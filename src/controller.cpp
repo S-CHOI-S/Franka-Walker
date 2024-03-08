@@ -229,6 +229,7 @@ void CController::JointControl()
 	for(int i = 0; i < 7; i++){
 		_A_diagonal(i,i) += 1.0;
 	}
+	// Manipulator equations of motion in joint space
 	_torque = _A_diagonal*(400*(_q_des - _q) + 40*(_qdot_des - _qdot)) + Model._bg;
 	// cout<<"_q_des 	 : "<<_q_des.transpose()<<endl;
 	// cout<<"_q 		 : "<<_q.transpose()<<endl;
