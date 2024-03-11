@@ -88,7 +88,6 @@ void CController::control_mujoco()
 			// cout<<"_x_hand 	: "<<_x_hand.transpose()<<endl;
 		}
 
-		
 		HandTrajectory.update_time(_t);
 		_x_des_hand.head(3) = HandTrajectory.position_cubicSpline();
 		_R_des_hand = HandTrajectory.rotationCubic();
@@ -104,7 +103,34 @@ void CController::control_mujoco()
 			_bool_init = true;
 		}
 	}
-	
+	else if(_control_mode == 3)
+	{
+		if (_t - _init_t < 0.1 && _bool_ee_motion == false)
+		{
+			_start_time = _init_t;
+			_end_time = _start_time + _motion_time;
+			HandTrajectory.reset_initial(_start_time, _x_hand, _xdot_hand);
+			HandTrajectory.update_goal(_x_goal_hand, _xdot_goal_hand, _end_time);
+			_bool_ee_motion = true;
+			// cout<<"_t : "<<_t<<endl;
+			// cout<<"_x_hand 	: "<<_x_hand.transpose()<<endl;
+		}
+
+		HandTrajectory.update_time(_t);
+		_x_des_hand.head(3) = HandTrajectory.position_cubicSpline();
+		_R_des_hand = HandTrajectory.rotationCubic();
+		_x_des_hand.segment<3>(3) = CustomMath::GetBodyRotationAngle(_R_des_hand);
+		_xdot_des_hand.head(3) = HandTrajectory.velocity_cubicSpline();
+		_xdot_des_hand.segment<3>(3) = HandTrajectory.rotationCubicDot();		
+
+		OperationalSpaceControl();
+
+		if (HandTrajectory.check_trajectory_complete() == 1)
+		{
+			_bool_plan(_cnt_plan) = 1;
+			_bool_init = true;
+		}
+	}
 }
 
 void CController::ModelUpdate()
@@ -157,9 +183,9 @@ void CController::motionPlan()
 
 			Vector3d target_pos;
 			Vector3d target_ori;
-			target_pos(0) = _x_hand(0) + 0.05;
-			target_pos(1) = _x_hand(1) + 0.05;
-			target_pos(2) = _x_hand(2) + 0.05;
+			target_pos(0) = _x_hand(0) + 0.1;
+			target_pos(1) = _x_hand(1) + 0.1;
+			target_pos(2) = _x_hand(2) + 0.1;
 			target_ori(0) = _x_hand(3);
 			target_ori(1) = _x_hand(4);
 			target_ori(2) = _x_hand(5);
@@ -183,19 +209,24 @@ void CController::motionPlan()
  			reset_target(10.0, target_pos, target_ori);
 			_cnt_plan++;			
 		}
+		else if(_cnt_plan == 3)
+		{
+			cout << "plan: " << _cnt_plan << endl;
+
+			VectorXd target_pose;
+			target_pose.setZero(6);
+			target_pose(0) = _x_hand(0) + 0.05;
+			target_pose(1) = _x_hand(1) + 0.05;
+			target_pose(2) = _x_hand(2) + 0.05;
+			target_pose(3) = _x_hand(3);
+			target_pose(4) = _x_hand(4);
+			target_pose(5) = _x_hand(5);
+
+ 			reset_target(10.0, target_pose);
+			_cnt_plan++;
+		}
 		
 	}
-}
-
-void CController::reset_target(double motion_time, VectorXd target_joint_position)
-{
-	_control_mode = 3;
-	_motion_time = motion_time;
-	_bool_joint_motion = false;
-	_bool_ee_motion = false;
-
-	// _q_goal = target_joint_position.head(7);
-	// _qdot_goal.setZero();
 }
 
 void CController::reset_target(double motion_time, VectorXd target_joint_position, VectorXd target_joint_velocity)
@@ -219,6 +250,19 @@ void CController::reset_target(double motion_time, Vector3d target_pos, Vector3d
 
 	_x_goal_hand.head(3) = target_pos;
 	_x_goal_hand.tail(3) = target_ori;
+	_xdot_goal_hand.setZero();
+}
+
+void CController::reset_target(double motion_time, VectorXd target_pose)
+{
+	_control_mode = 3;
+	_motion_time = motion_time;
+	_bool_joint_motion = false;
+	_bool_ee_motion = false;
+
+	// _q_goal = target_joint_position.head(7);
+	// _qdot_goal.setZero();
+	_x_goal_hand = target_pose;
 	_xdot_goal_hand.setZero();
 }
 
@@ -265,6 +309,43 @@ void CController::CLIK()
 	// cout<<"torque :"<<_torque.transpose()<<endl;
 }
 
+void CController::OperationalSpaceControl()
+{
+	cout << "Here is the Operational Space Control Mode!" << endl;
+
+	_torque.setZero();
+
+	_x_err_hand.segment(0,3) = _x_des_hand.head(3) - _x_hand.head(3);
+	_x_err_hand.segment(3,3) = -CustomMath::getPhi(Model._R_hand, _R_des_hand);
+	_x_dot_err_hand.segment(0,3) = _xdot_des_hand.head(3) - _xdot_hand.head(3);
+	_x_dot_err_hand.segment(3,3) = _xdot_des_hand.tail(3) - _xdot_hand.tail(3);
+
+	_J_bar_hands = CustomMath::pseudoInverseQR(_J_hands); // jacobian pseudo inverse
+
+	Eigen::MatrixXd _J_T_hands;
+	_J_T_hands.setZero(_k, 6);
+	_J_T_hands = _J_hands.transpose(); // jacobian transpose
+
+	Eigen::MatrixXd _J_bar_T_hands;
+	_J_bar_T_hands = CustomMath::pseudoInverseQR(_J_T_hands); // jacobian inverse transpose
+
+	// Should Consider [Null space] cuz franka_panda robot = 7 DOF
+	_J_null = _I - _J_T_hands * _J_bar_T_hands;
+
+	Eigen::MatrixXd _Lambda;
+	_Lambda = _J_bar_T_hands * Model._A * _J_bar_hands;
+
+	Eigen::VectorXd F_command_star;
+	F_command_star = 400 * _x_err_hand + 40 * _x_dot_err_hand;
+	// F_command_star = - _x_kp * _x_err_hand - _x_kd * _x_dot_err_hand;
+
+	// _torque = _J_T_hands * _Lambda * (F_command_star + 20 * _xdot_hand) - 20 * Model._A * _qdot + Model._bg;
+	// _torque = (_J_T_hands * _Lambda * F_command_star + Model._bg) + _J_null * Model._A * _qdot;
+	_torque = (_J_T_hands * _Lambda * F_command_star + Model._bg) + _J_null * Model._A * (_qdot_des-_qdot);
+	// cout << "nu\n" << nu << endl;
+	// cout << "_J_null\n" << _J_null << endl;
+}
+
 void CController::Initialize()
 {
     _control_mode = 1; //1: joint space, 2: task space(CLIK)
@@ -285,6 +366,7 @@ void CController::Initialize()
 	// _kdj_diagonal.diagonal() << 20., 250., 170., 320., 70., 50., 15.;
 	_x_kp = 1;//작게 0.1
 	// _x_kp = 20.0;
+	_x_kd = 1;
 
     _q.setZero(_k);
 	_qdot.setZero(_k);
@@ -342,9 +424,11 @@ void CController::Initialize()
 	_A_diagonal.setZero(_k,_k);
 
 	_x_err_hand.setZero(6);
+	_x_dot_err_hand.setZero(6);
 	_R_des_hand.setZero();
 
 	_I.setIdentity(7,7);
+	_J_null.setZero(_k,_k);
 
 	_pre_q.setZero(7);
 	_pre_qdot.setZero(7);

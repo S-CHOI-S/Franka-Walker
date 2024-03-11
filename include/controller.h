@@ -36,9 +36,9 @@ private:
     void ModelUpdate();
     void motionPlan();
 
-    void reset_target(double motion_time, VectorXd target_joint_position);
     void reset_target(double motion_time, VectorXd target_joint_position, VectorXd target_joint_velocity);
     void reset_target(double motion_time, Vector3d target_pos, Vector3d target_ori);
+    void reset_target(double motion_time, VectorXd target_pose);
 
     VectorXd _torque, _pre_q, _pre_qdot; // joint torque
     int _k; // DOF
@@ -52,9 +52,11 @@ private:
     //controller
 	double _kpj, _kdj; //joint P,D gain
     double _x_kp; // task control P gain
+    double _x_kd; // task control D gain
 
     void JointControl();
     void CLIK();
+    void OperationalSpaceControl();
 
     // robotmodel
     CModel Model;
@@ -88,9 +90,11 @@ private:
 
 
     VectorXd _x_err_hand;
+    VectorXd _x_dot_err_hand;
     Matrix3d _R_des_hand;
 
     MatrixXd _I; // Identity matrix
+    MatrixXd _J_null; // Null space control jacobian matrix
 };
 
 #endif
