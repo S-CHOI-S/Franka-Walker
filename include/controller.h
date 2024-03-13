@@ -85,16 +85,20 @@ private:
     MatrixXd _A_diagonal; // diagonal inertia matrix
     MatrixXd _J_hands; // jacobian matrix
     MatrixXd _J_bar_hands; // pseudo invere jacobian matrix
+    MatrixXd _J_T_hands; // jacobian transpose matrix
+    MatrixXd _J_bar_T_hands; // jacobian inverse transpose matrix
 
     VectorXd _x_hand, _xdot_hand; // End-effector
-
 
     VectorXd _x_err_hand;
     VectorXd _x_dot_err_hand;
     Matrix3d _R_des_hand;
-
+    
+    // For Operational Space Control
     MatrixXd _I; // Identity matrix
     MatrixXd _J_null; // Null space control jacobian matrix
+    MatrixXd _Lambda; // Inertia matirx: Operational Space
+    VectorXd F_command_star; // command vector of the decoupled end-effector
 };
 
 #endif

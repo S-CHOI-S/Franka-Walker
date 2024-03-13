@@ -52,7 +52,7 @@ void CController::control_mujoco()
 {
     ModelUpdate();
     motionPlan();
-	if(_control_mode == 1) //joint space control
+	if(_control_mode == 1) // joint space control
 	{
 		if (_t - _init_t < 0.1 && _bool_joint_motion == false)
 		{
@@ -75,7 +75,7 @@ void CController::control_mujoco()
 			_bool_init = true;
 		}
 	}
-	else if(_control_mode == 2)
+	else if(_control_mode == 2) // inverse kinematics control (CLIK)
 	{		
 		if (_t - _init_t < 0.1 && _bool_ee_motion == false)
 		{
@@ -103,7 +103,7 @@ void CController::control_mujoco()
 			_bool_init = true;
 		}
 	}
-	else if(_control_mode == 3)
+	else if(_control_mode == 3) // operational space control
 	{
 		if (_t - _init_t < 0.1 && _bool_ee_motion == false)
 		{
@@ -215,7 +215,7 @@ void CController::motionPlan()
 
 			VectorXd target_pose;
 			target_pose.setZero(6);
-			target_pose(0) = _x_hand(0) + 0.05;
+			target_pose(0) = _x_hand(0) - 0.1;
 			target_pose(1) = _x_hand(1) + 0.05;
 			target_pose(2) = _x_hand(2) + 0.05;
 			target_pose(3) = _x_hand(3);
@@ -231,6 +231,7 @@ void CController::motionPlan()
 
 void CController::reset_target(double motion_time, VectorXd target_joint_position, VectorXd target_joint_velocity)
 {
+	// joint space control
 	_control_mode = 1;
 	_motion_time = motion_time;
 	_bool_joint_motion = false;
@@ -243,6 +244,7 @@ void CController::reset_target(double motion_time, VectorXd target_joint_positio
 
 void CController::reset_target(double motion_time, Vector3d target_pos, Vector3d target_ori)
 {
+	// inverse kinematics control
 	_control_mode = 2;
 	_motion_time = motion_time;
 	_bool_joint_motion = false;
@@ -255,6 +257,7 @@ void CController::reset_target(double motion_time, Vector3d target_pos, Vector3d
 
 void CController::reset_target(double motion_time, VectorXd target_pose)
 {
+	// operational space control
 	_control_mode = 3;
 	_motion_time = motion_time;
 	_bool_joint_motion = false;
@@ -268,6 +271,7 @@ void CController::reset_target(double motion_time, VectorXd target_pose)
 
 void CController::JointControl()
 {	
+	// _control_mode = 1
 	_torque.setZero();
 	_A_diagonal = Model._A;
 	for(int i = 0; i < 7; i++){
@@ -283,6 +287,7 @@ void CController::JointControl()
 
 void CController::CLIK()
 {
+	// _control_mode = 2
 	_torque.setZero();	
 
 	_x_err_hand.segment(0,3) = _x_des_hand.head(3) - _x_hand.head(3);
@@ -311,44 +316,43 @@ void CController::CLIK()
 
 void CController::OperationalSpaceControl()
 {
-	cout << "Here is the Operational Space Control Mode!" << endl;
-
+	// _control_mode = 3
 	_torque.setZero();
 
+	// calc position, velocity errors
 	_x_err_hand.segment(0,3) = _x_des_hand.head(3) - _x_hand.head(3);
 	_x_err_hand.segment(3,3) = -CustomMath::getPhi(Model._R_hand, _R_des_hand);
 	_x_dot_err_hand.segment(0,3) = _xdot_des_hand.head(3) - _xdot_hand.head(3);
 	_x_dot_err_hand.segment(3,3) = _xdot_des_hand.tail(3) - _xdot_hand.tail(3);
 
-	_J_bar_hands = CustomMath::pseudoInverseQR(_J_hands); // jacobian pseudo inverse
+	// jacobian pseudo inverse matrix
+	_J_bar_hands = CustomMath::pseudoInverseQR(_J_hands);
 
-	Eigen::MatrixXd _J_T_hands;
-	_J_T_hands.setZero(_k, 6);
-	_J_T_hands = _J_hands.transpose(); // jacobian transpose
+	// jacobian transpose matrix
+	_J_T_hands = _J_hands.transpose();
 
-	Eigen::MatrixXd _J_bar_T_hands;
-	_J_bar_T_hands = CustomMath::pseudoInverseQR(_J_T_hands); // jacobian inverse transpose
+	// jacobian inverse transpose matrix
+	_J_bar_T_hands = CustomMath::pseudoInverseQR(_J_T_hands);
 
-	// Should Consider [Null space] cuz franka_panda robot = 7 DOF
+	// Should consider [Null space] cuz franka_panda robot = 7 DOF
 	_J_null = _I - _J_T_hands * _J_bar_T_hands;
 
-	Eigen::MatrixXd _Lambda;
+	// Inertial matrix: operational space
 	_Lambda = _J_bar_T_hands * Model._A * _J_bar_hands;
 
-	Eigen::VectorXd F_command_star;
 	F_command_star = 400 * _x_err_hand + 40 * _x_dot_err_hand;
-	// F_command_star = - _x_kp * _x_err_hand - _x_kd * _x_dot_err_hand;
 
-	// _torque = _J_T_hands * _Lambda * (F_command_star + 20 * _xdot_hand) - 20 * Model._A * _qdot + Model._bg;
-	// _torque = (_J_T_hands * _Lambda * F_command_star + Model._bg) + _J_null * Model._A * _qdot;
 	_torque = (_J_T_hands * _Lambda * F_command_star + Model._bg) + _J_null * Model._A * (_qdot_des-_qdot);
-	// cout << "nu\n" << nu << endl;
-	// cout << "_J_null\n" << _J_null << endl;
+
+	// cout << "_J_null\n" << _J_null * Model._A << endl;
+
+	cout << "Robot pose error\n" << _x_des_hand.head(3) - Model._x_hand << "\n"
+	<< _x_des_hand.tail(3) - CustomMath::GetBodyRotationAngle(Model._R_hand) << "\n==========" << endl;
 }
 
 void CController::Initialize()
 {
-    _control_mode = 1; //1: joint space, 2: task space(CLIK)
+    _control_mode = 1; //1: joint space, 2: task space(CLIK), 3: operational space
 
 	_bool_init = true;
 	_t = 0.0;
@@ -374,6 +378,7 @@ void CController::Initialize()
 
 	_J_hands.setZero(6,_k);
 	_J_bar_hands.setZero(_k,6);
+	_J_T_hands.setZero(_k, 6);
 
 	_x_hand.setZero(6);
 	_xdot_hand.setZero(6);
