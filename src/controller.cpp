@@ -346,8 +346,9 @@ void CController::OperationalSpaceControl()
 
 	// cout << "_J_null\n" << _J_null * Model._A << endl;
 
-	cout << "Robot pose error\n" << _x_des_hand.head(3) - Model._x_hand << "\n"
-	<< _x_des_hand.tail(3) - CustomMath::GetBodyRotationAngle(Model._R_hand) << "\n==========" << endl;
+	cout << "\ntarget pose:\n" << " x -> x - 0.1\n y -> y + 0.05\n z -> z + 0.05\n===============\n" << endl;
+	cout << "Robot pose error:\n" << _x_des_hand.head(3) - Model._x_hand << "\n"
+	<< _x_des_hand.tail(3) - CustomMath::GetBodyRotationAngle(Model._R_hand) << "\n===============\n===============" << endl;
 }
 
 void CController::Initialize()
