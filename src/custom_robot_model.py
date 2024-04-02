@@ -13,6 +13,12 @@ import torch.nn.functional as F
 learning_rate = 0.0002
 gamma = 0.98
 
+# Agent
+class Agent():
+	def __init__(self) -> None:
+		pass
+	
+
 # Policy
 class Policy(nn.Module):
 	def __init__(self): # policy network에 필요한 연산들을 정의
