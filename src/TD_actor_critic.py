@@ -72,19 +72,19 @@ class ActorCritic(nn.Module):
         self.optimizer.step()
 
 def main():
-    env = gym.make("InvertedPendulum-v4", render_mode="human")
+    env = gym.make("CartPole-v1", render_mode="human")
     model = ActorCritic() # model 선언
     print_interval = 20
     score = 0.0
 
     for n_epi in range(10000):
         done = False
-        s = env.reset()
+        s, env_info = env.reset()
         
         while not done:
             for t in range(n_rollout):
-                prob = model.pi(torch.from_numpy(s).float()) # model.pi: 정책함수
-                m = Categorical(prob)
+                prob = model.pi(torch.from_numpy(np.array(s, dtype=np.float32))) # model.pi: 정책함수
+                m = torch.distributions.Categorical(prob)
                 a = m.sample().item()
                 s_prime, r, terminated, truncated, info = env.step(a)
                 model.put_data((s,a,r,s_prime,terminated,truncated)) # 값들을 잠시 저장
