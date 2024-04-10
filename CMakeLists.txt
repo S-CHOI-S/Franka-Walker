@@ -1,15 +1,18 @@
 cmake_minimum_required(VERSION 3.15)
 project(simulation)
 
-
 set(CMAKE_CXX_STANDARD 17)
 
-
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-no-as-needed")
+# set(CMAKE_PREFIX_PATH "/home/kist/anaconda3/envs/mujoco_gym/lib/python3.8/site-packages/pybind11")
 #fing eigen library
 find_package (Eigen3 3.3 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
+#find_package(Python 3.8 COMPONENTS Interpreter Development REQUIRED)
+find_package(pybind11 REQUIRED) # pybind11
+
+set(PYTHON_INCLUDE_DIR "/home/kist/anaconda3/envs/mujoco_gym/include/python3.8")
 
 message(STATUS "Eigen3 : " ${EIGEN3_INCLUDE_DIR}/Eigen)
 message(STATUS "current : " ${CMAKE_CURRENT_SOURCE_DIR})
@@ -43,6 +46,7 @@ include_directories(
   ${GLEW_INCLUDE_DIRS}
     /usr/local/include/rbdl
     /usr/local/lib
+    ${PYTHON_INCLUDE_DIR}
 )
 
 set(COM_SRC
@@ -57,6 +61,9 @@ set(COM_SRC
         src/robotmodel.cpp
         src/trajectory.cpp
         src/quadraticprogram.cpp
+        
+#        src/pybind_controller.cpp
+#	example.cpp
         )
 
 set(COM_LIB 
@@ -67,7 +74,7 @@ ${GLFW}
 -lqpOASES
 )
 add_executable(mppi ${COM_SRC})
-#add_executable(${PROJECT_NAME} simulate/main.cc)
+
 target_link_libraries(mppi 
 	${COM_LIB} 
 	${CMAKE_DL_LIBS} 
@@ -81,3 +88,6 @@ target_link_libraries(mppi
 	${GLEW_LIBRARIES}
 	${OPENGL_LIBRARIES}
 )
+
+pybind11_add_module(mjc_controller src/pybind_controller.cpp)
+# pybind11_add_module(example example.cpp)

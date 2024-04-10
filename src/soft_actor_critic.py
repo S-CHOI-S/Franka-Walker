@@ -29,15 +29,21 @@ import time
 import mujoco
 import mujoco.viewer
 
+import numpy as np
+
 class PandaEnv(gym.Env):
-    metadata = {"render_nodes": ["human"]}
+    metadata = {"render_modes": ["human"], "render_fps": 30}
 
     def __init__(self, render_mode="human"):
         super(PandaEnv, self).__init__()
         self.render_mode = render_mode
 
-        self.m = mujoco.MjModel.from_xml_path(os.path.abspath('../model/pandaquest.xml'))
+        self.dof = 9 # joint1 ~ joint7, finger_joint1, finger_joint2
+
+        self.m = mujoco.MjModel.from_xml_path(os.path.abspath('../model/franka_emika_panda/pandaquest_sac.xml'))
         self.d = mujoco.MjData(self.m)
+        self.controller = 1 # HERE needs to import mujoco controller!
+        self.torque = np.zeros(self.dof, dtype=np.float64)
 
         renderer = mujoco.Renderer(self.m)
 
@@ -51,6 +57,7 @@ class PandaEnv(gym.Env):
                 mujoco.mj_step(self.m, self.d)
 
                 self.load_current_states()
+                # print(self.joint1)
             
             with viewer.lock():
                 viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = int(self.d.time % 2)
@@ -65,9 +72,16 @@ class PandaEnv(gym.Env):
 
     def load_current_states(self):
         print(self.d.xpos) # 각 링크의 위치를 나타낸다 -> ?
-        print(self.d.qpos) # 각 관절의 각도를 나타낸다
+        print(mujoco.mj_name2id(self.m, 1, "hand"))
+        
+        # print(self.d.qpos) # 각 관절의 각도를 나타낸다
+        
+
 
         print("load_current_states function successed!")
+
+    def reset(self):
+        pass
 
 
 
