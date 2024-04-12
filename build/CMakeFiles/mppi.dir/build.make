@@ -73,127 +73,127 @@ CMakeFiles/mppi.dir/src/main.cc.o: CMakeFiles/mppi.dir/flags.make
 CMakeFiles/mppi.dir/src/main.cc.o: /home/kist/franka_panda_3_mppi/src/main.cc
 CMakeFiles/mppi.dir/src/main.cc.o: CMakeFiles/mppi.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/kist/franka_panda_3_mppi/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/mppi.dir/src/main.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/mppi.dir/src/main.cc.o -MF CMakeFiles/mppi.dir/src/main.cc.o.d -o CMakeFiles/mppi.dir/src/main.cc.o -c /home/kist/franka_panda_3_mppi/src/main.cc
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -MD -MT CMakeFiles/mppi.dir/src/main.cc.o -MF CMakeFiles/mppi.dir/src/main.cc.o.d -o CMakeFiles/mppi.dir/src/main.cc.o -c /home/kist/franka_panda_3_mppi/src/main.cc
 
 CMakeFiles/mppi.dir/src/main.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mppi.dir/src/main.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/kist/franka_panda_3_mppi/src/main.cc > CMakeFiles/mppi.dir/src/main.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -E /home/kist/franka_panda_3_mppi/src/main.cc > CMakeFiles/mppi.dir/src/main.cc.i
 
 CMakeFiles/mppi.dir/src/main.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mppi.dir/src/main.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/kist/franka_panda_3_mppi/src/main.cc -o CMakeFiles/mppi.dir/src/main.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -S /home/kist/franka_panda_3_mppi/src/main.cc -o CMakeFiles/mppi.dir/src/main.cc.s
 
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.o: CMakeFiles/mppi.dir/flags.make
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.o: /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_dispatch.cc
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.o: CMakeFiles/mppi.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/kist/franka_panda_3_mppi/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.o -MF CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.o.d -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.o -c /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_dispatch.cc
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -MD -MT CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.o -MF CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.o.d -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.o -c /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_dispatch.cc
 
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_dispatch.cc > CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -E /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_dispatch.cc > CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.i
 
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_dispatch.cc -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -S /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_dispatch.cc -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.s
 
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.o: CMakeFiles/mppi.dir/flags.make
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.o: /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_adapter.cc
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.o: CMakeFiles/mppi.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/kist/franka_panda_3_mppi/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.o -MF CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.o.d -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.o -c /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_adapter.cc
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -MD -MT CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.o -MF CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.o.d -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.o -c /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_adapter.cc
 
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_adapter.cc > CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -E /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_adapter.cc > CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.i
 
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_adapter.cc -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -S /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/glfw_adapter.cc -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.s
 
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.o: CMakeFiles/mppi.dir/flags.make
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.o: /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/simulate.cc
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.o: CMakeFiles/mppi.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/kist/franka_panda_3_mppi/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.o -MF CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.o.d -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.o -c /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/simulate.cc
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -MD -MT CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.o -MF CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.o.d -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.o -c /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/simulate.cc
 
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/simulate.cc > CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -E /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/simulate.cc > CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.i
 
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/simulate.cc -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -S /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/simulate.cc -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.s
 
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.o: CMakeFiles/mppi.dir/flags.make
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.o: /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/platform_ui_adapter.cc
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.o: CMakeFiles/mppi.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/kist/franka_panda_3_mppi/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.o -MF CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.o.d -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.o -c /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/platform_ui_adapter.cc
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -MD -MT CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.o -MF CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.o.d -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.o -c /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/platform_ui_adapter.cc
 
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/platform_ui_adapter.cc > CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -E /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/platform_ui_adapter.cc > CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.i
 
 CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/platform_ui_adapter.cc -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -S /home/kist/franka_panda_3_mppi/mujoco-2.3.3/simulate/platform_ui_adapter.cc -o CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.s
 
 CMakeFiles/mppi.dir/src/controller.cpp.o: CMakeFiles/mppi.dir/flags.make
 CMakeFiles/mppi.dir/src/controller.cpp.o: /home/kist/franka_panda_3_mppi/src/controller.cpp
 CMakeFiles/mppi.dir/src/controller.cpp.o: CMakeFiles/mppi.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/kist/franka_panda_3_mppi/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/mppi.dir/src/controller.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/mppi.dir/src/controller.cpp.o -MF CMakeFiles/mppi.dir/src/controller.cpp.o.d -o CMakeFiles/mppi.dir/src/controller.cpp.o -c /home/kist/franka_panda_3_mppi/src/controller.cpp
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -MD -MT CMakeFiles/mppi.dir/src/controller.cpp.o -MF CMakeFiles/mppi.dir/src/controller.cpp.o.d -o CMakeFiles/mppi.dir/src/controller.cpp.o -c /home/kist/franka_panda_3_mppi/src/controller.cpp
 
 CMakeFiles/mppi.dir/src/controller.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mppi.dir/src/controller.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/kist/franka_panda_3_mppi/src/controller.cpp > CMakeFiles/mppi.dir/src/controller.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -E /home/kist/franka_panda_3_mppi/src/controller.cpp > CMakeFiles/mppi.dir/src/controller.cpp.i
 
 CMakeFiles/mppi.dir/src/controller.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mppi.dir/src/controller.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/kist/franka_panda_3_mppi/src/controller.cpp -o CMakeFiles/mppi.dir/src/controller.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -S /home/kist/franka_panda_3_mppi/src/controller.cpp -o CMakeFiles/mppi.dir/src/controller.cpp.s
 
 CMakeFiles/mppi.dir/src/robotmodel.cpp.o: CMakeFiles/mppi.dir/flags.make
 CMakeFiles/mppi.dir/src/robotmodel.cpp.o: /home/kist/franka_panda_3_mppi/src/robotmodel.cpp
 CMakeFiles/mppi.dir/src/robotmodel.cpp.o: CMakeFiles/mppi.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/kist/franka_panda_3_mppi/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/mppi.dir/src/robotmodel.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/mppi.dir/src/robotmodel.cpp.o -MF CMakeFiles/mppi.dir/src/robotmodel.cpp.o.d -o CMakeFiles/mppi.dir/src/robotmodel.cpp.o -c /home/kist/franka_panda_3_mppi/src/robotmodel.cpp
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -MD -MT CMakeFiles/mppi.dir/src/robotmodel.cpp.o -MF CMakeFiles/mppi.dir/src/robotmodel.cpp.o.d -o CMakeFiles/mppi.dir/src/robotmodel.cpp.o -c /home/kist/franka_panda_3_mppi/src/robotmodel.cpp
 
 CMakeFiles/mppi.dir/src/robotmodel.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mppi.dir/src/robotmodel.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/kist/franka_panda_3_mppi/src/robotmodel.cpp > CMakeFiles/mppi.dir/src/robotmodel.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -E /home/kist/franka_panda_3_mppi/src/robotmodel.cpp > CMakeFiles/mppi.dir/src/robotmodel.cpp.i
 
 CMakeFiles/mppi.dir/src/robotmodel.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mppi.dir/src/robotmodel.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/kist/franka_panda_3_mppi/src/robotmodel.cpp -o CMakeFiles/mppi.dir/src/robotmodel.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -S /home/kist/franka_panda_3_mppi/src/robotmodel.cpp -o CMakeFiles/mppi.dir/src/robotmodel.cpp.s
 
 CMakeFiles/mppi.dir/src/trajectory.cpp.o: CMakeFiles/mppi.dir/flags.make
 CMakeFiles/mppi.dir/src/trajectory.cpp.o: /home/kist/franka_panda_3_mppi/src/trajectory.cpp
 CMakeFiles/mppi.dir/src/trajectory.cpp.o: CMakeFiles/mppi.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/kist/franka_panda_3_mppi/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/mppi.dir/src/trajectory.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/mppi.dir/src/trajectory.cpp.o -MF CMakeFiles/mppi.dir/src/trajectory.cpp.o.d -o CMakeFiles/mppi.dir/src/trajectory.cpp.o -c /home/kist/franka_panda_3_mppi/src/trajectory.cpp
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -MD -MT CMakeFiles/mppi.dir/src/trajectory.cpp.o -MF CMakeFiles/mppi.dir/src/trajectory.cpp.o.d -o CMakeFiles/mppi.dir/src/trajectory.cpp.o -c /home/kist/franka_panda_3_mppi/src/trajectory.cpp
 
 CMakeFiles/mppi.dir/src/trajectory.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mppi.dir/src/trajectory.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/kist/franka_panda_3_mppi/src/trajectory.cpp > CMakeFiles/mppi.dir/src/trajectory.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -E /home/kist/franka_panda_3_mppi/src/trajectory.cpp > CMakeFiles/mppi.dir/src/trajectory.cpp.i
 
 CMakeFiles/mppi.dir/src/trajectory.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mppi.dir/src/trajectory.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/kist/franka_panda_3_mppi/src/trajectory.cpp -o CMakeFiles/mppi.dir/src/trajectory.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -S /home/kist/franka_panda_3_mppi/src/trajectory.cpp -o CMakeFiles/mppi.dir/src/trajectory.cpp.s
 
 CMakeFiles/mppi.dir/src/quadraticprogram.cpp.o: CMakeFiles/mppi.dir/flags.make
 CMakeFiles/mppi.dir/src/quadraticprogram.cpp.o: /home/kist/franka_panda_3_mppi/src/quadraticprogram.cpp
 CMakeFiles/mppi.dir/src/quadraticprogram.cpp.o: CMakeFiles/mppi.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/kist/franka_panda_3_mppi/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/mppi.dir/src/quadraticprogram.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/mppi.dir/src/quadraticprogram.cpp.o -MF CMakeFiles/mppi.dir/src/quadraticprogram.cpp.o.d -o CMakeFiles/mppi.dir/src/quadraticprogram.cpp.o -c /home/kist/franka_panda_3_mppi/src/quadraticprogram.cpp
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -MD -MT CMakeFiles/mppi.dir/src/quadraticprogram.cpp.o -MF CMakeFiles/mppi.dir/src/quadraticprogram.cpp.o.d -o CMakeFiles/mppi.dir/src/quadraticprogram.cpp.o -c /home/kist/franka_panda_3_mppi/src/quadraticprogram.cpp
 
 CMakeFiles/mppi.dir/src/quadraticprogram.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/mppi.dir/src/quadraticprogram.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/kist/franka_panda_3_mppi/src/quadraticprogram.cpp > CMakeFiles/mppi.dir/src/quadraticprogram.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -E /home/kist/franka_panda_3_mppi/src/quadraticprogram.cpp > CMakeFiles/mppi.dir/src/quadraticprogram.cpp.i
 
 CMakeFiles/mppi.dir/src/quadraticprogram.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/mppi.dir/src/quadraticprogram.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/kist/franka_panda_3_mppi/src/quadraticprogram.cpp -o CMakeFiles/mppi.dir/src/quadraticprogram.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -S /home/kist/franka_panda_3_mppi/src/quadraticprogram.cpp -o CMakeFiles/mppi.dir/src/quadraticprogram.cpp.s
 
 # Object files for target mppi
 mppi_OBJECTS = \

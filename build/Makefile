@@ -130,6 +130,19 @@ mppi/fast:
 .PHONY : mppi/fast
 
 #=============================================================================
+# Target rules for targets named pybind_lib
+
+# Build rule for target.
+pybind_lib: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 pybind_lib
+.PHONY : pybind_lib
+
+# fast build rule for target.
+pybind_lib/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/build
+.PHONY : pybind_lib/fast
+
+#=============================================================================
 # Target rules for targets named mjc_controller
 
 # Build rule for target.
@@ -142,12 +155,50 @@ mjc_controller/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mjc_controller.dir/build.make CMakeFiles/mjc_controller.dir/build
 .PHONY : mjc_controller/fast
 
+#=============================================================================
+# Target rules for targets named example
+
+# Build rule for target.
+example: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 example
+.PHONY : example
+
+# fast build rule for target.
+example/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/example.dir/build.make CMakeFiles/example.dir/build
+.PHONY : example/fast
+
+example.o: example.cpp.o
+.PHONY : example.o
+
+# target to build an object file
+example.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/example.dir/build.make CMakeFiles/example.dir/example.cpp.o
+.PHONY : example.cpp.o
+
+example.i: example.cpp.i
+.PHONY : example.i
+
+# target to preprocess a source file
+example.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/example.dir/build.make CMakeFiles/example.dir/example.cpp.i
+.PHONY : example.cpp.i
+
+example.s: example.cpp.s
+.PHONY : example.s
+
+# target to generate assembly for a file
+example.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/example.dir/build.make CMakeFiles/example.dir/example.cpp.s
+.PHONY : example.cpp.s
+
 mujoco-2.3.3/simulate/glfw_adapter.o: mujoco-2.3.3/simulate/glfw_adapter.cc.o
 .PHONY : mujoco-2.3.3/simulate/glfw_adapter.o
 
 # target to build an object file
 mujoco-2.3.3/simulate/glfw_adapter.cc.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.o
 .PHONY : mujoco-2.3.3/simulate/glfw_adapter.cc.o
 
 mujoco-2.3.3/simulate/glfw_adapter.i: mujoco-2.3.3/simulate/glfw_adapter.cc.i
@@ -156,6 +207,7 @@ mujoco-2.3.3/simulate/glfw_adapter.i: mujoco-2.3.3/simulate/glfw_adapter.cc.i
 # target to preprocess a source file
 mujoco-2.3.3/simulate/glfw_adapter.cc.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.i
 .PHONY : mujoco-2.3.3/simulate/glfw_adapter.cc.i
 
 mujoco-2.3.3/simulate/glfw_adapter.s: mujoco-2.3.3/simulate/glfw_adapter.cc.s
@@ -164,6 +216,7 @@ mujoco-2.3.3/simulate/glfw_adapter.s: mujoco-2.3.3/simulate/glfw_adapter.cc.s
 # target to generate assembly for a file
 mujoco-2.3.3/simulate/glfw_adapter.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.s
 .PHONY : mujoco-2.3.3/simulate/glfw_adapter.cc.s
 
 mujoco-2.3.3/simulate/glfw_dispatch.o: mujoco-2.3.3/simulate/glfw_dispatch.cc.o
@@ -172,6 +225,7 @@ mujoco-2.3.3/simulate/glfw_dispatch.o: mujoco-2.3.3/simulate/glfw_dispatch.cc.o
 # target to build an object file
 mujoco-2.3.3/simulate/glfw_dispatch.cc.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.o
 .PHONY : mujoco-2.3.3/simulate/glfw_dispatch.cc.o
 
 mujoco-2.3.3/simulate/glfw_dispatch.i: mujoco-2.3.3/simulate/glfw_dispatch.cc.i
@@ -180,6 +234,7 @@ mujoco-2.3.3/simulate/glfw_dispatch.i: mujoco-2.3.3/simulate/glfw_dispatch.cc.i
 # target to preprocess a source file
 mujoco-2.3.3/simulate/glfw_dispatch.cc.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.i
 .PHONY : mujoco-2.3.3/simulate/glfw_dispatch.cc.i
 
 mujoco-2.3.3/simulate/glfw_dispatch.s: mujoco-2.3.3/simulate/glfw_dispatch.cc.s
@@ -188,6 +243,7 @@ mujoco-2.3.3/simulate/glfw_dispatch.s: mujoco-2.3.3/simulate/glfw_dispatch.cc.s
 # target to generate assembly for a file
 mujoco-2.3.3/simulate/glfw_dispatch.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.s
 .PHONY : mujoco-2.3.3/simulate/glfw_dispatch.cc.s
 
 mujoco-2.3.3/simulate/platform_ui_adapter.o: mujoco-2.3.3/simulate/platform_ui_adapter.cc.o
@@ -196,6 +252,7 @@ mujoco-2.3.3/simulate/platform_ui_adapter.o: mujoco-2.3.3/simulate/platform_ui_a
 # target to build an object file
 mujoco-2.3.3/simulate/platform_ui_adapter.cc.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.o
 .PHONY : mujoco-2.3.3/simulate/platform_ui_adapter.cc.o
 
 mujoco-2.3.3/simulate/platform_ui_adapter.i: mujoco-2.3.3/simulate/platform_ui_adapter.cc.i
@@ -204,6 +261,7 @@ mujoco-2.3.3/simulate/platform_ui_adapter.i: mujoco-2.3.3/simulate/platform_ui_a
 # target to preprocess a source file
 mujoco-2.3.3/simulate/platform_ui_adapter.cc.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.i
 .PHONY : mujoco-2.3.3/simulate/platform_ui_adapter.cc.i
 
 mujoco-2.3.3/simulate/platform_ui_adapter.s: mujoco-2.3.3/simulate/platform_ui_adapter.cc.s
@@ -212,6 +270,7 @@ mujoco-2.3.3/simulate/platform_ui_adapter.s: mujoco-2.3.3/simulate/platform_ui_a
 # target to generate assembly for a file
 mujoco-2.3.3/simulate/platform_ui_adapter.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.s
 .PHONY : mujoco-2.3.3/simulate/platform_ui_adapter.cc.s
 
 mujoco-2.3.3/simulate/simulate.o: mujoco-2.3.3/simulate/simulate.cc.o
@@ -220,6 +279,7 @@ mujoco-2.3.3/simulate/simulate.o: mujoco-2.3.3/simulate/simulate.cc.o
 # target to build an object file
 mujoco-2.3.3/simulate/simulate.cc.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/mujoco-2.3.3/simulate/simulate.cc.o
 .PHONY : mujoco-2.3.3/simulate/simulate.cc.o
 
 mujoco-2.3.3/simulate/simulate.i: mujoco-2.3.3/simulate/simulate.cc.i
@@ -228,6 +288,7 @@ mujoco-2.3.3/simulate/simulate.i: mujoco-2.3.3/simulate/simulate.cc.i
 # target to preprocess a source file
 mujoco-2.3.3/simulate/simulate.cc.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/mujoco-2.3.3/simulate/simulate.cc.i
 .PHONY : mujoco-2.3.3/simulate/simulate.cc.i
 
 mujoco-2.3.3/simulate/simulate.s: mujoco-2.3.3/simulate/simulate.cc.s
@@ -236,6 +297,7 @@ mujoco-2.3.3/simulate/simulate.s: mujoco-2.3.3/simulate/simulate.cc.s
 # target to generate assembly for a file
 mujoco-2.3.3/simulate/simulate.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/mujoco-2.3.3/simulate/simulate.cc.s
 .PHONY : mujoco-2.3.3/simulate/simulate.cc.s
 
 src/controller.o: src/controller.cpp.o
@@ -244,6 +306,7 @@ src/controller.o: src/controller.cpp.o
 # target to build an object file
 src/controller.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/controller.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/controller.cpp.o
 .PHONY : src/controller.cpp.o
 
 src/controller.i: src/controller.cpp.i
@@ -252,6 +315,7 @@ src/controller.i: src/controller.cpp.i
 # target to preprocess a source file
 src/controller.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/controller.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/controller.cpp.i
 .PHONY : src/controller.cpp.i
 
 src/controller.s: src/controller.cpp.s
@@ -260,6 +324,7 @@ src/controller.s: src/controller.cpp.s
 # target to generate assembly for a file
 src/controller.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/controller.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/controller.cpp.s
 .PHONY : src/controller.cpp.s
 
 src/main.o: src/main.cc.o
@@ -268,6 +333,7 @@ src/main.o: src/main.cc.o
 # target to build an object file
 src/main.cc.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/main.cc.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/main.cc.o
 .PHONY : src/main.cc.o
 
 src/main.i: src/main.cc.i
@@ -276,6 +342,7 @@ src/main.i: src/main.cc.i
 # target to preprocess a source file
 src/main.cc.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/main.cc.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/main.cc.i
 .PHONY : src/main.cc.i
 
 src/main.s: src/main.cc.s
@@ -284,6 +351,7 @@ src/main.s: src/main.cc.s
 # target to generate assembly for a file
 src/main.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/main.cc.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/main.cc.s
 .PHONY : src/main.cc.s
 
 src/pybind_controller.o: src/pybind_controller.cpp.o
@@ -316,6 +384,7 @@ src/quadraticprogram.o: src/quadraticprogram.cpp.o
 # target to build an object file
 src/quadraticprogram.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/quadraticprogram.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/quadraticprogram.cpp.o
 .PHONY : src/quadraticprogram.cpp.o
 
 src/quadraticprogram.i: src/quadraticprogram.cpp.i
@@ -324,6 +393,7 @@ src/quadraticprogram.i: src/quadraticprogram.cpp.i
 # target to preprocess a source file
 src/quadraticprogram.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/quadraticprogram.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/quadraticprogram.cpp.i
 .PHONY : src/quadraticprogram.cpp.i
 
 src/quadraticprogram.s: src/quadraticprogram.cpp.s
@@ -332,6 +402,7 @@ src/quadraticprogram.s: src/quadraticprogram.cpp.s
 # target to generate assembly for a file
 src/quadraticprogram.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/quadraticprogram.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/quadraticprogram.cpp.s
 .PHONY : src/quadraticprogram.cpp.s
 
 src/robotmodel.o: src/robotmodel.cpp.o
@@ -340,6 +411,7 @@ src/robotmodel.o: src/robotmodel.cpp.o
 # target to build an object file
 src/robotmodel.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/robotmodel.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/robotmodel.cpp.o
 .PHONY : src/robotmodel.cpp.o
 
 src/robotmodel.i: src/robotmodel.cpp.i
@@ -348,6 +420,7 @@ src/robotmodel.i: src/robotmodel.cpp.i
 # target to preprocess a source file
 src/robotmodel.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/robotmodel.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/robotmodel.cpp.i
 .PHONY : src/robotmodel.cpp.i
 
 src/robotmodel.s: src/robotmodel.cpp.s
@@ -356,6 +429,7 @@ src/robotmodel.s: src/robotmodel.cpp.s
 # target to generate assembly for a file
 src/robotmodel.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/robotmodel.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/robotmodel.cpp.s
 .PHONY : src/robotmodel.cpp.s
 
 src/trajectory.o: src/trajectory.cpp.o
@@ -364,6 +438,7 @@ src/trajectory.o: src/trajectory.cpp.o
 # target to build an object file
 src/trajectory.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/trajectory.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/trajectory.cpp.o
 .PHONY : src/trajectory.cpp.o
 
 src/trajectory.i: src/trajectory.cpp.i
@@ -372,6 +447,7 @@ src/trajectory.i: src/trajectory.cpp.i
 # target to preprocess a source file
 src/trajectory.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/trajectory.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/trajectory.cpp.i
 .PHONY : src/trajectory.cpp.i
 
 src/trajectory.s: src/trajectory.cpp.s
@@ -380,6 +456,7 @@ src/trajectory.s: src/trajectory.cpp.s
 # target to generate assembly for a file
 src/trajectory.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mppi.dir/build.make CMakeFiles/mppi.dir/src/trajectory.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/pybind_lib.dir/build.make CMakeFiles/pybind_lib.dir/src/trajectory.cpp.s
 .PHONY : src/trajectory.cpp.s
 
 # Help Target
@@ -390,8 +467,13 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... example"
 	@echo "... mjc_controller"
 	@echo "... mppi"
+	@echo "... pybind_lib"
+	@echo "... example.o"
+	@echo "... example.i"
+	@echo "... example.s"
 	@echo "... mujoco-2.3.3/simulate/glfw_adapter.o"
 	@echo "... mujoco-2.3.3/simulate/glfw_adapter.i"
 	@echo "... mujoco-2.3.3/simulate/glfw_adapter.s"

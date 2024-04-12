@@ -1,7 +1,10 @@
 #pragma once
-#ifndef __CONTROLLER_H
-#define __CONTROLLER_H
+#ifndef __PYBIND_CONTROLLER_H
+#define __PYBIND_CONTROLLER_H
 
+#include "pybind11/pybind11.h"
+#include <pybind11/operators.h>
+#include <pybind11/stl.h>
 // #include <iostream>
 #include <eigen3/Eigen/Dense>
 #include <rbdl/rbdl.h>
@@ -10,48 +13,46 @@
 #include "robotmodel.h"
 #include "trajectory.h"
 #include "custommath.h"
-#include "pybind11/pybind11.h"
 
 using namespace std;
 using namespace Eigen;
 
 #define NECS2SEC 1000000000
 
-class CController
+class MJCController
 {
 
 public:
-    CController();
-    virtual ~CController();	
+    MJCController();
+    virtual ~MJCController();	
 
     void read(double t, std::array<double, 9> q, std::array<double, 9> qdot);
     void control_mujoco();
-    void write(std::array<double, 9> torque);
+    std::array<double, 9> write();
 
     VectorXd _q, _qdot, _q_order, _qdot_order;
-
+    
     void Initialize();
 
 private:
     
     void ModelUpdate();
     void motionPlan();
-
-    void reset_target(double motion_time, VectorXd target_joint_position, VectorXd target_joint_velocity);
-    void reset_target(double motion_time, Vector3d target_pos, Vector3d target_ori);
     void reset_target(double motion_time, VectorXd target_pose);
 
     VectorXd _torque, _pre_q, _pre_qdot; // joint torque
     int _k; // DOF
+    
+    std::array<double, 9> torque;
 
     bool _bool_init;
     double _t;
     double _dt;
-	double _init_t;
-	double _pre_t;
+    double _init_t;
+    double _pre_t;
 
     //controller
-	double _kpj, _kdj; //joint P,D gain
+    double _kpj, _kdj; //joint P,D gain
     double _x_kp; // task control P gain
     double _x_kd; // task control D gain
 
@@ -70,7 +71,7 @@ private:
     VectorXd _q_home; // joint home position
 
     //motion trajectory
-	double _start_time, _end_time, _motion_time;
+    double _start_time, _end_time, _motion_time;
 
     CTrajectory JointTrajectory; // joint space trajectory
     HTrajectory HandTrajectory; // task space trajectory

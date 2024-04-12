@@ -8,3 +8,21 @@ CXX_INCLUDES = -I/home/kist/franka_panda_3_mppi/include -I/home/kist/anaconda3/e
 
 CXX_FLAGS = -std=gnu++17
 
+# Custom flags: CMakeFiles/mppi.dir/src/main.cc.o_FLAGS = -fPIC
+
+# Custom flags: CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_dispatch.cc.o_FLAGS = -fPIC
+
+# Custom flags: CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/glfw_adapter.cc.o_FLAGS = -fPIC
+
+# Custom flags: CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/simulate.cc.o_FLAGS = -fPIC
+
+# Custom flags: CMakeFiles/mppi.dir/mujoco-2.3.3/simulate/platform_ui_adapter.cc.o_FLAGS = -fPIC
+
+# Custom flags: CMakeFiles/mppi.dir/src/controller.cpp.o_FLAGS = -fPIC
+
+# Custom flags: CMakeFiles/mppi.dir/src/robotmodel.cpp.o_FLAGS = -fPIC
+
+# Custom flags: CMakeFiles/mppi.dir/src/trajectory.cpp.o_FLAGS = -fPIC
+
+# Custom flags: CMakeFiles/mppi.dir/src/quadraticprogram.cpp.o_FLAGS = -fPIC
+

@@ -61,8 +61,8 @@ events:
     checks:
       - "Detecting C compiler ABI info"
     directories:
-      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-RA3zZi"
-      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-RA3zZi"
+      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-X6XhZL"
+      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-X6XhZL"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
@@ -71,13 +71,13 @@ events:
       variable: "CMAKE_C_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-RA3zZi'
+        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-X6XhZL'
         
-        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_0649c/fast
-        /usr/bin/make  -f CMakeFiles/cmTC_0649c.dir/build.make CMakeFiles/cmTC_0649c.dir/build
-        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-RA3zZi'
-        Building C object CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o
-        /usr/bin/cc   -v -o CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o -c /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCCompilerABI.c
+        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_ba99e/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_ba99e.dir/build.make CMakeFiles/cmTC_ba99e.dir/build
+        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-X6XhZL'
+        Building C object CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o
+        /usr/bin/cc   -v -o CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o -c /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCCompilerABI.c
         Using built-in specs.
         COLLECT_GCC=/usr/bin/cc
         OFFLOAD_TARGET_NAMES=nvptx-none:hsa
@@ -86,8 +86,8 @@ events:
         Configured with: ../src/configure -v --with-pkgversion='Ubuntu 9.4.0-1ubuntu1~20.04.2' --with-bugurl=file:///usr/share/doc/gcc-9/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++,gm2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-9 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-9-9QDOt0/gcc-9-9.4.0/debian/tmp-nvptx/usr,hsa --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
         Thread model: posix
         gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.2) 
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64'
-         /usr/lib/gcc/x86_64-linux-gnu/9/cc1 -quiet -v -imultiarch x86_64-linux-gnu /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o -version -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -fcf-protection -o /tmp/cccyPJoq.s
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64'
+         /usr/lib/gcc/x86_64-linux-gnu/9/cc1 -quiet -v -imultiarch x86_64-linux-gnu /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o -version -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -fcf-protection -o /tmp/ccJoMadW.s
         GNU C17 (Ubuntu 9.4.0-1ubuntu1~20.04.2) version 9.4.0 (x86_64-linux-gnu)
         	compiled by GNU C version 9.4.0, GMP version 6.2.0, MPFR version 4.0.2, MPC version 1.1.0, isl version isl-0.22.1-GMP
         
@@ -107,15 +107,15 @@ events:
         
         GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
         Compiler executable checksum: 01da938ff5dc2163489aa33cb3b747a7
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64'
-         as -v --64 -o CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o /tmp/cccyPJoq.s
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64'
+         as -v --64 -o CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o /tmp/ccJoMadW.s
         GNU assembler version 2.34 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.34
         COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/
         LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../:/lib/:/usr/lib/
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64'
-        Linking C executable cmTC_0649c
-        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0649c.dir/link.txt --verbose=1
-        /usr/bin/cc  -v CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o -o cmTC_0649c 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64'
+        Linking C executable cmTC_ba99e
+        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ba99e.dir/link.txt --verbose=1
+        /usr/bin/cc  -v CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o -o cmTC_ba99e 
         Using built-in specs.
         COLLECT_GCC=/usr/bin/cc
         COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper
@@ -127,10 +127,10 @@ events:
         gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.2) 
         COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/
         LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../:/lib/:/usr/lib/
-        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_0649c' '-mtune=generic' '-march=x86-64'
-         /usr/lib/gcc/x86_64-linux-gnu/9/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/9/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper -plugin-opt=-fresolution=/tmp/ccHujzFR.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_0649c /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/9/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/9 -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/9/../../.. CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/9/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o
-        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_0649c' '-mtune=generic' '-march=x86-64'
-        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-RA3zZi'
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_ba99e' '-mtune=generic' '-march=x86-64'
+         /usr/lib/gcc/x86_64-linux-gnu/9/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/9/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper -plugin-opt=-fresolution=/tmp/ccxQYx8p.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_ba99e /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/9/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/9 -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/9/../../.. CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/9/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_ba99e' '-mtune=generic' '-march=x86-64'
+        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-X6XhZL'
         
       exitCode: 0
   -
@@ -164,13 +164,13 @@ events:
     message: |
       Parsed C implicit link information:
         link line regex: [^( *|.*[/\\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
-        ignore line: [Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-RA3zZi']
+        ignore line: [Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-X6XhZL']
         ignore line: []
-        ignore line: [Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_0649c/fast]
-        ignore line: [/usr/bin/make  -f CMakeFiles/cmTC_0649c.dir/build.make CMakeFiles/cmTC_0649c.dir/build]
-        ignore line: [make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-RA3zZi']
-        ignore line: [Building C object CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o]
-        ignore line: [/usr/bin/cc   -v -o CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o -c /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCCompilerABI.c]
+        ignore line: [Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_ba99e/fast]
+        ignore line: [/usr/bin/make  -f CMakeFiles/cmTC_ba99e.dir/build.make CMakeFiles/cmTC_ba99e.dir/build]
+        ignore line: [make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-X6XhZL']
+        ignore line: [Building C object CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o]
+        ignore line: [/usr/bin/cc   -v -o CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o -c /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCCompilerABI.c]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=/usr/bin/cc]
         ignore line: [OFFLOAD_TARGET_NAMES=nvptx-none:hsa]
@@ -179,8 +179,8 @@ events:
         ignore line: [Configured with: ../src/configure -v --with-pkgversion='Ubuntu 9.4.0-1ubuntu1~20.04.2' --with-bugurl=file:///usr/share/doc/gcc-9/README.Bugs --enable-languages=c ada c++ go brig d fortran objc obj-c++ gm2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-9 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32 m64 mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-9-9QDOt0/gcc-9-9.4.0/debian/tmp-nvptx/usr hsa --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu]
         ignore line: [Thread model: posix]
         ignore line: [gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.2) ]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64']
-        ignore line: [ /usr/lib/gcc/x86_64-linux-gnu/9/cc1 -quiet -v -imultiarch x86_64-linux-gnu /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o -version -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -fcf-protection -o /tmp/cccyPJoq.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64']
+        ignore line: [ /usr/lib/gcc/x86_64-linux-gnu/9/cc1 -quiet -v -imultiarch x86_64-linux-gnu /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o -version -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -fcf-protection -o /tmp/ccJoMadW.s]
         ignore line: [GNU C17 (Ubuntu 9.4.0-1ubuntu1~20.04.2) version 9.4.0 (x86_64-linux-gnu)]
         ignore line: [	compiled by GNU C version 9.4.0  GMP version 6.2.0  MPFR version 4.0.2  MPC version 1.1.0  isl version isl-0.22.1-GMP]
         ignore line: []
@@ -200,15 +200,15 @@ events:
         ignore line: []
         ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
         ignore line: [Compiler executable checksum: 01da938ff5dc2163489aa33cb3b747a7]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64']
-        ignore line: [ as -v --64 -o CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o /tmp/cccyPJoq.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64']
+        ignore line: [ as -v --64 -o CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o /tmp/ccJoMadW.s]
         ignore line: [GNU assembler version 2.34 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.34]
         ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/]
         ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../:/lib/:/usr/lib/]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64']
-        ignore line: [Linking C executable cmTC_0649c]
-        ignore line: [/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0649c.dir/link.txt --verbose=1]
-        ignore line: [/usr/bin/cc  -v CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o -o cmTC_0649c ]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64']
+        ignore line: [Linking C executable cmTC_ba99e]
+        ignore line: [/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ba99e.dir/link.txt --verbose=1]
+        ignore line: [/usr/bin/cc  -v CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o -o cmTC_ba99e ]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=/usr/bin/cc]
         ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper]
@@ -220,13 +220,13 @@ events:
         ignore line: [gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.2) ]
         ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/]
         ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../:/lib/:/usr/lib/]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_0649c' '-mtune=generic' '-march=x86-64']
-        link line: [ /usr/lib/gcc/x86_64-linux-gnu/9/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/9/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper -plugin-opt=-fresolution=/tmp/ccHujzFR.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_0649c /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/9/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/9 -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/9/../../.. CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/9/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_ba99e' '-mtune=generic' '-march=x86-64']
+        link line: [ /usr/lib/gcc/x86_64-linux-gnu/9/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/9/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper -plugin-opt=-fresolution=/tmp/ccxQYx8p.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_ba99e /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/9/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/9 -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/9/../../.. CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/9/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o]
           arg [/usr/lib/gcc/x86_64-linux-gnu/9/collect2] ==> ignore
           arg [-plugin] ==> ignore
           arg [/usr/lib/gcc/x86_64-linux-gnu/9/liblto_plugin.so] ==> ignore
           arg [-plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper] ==> ignore
-          arg [-plugin-opt=-fresolution=/tmp/ccHujzFR.res] ==> ignore
+          arg [-plugin-opt=-fresolution=/tmp/ccxQYx8p.res] ==> ignore
           arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
           arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
           arg [-plugin-opt=-pass-through=-lc] ==> ignore
@@ -244,7 +244,7 @@ events:
           arg [-znow] ==> ignore
           arg [-zrelro] ==> ignore
           arg [-o] ==> ignore
-          arg [cmTC_0649c] ==> ignore
+          arg [cmTC_ba99e] ==> ignore
           arg [/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o]
           arg [/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o]
           arg [/usr/lib/gcc/x86_64-linux-gnu/9/crtbeginS.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/9/crtbeginS.o]
@@ -256,7 +256,7 @@ events:
           arg [-L/usr/lib/x86_64-linux-gnu] ==> dir [/usr/lib/x86_64-linux-gnu]
           arg [-L/usr/lib/../lib] ==> dir [/usr/lib/../lib]
           arg [-L/usr/lib/gcc/x86_64-linux-gnu/9/../../..] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/9/../../..]
-          arg [CMakeFiles/cmTC_0649c.dir/CMakeCCompilerABI.c.o] ==> ignore
+          arg [CMakeFiles/cmTC_ba99e.dir/CMakeCCompilerABI.c.o] ==> ignore
           arg [-lgcc] ==> lib [gcc]
           arg [--push-state] ==> ignore
           arg [--as-needed] ==> ignore
@@ -296,8 +296,8 @@ events:
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-zBd3Mg"
-      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-zBd3Mg"
+      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-2yk6IK"
+      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-2yk6IK"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -306,13 +306,13 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-zBd3Mg'
+        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-2yk6IK'
         
-        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_ff6fc/fast
-        /usr/bin/make  -f CMakeFiles/cmTC_ff6fc.dir/build.make CMakeFiles/cmTC_ff6fc.dir/build
-        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-zBd3Mg'
-        Building CXX object CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o
-        /usr/bin/c++   -v -o CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o -c /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp
+        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_b7c32/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_b7c32.dir/build.make CMakeFiles/cmTC_b7c32.dir/build
+        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-2yk6IK'
+        Building CXX object CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o
+        /usr/bin/c++   -v -o CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o -c /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp
         Using built-in specs.
         COLLECT_GCC=/usr/bin/c++
         OFFLOAD_TARGET_NAMES=nvptx-none:hsa
@@ -321,8 +321,8 @@ events:
         Configured with: ../src/configure -v --with-pkgversion='Ubuntu 9.4.0-1ubuntu1~20.04.2' --with-bugurl=file:///usr/share/doc/gcc-9/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++,gm2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-9 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-9-9QDOt0/gcc-9-9.4.0/debian/tmp-nvptx/usr,hsa --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
         Thread model: posix
         gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.2) 
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
-         /usr/lib/gcc/x86_64-linux-gnu/9/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -D_GNU_SOURCE /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o -version -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -fcf-protection -o /tmp/ccYg1O6Z.s
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+         /usr/lib/gcc/x86_64-linux-gnu/9/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -D_GNU_SOURCE /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o -version -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -fcf-protection -o /tmp/cci9XNex.s
         GNU C++14 (Ubuntu 9.4.0-1ubuntu1~20.04.2) version 9.4.0 (x86_64-linux-gnu)
         	compiled by GNU C version 9.4.0, GMP version 6.2.0, MPFR version 4.0.2, MPC version 1.1.0, isl version isl-0.22.1-GMP
         
@@ -346,15 +346,15 @@ events:
         
         GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
         Compiler executable checksum: 3d1eba838554fa2348dba760e4770469
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
-         as -v --64 -o CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o /tmp/ccYg1O6Z.s
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+         as -v --64 -o CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o /tmp/cci9XNex.s
         GNU assembler version 2.34 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.34
         COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/
         LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../:/lib/:/usr/lib/
-        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
-        Linking CXX executable cmTC_ff6fc
-        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ff6fc.dir/link.txt --verbose=1
-        /usr/bin/c++  -v CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_ff6fc 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+        Linking CXX executable cmTC_b7c32
+        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b7c32.dir/link.txt --verbose=1
+        /usr/bin/c++  -v CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_b7c32 
         Using built-in specs.
         COLLECT_GCC=/usr/bin/c++
         COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper
@@ -366,10 +366,10 @@ events:
         gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.2) 
         COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/
         LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../:/lib/:/usr/lib/
-        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_ff6fc' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
-         /usr/lib/gcc/x86_64-linux-gnu/9/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/9/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper -plugin-opt=-fresolution=/tmp/cc1uoTvs.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_ff6fc /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/9/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/9 -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/9/../../.. CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/9/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o
-        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_ff6fc' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
-        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-zBd3Mg'
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_b7c32' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+         /usr/lib/gcc/x86_64-linux-gnu/9/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/9/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper -plugin-opt=-fresolution=/tmp/ccvJJ9YZ.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_b7c32 /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/9/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/9 -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/9/../../.. CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/9/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_b7c32' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-2yk6IK'
         
       exitCode: 0
   -
@@ -409,13 +409,13 @@ events:
     message: |
       Parsed CXX implicit link information:
         link line regex: [^( *|.*[/\\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
-        ignore line: [Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-zBd3Mg']
+        ignore line: [Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-2yk6IK']
         ignore line: []
-        ignore line: [Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_ff6fc/fast]
-        ignore line: [/usr/bin/make  -f CMakeFiles/cmTC_ff6fc.dir/build.make CMakeFiles/cmTC_ff6fc.dir/build]
-        ignore line: [make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-zBd3Mg']
-        ignore line: [Building CXX object CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o]
-        ignore line: [/usr/bin/c++   -v -o CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o -c /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_b7c32/fast]
+        ignore line: [/usr/bin/make  -f CMakeFiles/cmTC_b7c32.dir/build.make CMakeFiles/cmTC_b7c32.dir/build]
+        ignore line: [make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-2yk6IK']
+        ignore line: [Building CXX object CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o]
+        ignore line: [/usr/bin/c++   -v -o CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o -c /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=/usr/bin/c++]
         ignore line: [OFFLOAD_TARGET_NAMES=nvptx-none:hsa]
@@ -424,8 +424,8 @@ events:
         ignore line: [Configured with: ../src/configure -v --with-pkgversion='Ubuntu 9.4.0-1ubuntu1~20.04.2' --with-bugurl=file:///usr/share/doc/gcc-9/README.Bugs --enable-languages=c ada c++ go brig d fortran objc obj-c++ gm2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-9 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32 m64 mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-9-9QDOt0/gcc-9-9.4.0/debian/tmp-nvptx/usr hsa --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu]
         ignore line: [Thread model: posix]
         ignore line: [gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.2) ]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
-        ignore line: [ /usr/lib/gcc/x86_64-linux-gnu/9/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -D_GNU_SOURCE /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o -version -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -fcf-protection -o /tmp/ccYg1O6Z.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+        ignore line: [ /usr/lib/gcc/x86_64-linux-gnu/9/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -D_GNU_SOURCE /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o -version -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -fcf-protection -o /tmp/cci9XNex.s]
         ignore line: [GNU C++14 (Ubuntu 9.4.0-1ubuntu1~20.04.2) version 9.4.0 (x86_64-linux-gnu)]
         ignore line: [	compiled by GNU C version 9.4.0  GMP version 6.2.0  MPFR version 4.0.2  MPC version 1.1.0  isl version isl-0.22.1-GMP]
         ignore line: []
@@ -449,15 +449,15 @@ events:
         ignore line: []
         ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
         ignore line: [Compiler executable checksum: 3d1eba838554fa2348dba760e4770469]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
-        ignore line: [ as -v --64 -o CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o /tmp/ccYg1O6Z.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+        ignore line: [ as -v --64 -o CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o /tmp/cci9XNex.s]
         ignore line: [GNU assembler version 2.34 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.34]
         ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/]
         ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../:/lib/:/usr/lib/]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
-        ignore line: [Linking CXX executable cmTC_ff6fc]
-        ignore line: [/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ff6fc.dir/link.txt --verbose=1]
-        ignore line: [/usr/bin/c++  -v CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_ff6fc ]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+        ignore line: [Linking CXX executable cmTC_b7c32]
+        ignore line: [/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b7c32.dir/link.txt --verbose=1]
+        ignore line: [/usr/bin/c++  -v CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_b7c32 ]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=/usr/bin/c++]
         ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper]
@@ -469,13 +469,13 @@ events:
         ignore line: [gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.2) ]
         ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/]
         ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/9/../../../:/lib/:/usr/lib/]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_ff6fc' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
-        link line: [ /usr/lib/gcc/x86_64-linux-gnu/9/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/9/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper -plugin-opt=-fresolution=/tmp/cc1uoTvs.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_ff6fc /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/9/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/9 -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/9/../../.. CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/9/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_b7c32' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+        link line: [ /usr/lib/gcc/x86_64-linux-gnu/9/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/9/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper -plugin-opt=-fresolution=/tmp/ccvJJ9YZ.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_b7c32 /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/9/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/9 -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/9/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/9/../../.. CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/9/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crtn.o]
           arg [/usr/lib/gcc/x86_64-linux-gnu/9/collect2] ==> ignore
           arg [-plugin] ==> ignore
           arg [/usr/lib/gcc/x86_64-linux-gnu/9/liblto_plugin.so] ==> ignore
           arg [-plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/9/lto-wrapper] ==> ignore
-          arg [-plugin-opt=-fresolution=/tmp/cc1uoTvs.res] ==> ignore
+          arg [-plugin-opt=-fresolution=/tmp/ccvJJ9YZ.res] ==> ignore
           arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
           arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
           arg [-plugin-opt=-pass-through=-lc] ==> ignore
@@ -493,7 +493,7 @@ events:
           arg [-znow] ==> ignore
           arg [-zrelro] ==> ignore
           arg [-o] ==> ignore
-          arg [cmTC_ff6fc] ==> ignore
+          arg [cmTC_b7c32] ==> ignore
           arg [/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o]
           arg [/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/crti.o]
           arg [/usr/lib/gcc/x86_64-linux-gnu/9/crtbeginS.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/9/crtbeginS.o]
@@ -505,7 +505,7 @@ events:
           arg [-L/usr/lib/x86_64-linux-gnu] ==> dir [/usr/lib/x86_64-linux-gnu]
           arg [-L/usr/lib/../lib] ==> dir [/usr/lib/../lib]
           arg [-L/usr/lib/gcc/x86_64-linux-gnu/9/../../..] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/9/../../..]
-          arg [CMakeFiles/cmTC_ff6fc.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [CMakeFiles/cmTC_b7c32.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
           arg [-lstdc++] ==> lib [stdc++]
           arg [-lm] ==> lib [m]
           arg [-lgcc_s] ==> lib [gcc_s]
@@ -535,72 +535,34 @@ events:
   -
     kind: "try_compile-v1"
     backtrace:
-      - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
-      - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
-      - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CheckCXXCompilerFlag.cmake:34 (cmake_check_compiler_flag)"
-      - "/home/kist/anaconda3/envs/mujoco_gym/lib/python3.8/site-packages/pybind11/share/cmake/pybind11/pybind11Common.cmake:287 (check_cxx_compiler_flag)"
-      - "/home/kist/anaconda3/envs/mujoco_gym/lib/python3.8/site-packages/pybind11/share/cmake/pybind11/pybind11Common.cmake:332 (_pybind11_return_if_cxx_and_linker_flags_work)"
-      - "/home/kist/anaconda3/envs/mujoco_gym/lib/python3.8/site-packages/pybind11/share/cmake/pybind11/pybind11Common.cmake:399 (_pybind11_generate_lto)"
-      - "/home/kist/anaconda3/envs/mujoco_gym/lib/python3.8/site-packages/pybind11/share/cmake/pybind11/pybind11Config.cmake:250 (include)"
-      - "CMakeLists.txt:13 (find_package)"
-    checks:
-      - "Performing Test HAS_FLTO"
-    directories:
-      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-N9qiOi"
-      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-N9qiOi"
-    cmakeVariables:
-      CMAKE_CXX_FLAGS: ""
-      CMAKE_CXX_FLAGS_DEBUG: "-g"
-      CMAKE_EXE_LINKER_FLAGS: ""
-      CMAKE_MODULE_PATH: ""
-    buildResult:
-      variable: "HAS_FLTO"
-      cached: true
-      stdout: |
-        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-N9qiOi'
-        
-        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_edab2/fast
-        /usr/bin/make  -f CMakeFiles/cmTC_edab2.dir/build.make CMakeFiles/cmTC_edab2.dir/build
-        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-N9qiOi'
-        Building CXX object CMakeFiles/cmTC_edab2.dir/src.cxx.o
-        /usr/bin/c++ -DHAS_FLTO  -std=gnu++17   -flto -fno-fat-lto-objects -o CMakeFiles/cmTC_edab2.dir/src.cxx.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-N9qiOi/src.cxx
-        Linking CXX executable cmTC_edab2
-        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_edab2.dir/link.txt --verbose=1
-        /usr/bin/c++ CMakeFiles/cmTC_edab2.dir/src.cxx.o -o cmTC_edab2  -flto 
-        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-N9qiOi'
-        
-      exitCode: 0
-  -
-    kind: "try_compile-v1"
-    backtrace:
       - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CheckLibraryExists.cmake:69 (try_compile)"
       - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/FindX11.cmake:682 (check_library_exists)"
-      - "CMakeLists.txt:23 (find_package)"
+      - "CMakeLists.txt:21 (find_package)"
     checks:
       - "Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so"
     directories:
-      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-AQgz7i"
-      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-AQgz7i"
+      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-NsbKBH"
+      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-NsbKBH"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
       CMAKE_EXE_LINKER_FLAGS: ""
-      CMAKE_MODULE_PATH: ""
+      CMAKE_MODULE_PATH: "/usr/lib/cmake/pybind11"
     buildResult:
       variable: "X11_LIB_X11_SOLO"
       cached: true
       stdout: |
-        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-AQgz7i'
+        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-NsbKBH'
         
-        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_af5a9/fast
-        /usr/bin/make  -f CMakeFiles/cmTC_af5a9.dir/build.make CMakeFiles/cmTC_af5a9.dir/build
-        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-AQgz7i'
-        Building C object CMakeFiles/cmTC_af5a9.dir/CheckFunctionExists.c.o
-        /usr/bin/cc   -DCHECK_FUNCTION_EXISTS=XOpenDisplay -o CMakeFiles/cmTC_af5a9.dir/CheckFunctionExists.c.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-AQgz7i/CheckFunctionExists.c
-        Linking C executable cmTC_af5a9
-        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_af5a9.dir/link.txt --verbose=1
-        /usr/bin/cc  -DCHECK_FUNCTION_EXISTS=XOpenDisplay CMakeFiles/cmTC_af5a9.dir/CheckFunctionExists.c.o -o cmTC_af5a9  /usr/lib/x86_64-linux-gnu/libX11.so /usr/lib/x86_64-linux-gnu/libXext.so 
-        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-AQgz7i'
+        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_864ad/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_864ad.dir/build.make CMakeFiles/cmTC_864ad.dir/build
+        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-NsbKBH'
+        Building C object CMakeFiles/cmTC_864ad.dir/CheckFunctionExists.c.o
+        /usr/bin/cc   -DCHECK_FUNCTION_EXISTS=XOpenDisplay -o CMakeFiles/cmTC_864ad.dir/CheckFunctionExists.c.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-NsbKBH/CheckFunctionExists.c
+        Linking C executable cmTC_864ad
+        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_864ad.dir/link.txt --verbose=1
+        /usr/bin/cc  -DCHECK_FUNCTION_EXISTS=XOpenDisplay CMakeFiles/cmTC_864ad.dir/CheckFunctionExists.c.o -o cmTC_864ad  /usr/lib/x86_64-linux-gnu/libX11.so /usr/lib/x86_64-linux-gnu/libXext.so 
+        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-NsbKBH'
         
       exitCode: 0
   -
@@ -608,32 +570,32 @@ events:
     backtrace:
       - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CheckFunctionExists.cmake:86 (try_compile)"
       - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/FindX11.cmake:697 (check_function_exists)"
-      - "CMakeLists.txt:23 (find_package)"
+      - "CMakeLists.txt:21 (find_package)"
     checks:
       - "Looking for gethostbyname"
     directories:
-      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-amQ21f"
-      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-amQ21f"
+      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-G2SS4J"
+      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-G2SS4J"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
       CMAKE_EXE_LINKER_FLAGS: ""
-      CMAKE_MODULE_PATH: ""
+      CMAKE_MODULE_PATH: "/usr/lib/cmake/pybind11"
     buildResult:
       variable: "CMAKE_HAVE_GETHOSTBYNAME"
       cached: true
       stdout: |
-        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-amQ21f'
+        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-G2SS4J'
         
-        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_b61d5/fast
-        /usr/bin/make  -f CMakeFiles/cmTC_b61d5.dir/build.make CMakeFiles/cmTC_b61d5.dir/build
-        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-amQ21f'
-        Building C object CMakeFiles/cmTC_b61d5.dir/CheckFunctionExists.c.o
-        /usr/bin/cc   -DCHECK_FUNCTION_EXISTS=gethostbyname -o CMakeFiles/cmTC_b61d5.dir/CheckFunctionExists.c.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-amQ21f/CheckFunctionExists.c
-        Linking C executable cmTC_b61d5
-        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b61d5.dir/link.txt --verbose=1
-        /usr/bin/cc  -DCHECK_FUNCTION_EXISTS=gethostbyname CMakeFiles/cmTC_b61d5.dir/CheckFunctionExists.c.o -o cmTC_b61d5 
-        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-amQ21f'
+        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_aab6e/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_aab6e.dir/build.make CMakeFiles/cmTC_aab6e.dir/build
+        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-G2SS4J'
+        Building C object CMakeFiles/cmTC_aab6e.dir/CheckFunctionExists.c.o
+        /usr/bin/cc   -DCHECK_FUNCTION_EXISTS=gethostbyname -o CMakeFiles/cmTC_aab6e.dir/CheckFunctionExists.c.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-G2SS4J/CheckFunctionExists.c
+        Linking C executable cmTC_aab6e
+        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_aab6e.dir/link.txt --verbose=1
+        /usr/bin/cc  -DCHECK_FUNCTION_EXISTS=gethostbyname CMakeFiles/cmTC_aab6e.dir/CheckFunctionExists.c.o -o cmTC_aab6e 
+        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-G2SS4J'
         
       exitCode: 0
   -
@@ -641,32 +603,32 @@ events:
     backtrace:
       - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CheckFunctionExists.cmake:86 (try_compile)"
       - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/FindX11.cmake:711 (check_function_exists)"
-      - "CMakeLists.txt:23 (find_package)"
+      - "CMakeLists.txt:21 (find_package)"
     checks:
       - "Looking for connect"
     directories:
-      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-wsKHnh"
-      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-wsKHnh"
+      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-nZOosJ"
+      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-nZOosJ"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
       CMAKE_EXE_LINKER_FLAGS: ""
-      CMAKE_MODULE_PATH: ""
+      CMAKE_MODULE_PATH: "/usr/lib/cmake/pybind11"
     buildResult:
       variable: "CMAKE_HAVE_CONNECT"
       cached: true
       stdout: |
-        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-wsKHnh'
+        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-nZOosJ'
         
-        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_0e8b4/fast
-        /usr/bin/make  -f CMakeFiles/cmTC_0e8b4.dir/build.make CMakeFiles/cmTC_0e8b4.dir/build
-        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-wsKHnh'
-        Building C object CMakeFiles/cmTC_0e8b4.dir/CheckFunctionExists.c.o
-        /usr/bin/cc   -DCHECK_FUNCTION_EXISTS=connect -o CMakeFiles/cmTC_0e8b4.dir/CheckFunctionExists.c.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-wsKHnh/CheckFunctionExists.c
-        Linking C executable cmTC_0e8b4
-        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0e8b4.dir/link.txt --verbose=1
-        /usr/bin/cc  -DCHECK_FUNCTION_EXISTS=connect CMakeFiles/cmTC_0e8b4.dir/CheckFunctionExists.c.o -o cmTC_0e8b4 
-        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-wsKHnh'
+        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_27cae/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_27cae.dir/build.make CMakeFiles/cmTC_27cae.dir/build
+        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-nZOosJ'
+        Building C object CMakeFiles/cmTC_27cae.dir/CheckFunctionExists.c.o
+        /usr/bin/cc   -DCHECK_FUNCTION_EXISTS=connect -o CMakeFiles/cmTC_27cae.dir/CheckFunctionExists.c.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-nZOosJ/CheckFunctionExists.c
+        Linking C executable cmTC_27cae
+        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_27cae.dir/link.txt --verbose=1
+        /usr/bin/cc  -DCHECK_FUNCTION_EXISTS=connect CMakeFiles/cmTC_27cae.dir/CheckFunctionExists.c.o -o cmTC_27cae 
+        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-nZOosJ'
         
       exitCode: 0
   -
@@ -674,32 +636,32 @@ events:
     backtrace:
       - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CheckFunctionExists.cmake:86 (try_compile)"
       - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/FindX11.cmake:720 (check_function_exists)"
-      - "CMakeLists.txt:23 (find_package)"
+      - "CMakeLists.txt:21 (find_package)"
     checks:
       - "Looking for remove"
     directories:
-      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-G7yK6g"
-      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-G7yK6g"
+      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-ahxI3I"
+      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-ahxI3I"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
       CMAKE_EXE_LINKER_FLAGS: ""
-      CMAKE_MODULE_PATH: ""
+      CMAKE_MODULE_PATH: "/usr/lib/cmake/pybind11"
     buildResult:
       variable: "CMAKE_HAVE_REMOVE"
       cached: true
       stdout: |
-        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-G7yK6g'
+        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-ahxI3I'
         
-        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_cd482/fast
-        /usr/bin/make  -f CMakeFiles/cmTC_cd482.dir/build.make CMakeFiles/cmTC_cd482.dir/build
-        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-G7yK6g'
-        Building C object CMakeFiles/cmTC_cd482.dir/CheckFunctionExists.c.o
-        /usr/bin/cc   -DCHECK_FUNCTION_EXISTS=remove -o CMakeFiles/cmTC_cd482.dir/CheckFunctionExists.c.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-G7yK6g/CheckFunctionExists.c
-        Linking C executable cmTC_cd482
-        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_cd482.dir/link.txt --verbose=1
-        /usr/bin/cc  -DCHECK_FUNCTION_EXISTS=remove CMakeFiles/cmTC_cd482.dir/CheckFunctionExists.c.o -o cmTC_cd482 
-        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-G7yK6g'
+        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_4b67c/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_4b67c.dir/build.make CMakeFiles/cmTC_4b67c.dir/build
+        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-ahxI3I'
+        Building C object CMakeFiles/cmTC_4b67c.dir/CheckFunctionExists.c.o
+        /usr/bin/cc   -DCHECK_FUNCTION_EXISTS=remove -o CMakeFiles/cmTC_4b67c.dir/CheckFunctionExists.c.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-ahxI3I/CheckFunctionExists.c
+        Linking C executable cmTC_4b67c
+        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_4b67c.dir/link.txt --verbose=1
+        /usr/bin/cc  -DCHECK_FUNCTION_EXISTS=remove CMakeFiles/cmTC_4b67c.dir/CheckFunctionExists.c.o -o cmTC_4b67c 
+        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-ahxI3I'
         
       exitCode: 0
   -
@@ -707,32 +669,32 @@ events:
     backtrace:
       - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CheckFunctionExists.cmake:86 (try_compile)"
       - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/FindX11.cmake:729 (check_function_exists)"
-      - "CMakeLists.txt:23 (find_package)"
+      - "CMakeLists.txt:21 (find_package)"
     checks:
       - "Looking for shmat"
     directories:
-      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-ulgZyh"
-      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-ulgZyh"
+      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-4qMaqI"
+      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-4qMaqI"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
       CMAKE_EXE_LINKER_FLAGS: ""
-      CMAKE_MODULE_PATH: ""
+      CMAKE_MODULE_PATH: "/usr/lib/cmake/pybind11"
     buildResult:
       variable: "CMAKE_HAVE_SHMAT"
       cached: true
       stdout: |
-        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-ulgZyh'
+        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-4qMaqI'
         
-        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_72699/fast
-        /usr/bin/make  -f CMakeFiles/cmTC_72699.dir/build.make CMakeFiles/cmTC_72699.dir/build
-        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-ulgZyh'
-        Building C object CMakeFiles/cmTC_72699.dir/CheckFunctionExists.c.o
-        /usr/bin/cc   -DCHECK_FUNCTION_EXISTS=shmat -o CMakeFiles/cmTC_72699.dir/CheckFunctionExists.c.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-ulgZyh/CheckFunctionExists.c
-        Linking C executable cmTC_72699
-        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_72699.dir/link.txt --verbose=1
-        /usr/bin/cc  -DCHECK_FUNCTION_EXISTS=shmat CMakeFiles/cmTC_72699.dir/CheckFunctionExists.c.o -o cmTC_72699 
-        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-ulgZyh'
+        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_8dac8/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_8dac8.dir/build.make CMakeFiles/cmTC_8dac8.dir/build
+        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-4qMaqI'
+        Building C object CMakeFiles/cmTC_8dac8.dir/CheckFunctionExists.c.o
+        /usr/bin/cc   -DCHECK_FUNCTION_EXISTS=shmat -o CMakeFiles/cmTC_8dac8.dir/CheckFunctionExists.c.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-4qMaqI/CheckFunctionExists.c
+        Linking C executable cmTC_8dac8
+        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8dac8.dir/link.txt --verbose=1
+        /usr/bin/cc  -DCHECK_FUNCTION_EXISTS=shmat CMakeFiles/cmTC_8dac8.dir/CheckFunctionExists.c.o -o cmTC_8dac8 
+        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-4qMaqI'
         
       exitCode: 0
   -
@@ -740,32 +702,67 @@ events:
     backtrace:
       - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CheckLibraryExists.cmake:69 (try_compile)"
       - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/FindX11.cmake:739 (check_library_exists)"
-      - "CMakeLists.txt:23 (find_package)"
+      - "CMakeLists.txt:21 (find_package)"
     checks:
       - "Looking for IceConnectionNumber in ICE"
     directories:
-      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-XDN0Nf"
-      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-XDN0Nf"
+      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-9T8Y8J"
+      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-9T8Y8J"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
       CMAKE_EXE_LINKER_FLAGS: ""
-      CMAKE_MODULE_PATH: ""
+      CMAKE_MODULE_PATH: "/usr/lib/cmake/pybind11"
     buildResult:
       variable: "CMAKE_LIB_ICE_HAS_ICECONNECTIONNUMBER"
       cached: true
       stdout: |
-        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-XDN0Nf'
+        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-9T8Y8J'
         
-        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_693cb/fast
-        /usr/bin/make  -f CMakeFiles/cmTC_693cb.dir/build.make CMakeFiles/cmTC_693cb.dir/build
-        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-XDN0Nf'
-        Building C object CMakeFiles/cmTC_693cb.dir/CheckFunctionExists.c.o
-        /usr/bin/cc   -DCHECK_FUNCTION_EXISTS=IceConnectionNumber -o CMakeFiles/cmTC_693cb.dir/CheckFunctionExists.c.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-XDN0Nf/CheckFunctionExists.c
-        Linking C executable cmTC_693cb
-        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_693cb.dir/link.txt --verbose=1
-        /usr/bin/cc  -DCHECK_FUNCTION_EXISTS=IceConnectionNumber CMakeFiles/cmTC_693cb.dir/CheckFunctionExists.c.o -o cmTC_693cb  -lICE 
-        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-XDN0Nf'
+        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_51a26/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_51a26.dir/build.make CMakeFiles/cmTC_51a26.dir/build
+        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-9T8Y8J'
+        Building C object CMakeFiles/cmTC_51a26.dir/CheckFunctionExists.c.o
+        /usr/bin/cc   -DCHECK_FUNCTION_EXISTS=IceConnectionNumber -o CMakeFiles/cmTC_51a26.dir/CheckFunctionExists.c.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-9T8Y8J/CheckFunctionExists.c
+        Linking C executable cmTC_51a26
+        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_51a26.dir/link.txt --verbose=1
+        /usr/bin/cc  -DCHECK_FUNCTION_EXISTS=IceConnectionNumber CMakeFiles/cmTC_51a26.dir/CheckFunctionExists.c.o -o cmTC_51a26  -lICE 
+        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-9T8Y8J'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "/home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/share/cmake-3.28/Modules/CheckCXXCompilerFlag.cmake:34 (cmake_check_compiler_flag)"
+      - "/usr/lib/cmake/pybind11/pybind11Tools.cmake:49 (check_cxx_compiler_flag)"
+      - "/usr/lib/cmake/pybind11/pybind11Tools.cmake:79 (_pybind11_return_if_cxx_and_linker_flags_work)"
+      - "/usr/lib/cmake/pybind11/pybind11Tools.cmake:198 (_pybind11_add_lto_flags)"
+      - "CMakeLists.txt:98 (pybind11_add_module)"
+    checks:
+      - "Performing Test HAS_FLTO"
+    directories:
+      source: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-PRvWuK"
+      binary: "/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-PRvWuK"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_MODULE_PATH: "/usr/lib/cmake/pybind11"
+    buildResult:
+      variable: "HAS_FLTO"
+      cached: true
+      stdout: |
+        Change Dir: '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-PRvWuK'
+        
+        Run Build Command(s): /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_51cc7/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_51cc7.dir/build.make CMakeFiles/cmTC_51cc7.dir/build
+        make[1]: Entering directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-PRvWuK'
+        Building CXX object CMakeFiles/cmTC_51cc7.dir/src.cxx.o
+        /usr/bin/c++ -DHAS_FLTO  -flto -fno-fat-lto-objects -o CMakeFiles/cmTC_51cc7.dir/src.cxx.o -c /home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-PRvWuK/src.cxx
+        Linking CXX executable cmTC_51cc7
+        /home/kist/anaconda3/lib/python3.11/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/cmTC_51cc7.dir/link.txt --verbose=1
+        /usr/bin/c++ -rdynamic CMakeFiles/cmTC_51cc7.dir/src.cxx.o -o cmTC_51cc7  -flto 
+        make[1]: Leaving directory '/home/kist/franka_panda_3_mppi/build/CMakeFiles/CMakeScratch/TryCompile-PRvWuK'
         
       exitCode: 0
 ...

@@ -1,16 +1,16 @@
 #include "pybind_controller.h"
 
-CController::CController()
+MJCController::MJCController()
 {
-	_k = 9;
+	_k = 7;
 	Initialize();
 }
 
-CController::~CController()
+MJCController::~MJCController()
 {
 }
 
-void CController::read(double t, std::array<double, 9> q, std::array<double, 9> qdot)
+void MJCController::read(double t, std::array<double, 9> q, std::array<double, 9> qdot)
 {	
 	_t = t;
 	if (_bool_init == true)
@@ -20,7 +20,6 @@ void CController::read(double t, std::array<double, 9> q, std::array<double, 9> 
 	}
 
 	_dt = t - _pre_t;
-	// cout<<"_dt : "<<_dt<<endl;
 	_pre_t = t;
 
 	for (int i = 0; i < _k; i++)
@@ -29,149 +28,324 @@ void CController::read(double t, std::array<double, 9> q, std::array<double, 9> 
 		_qdot(i) = qdot[i];
 		// _qdot(i) = CustomMath::VelLowpassFilter(0.001, 2.0*PI* 10.0, _pre_q(i), _q(i), _pre_qdot(i)); //low-pass filter
 		_pre_q(i) = _q(i);
-		_pre_qdot(i) = _qdot(i);	
-			
-		// if(_t < 2.0)///use filtered data after convergece
-        // {
-		// 	_qdot(i) = qdot[i];
-		// }
+		_pre_qdot(i) = _qdot(i);
 	}
+
+	// to use gripper, need to write some code!
 }
 
-void CController::write(std::array<double, 9> torque)
+std::array<double, 9> MJCController::write()
 {
 	for (int i = 0; i < _k; i++)
 	{
 		torque[i] = _torque(i);
+		// cout << torque[i] << endl;
+	}
+
+	for (int i = 0; i < 1; i++)
+	{
+		torque[_k + i] = 0.2; // change the value
+	}
+	// cout <<torque<< "\n==============\n" << endl;
+	return torque;
+}
+
+void MJCController::control_mujoco()
+{
+	// Only Operational Space Control
+
+    ModelUpdate();
+    motionPlan();
+
+	if (_t - _init_t < 0.1 && _bool_ee_motion == false)
+	{
+		_start_time = _init_t;
+		_end_time = _start_time + _motion_time;
+		HandTrajectory.reset_initial(_start_time, _x_hand, _xdot_hand);
+		HandTrajectory.update_goal(_x_goal_hand, _xdot_goal_hand, _end_time);
+		_bool_ee_motion = true;
+		// cout<<"_t : "<<_t<<endl;
+		cout<<"_x_goal_hand :\n"<<_x_goal_hand<<endl;
+	}
+
+	HandTrajectory.update_time(_t);
+	_x_des_hand.head(3) = HandTrajectory.position_cubicSpline();
+	_R_des_hand = HandTrajectory.rotationCubic();
+	_x_des_hand.segment<3>(3) = CustomMath::GetBodyRotationAngle(_R_des_hand);
+	_xdot_des_hand.head(3) = HandTrajectory.velocity_cubicSpline();
+	_xdot_des_hand.segment<3>(3) = HandTrajectory.rotationCubicDot();		
+
+	OperationalSpaceControl();
+
+	// cout<<_x_des_hand.head(3)<<endl;
+
+	if (HandTrajectory.check_trajectory_complete() == 1)
+	{
+		_bool_plan(_cnt_plan) = 1;
+		_bool_init = true;
 	}
 }
 
-void CController::control_mujoco()
+void MJCController::reset_target(double motion_time, VectorXd target_pose)
 {
-    ModelUpdate();
-    motionPlan();
-	if(_control_mode == 1) // joint space control
+	// operational space control
+	_control_mode = 3;
+	_motion_time = motion_time;
+	_bool_joint_motion = false;
+	_bool_ee_motion = false;
+
+	_x_goal_hand = target_pose;
+	_xdot_goal_hand.setZero();
+	cout<< "reset target:\n" << _x_goal_hand << endl;
+}
+
+void MJCController::ModelUpdate()
+{
+    Model.update_kinematics(_q, _qdot);
+	Model.update_dynamics();
+    Model.calculate_EE_Jacobians();
+	Model.calculate_EE_positions_orientations();
+	Model.calculate_EE_velocity();
+
+	_J_hands = Model._J_hand;
+
+	_x_hand.head(3) = Model._x_hand;
+	_x_hand.tail(3) = CustomMath::GetBodyRotationAngle(Model._R_hand);
+	_xdot_hand = Model._xdot_hand;
+}	
+
+void MJCController::motionPlan()
+{	
+	if (_bool_plan(_cnt_plan) == 1)
 	{
-		if (_t - _init_t < 0.1 && _bool_joint_motion == false)
+		if(_cnt_plan == 3)
 		{
-			_start_time = _init_t;
-			_end_time = _start_time + _motion_time;
-			JointTrajectory.reset_initial(_start_time, _q, _qdot);
-			JointTrajectory.update_goal(_q_goal, _qdot_goal, _end_time);
-			_bool_joint_motion = true;
-		}
-		
-		JointTrajectory.update_time(_t);
-		_q_des = JointTrajectory.position_cubicSpline();
-		_qdot_des = JointTrajectory.velocity_cubicSpline();
+			cout << "plan: " << _cnt_plan << endl;
+			cout << "present pose:\n" << _x_hand << "\n================" << endl;
 
-		JointControl();
+			VectorXd target_pose;
+			target_pose.setZero(6);
+			// target_pose(0) = _x_hand(0) - 0.1;
+			// target_pose(1) = _x_hand(1) + 0.05;
+			// target_pose(2) = _x_hand(2) + 0.05;
+			target_pose(0) = _x_hand(0) + 0.1;
+			target_pose(1) = _x_hand(1) + 0.1;
+			target_pose(2) = _x_hand(2) + 0.1;
+			target_pose(3) = _x_hand(3);
+			target_pose(4) = _x_hand(4);
+			target_pose(5) = _x_hand(5);
+			cout << "target pose:\n" << target_pose << "\n================" << endl;
 
-		if (JointTrajectory.check_trajectory_complete() == 1)
-		{
-			_bool_plan(_cnt_plan) = 1;
-			_bool_init = true;
-		}
-	}
-	else if(_control_mode == 2) // inverse kinematics control (CLIK)
-	{		
-		if (_t - _init_t < 0.1 && _bool_ee_motion == false)
-		{
-			_start_time = _init_t;
-			_end_time = _start_time + _motion_time;
-			HandTrajectory.reset_initial(_start_time, _x_hand, _xdot_hand);
-			HandTrajectory.update_goal(_x_goal_hand, _xdot_goal_hand, _end_time);
-			_bool_ee_motion = true;
-			// cout<<"_t : "<<_t<<endl;
-			// cout<<"_x_hand 	: "<<_x_hand.transpose()<<endl;
-		}
-
-		HandTrajectory.update_time(_t);
-		_x_des_hand.head(3) = HandTrajectory.position_cubicSpline();
-		_R_des_hand = HandTrajectory.rotationCubic();
-		_x_des_hand.segment<3>(3) = CustomMath::GetBodyRotationAngle(_R_des_hand);
-		_xdot_des_hand.head(3) = HandTrajectory.velocity_cubicSpline();
-		_xdot_des_hand.segment<3>(3) = HandTrajectory.rotationCubicDot();		
-
-		CLIK();
-
-		if (HandTrajectory.check_trajectory_complete() == 1)
-		{
-			_bool_plan(_cnt_plan) = 1;
-			_bool_init = true;
+ 			reset_target(5.0, target_pose);
+			_cnt_plan++;
 		}
 	}
-	else if(_control_mode == 3) // operational space control
-	{
-		if (_t - _init_t < 0.1 && _bool_ee_motion == false)
-		{
-			_start_time = _init_t;
-			_end_time = _start_time + _motion_time;
-			HandTrajectory.reset_initial(_start_time, _x_hand, _xdot_hand);
-			HandTrajectory.update_goal(_x_goal_hand, _xdot_goal_hand, _end_time);
-			_bool_ee_motion = true;
-			// cout<<"_t : "<<_t<<endl;
-			// cout<<"_x_hand 	: "<<_x_hand.transpose()<<endl;
-		}
+}
 
-		HandTrajectory.update_time(_t);
-		_x_des_hand.head(3) = HandTrajectory.position_cubicSpline();
-		_R_des_hand = HandTrajectory.rotationCubic();
-		_x_des_hand.segment<3>(3) = CustomMath::GetBodyRotationAngle(_R_des_hand);
-		_xdot_des_hand.head(3) = HandTrajectory.velocity_cubicSpline();
-		_xdot_des_hand.segment<3>(3) = HandTrajectory.rotationCubicDot();		
+void MJCController::OperationalSpaceControl()
+{
+	// _control_mode = 3
+	_torque.setZero();
 
-		OperationalSpaceControl();
+	// calc position, velocity errors
+	_x_err_hand.segment(0,3) = _x_des_hand.head(3) - _x_hand.head(3);
+	_x_err_hand.segment(3,3) = -CustomMath::getPhi(Model._R_hand, _R_des_hand);
+	_x_dot_err_hand.segment(0,3) = _xdot_des_hand.head(3) - _xdot_hand.head(3);
+	_x_dot_err_hand.segment(3,3) = _xdot_des_hand.tail(3) - _xdot_hand.tail(3);
 
-		if (HandTrajectory.check_trajectory_complete() == 1)
-		{
-			_bool_plan(_cnt_plan) = 1;
-			_bool_init = true;
-		}
-	}
+	// jacobian pseudo inverse matrix
+	_J_bar_hands = CustomMath::pseudoInverseQR(_J_hands);
+
+	// jacobian transpose matrix
+	_J_T_hands = _J_hands.transpose();
+
+	// jacobian inverse transpose matrix
+	_J_bar_T_hands = CustomMath::pseudoInverseQR(_J_T_hands);
+
+	// Should consider [Null space] cuz franka_panda robot = 7 DOF
+	_J_null = _I - _J_T_hands * _J_bar_T_hands;
+
+	// Inertial matrix: operational space
+	_Lambda = _J_bar_T_hands * Model._A * _J_bar_hands;
+
+	F_command_star = 400 * _x_err_hand + 40 * _x_dot_err_hand;
+
+	_torque = (_J_T_hands * _Lambda * F_command_star + Model._bg) + _J_null * Model._A * (_qdot_des-_qdot);
+
+	// cout << "_J_null\n" << _J_null * Model._A << endl;
+
+	// cout << "\ntarget pose:\n" << " x -> x - 0.1\n y -> y + 0.05\n z -> z + 0.05\n===============\n" << endl;
+	// cout << "Robot pose error:\n" << _x_des_hand.head(3) - Model._x_hand << "\n"
+	// << _x_des_hand.tail(3) - CustomMath::GetBodyRotationAngle(Model._R_hand) << "\n===============\n===============" << endl;
+}
+
+void MJCController::Initialize()
+{
+    _control_mode = 1; //1: joint space, 2: task space(CLIK), 3: operational space
+
+	_bool_init = true;
+	_t = 0.0;
+	_init_t = 0.0;
+	_pre_t = 0.0;
+	_dt = 0.0;
+
+	_kpj = 400.0;
+	_kdj = 20.0;
+
+	// _kpj_diagonal.setZero(_k, _k);
+	// //							0 		1	2		3	   4	5 	6
+	// _kpj_diagonal.diagonal() << 400., 2500., 1500., 1700., 700., 500., 520.;
+	// _kdj_diagonal.setZero(_k, _k);
+	// _kdj_diagonal.diagonal() << 20., 250., 170., 320., 70., 50., 15.;
+	_x_kp = 1;//작게 0.1
+	// _x_kp = 20.0;
+	_x_kd = 1;
+
+    _q.setZero(_k); // use
+	_qdot.setZero(_k); // use
+	_torque.setZero(_k); // use
+	torque = {0}; // use
+
+	_J_hands.setZero(6,_k);
+	_J_bar_hands.setZero(_k,6);
+	_J_T_hands.setZero(_k, 6);
+
+	_x_hand.setZero(6);
+	_xdot_hand.setZero(6);
+
+	//////////////////원본///////////////////
+	// _cnt_plan = 0;
+	_bool_plan.setZero(30);
+	// _time_plan.resize(30);
+	// _time_plan.setConstant(5.0);
+	//////////////////원본///////////////////
+
+	_q_home.setZero(_k);
+	// _q_home(0) = 0.0;
+	// _q_home(1) = -30.0 * DEG2RAD;
+	// _q_home(2) = 30.0 * DEG2RAD;
+	// _q_home(3) = -30.0 * DEG2RAD;
+	// _q_home(4) = 30.0 * DEG2RAD;
+	// _q_home(5) = -60.0 * DEG2RAD;
+	// _q_home(6) = 30.0 * DEG2RAD;
+	_q_home(0) = 0;
+	_q_home(1) = -M_PI_4;
+	_q_home(2) = 0;
+	_q_home(3) = -3 * M_PI_4;
+	_q_home(4) = 0;
+	_q_home(5) = M_PI_2;
+	_q_home(6) = M_PI_4;
+
+	_start_time = 0.0;
+	_end_time = 0.0;
+	_motion_time = 0.0;
+
+	_bool_joint_motion = false;
+	_bool_ee_motion = false;
+
+	_q_des.setZero(_k);
+	_qdot_des.setZero(_k);
+	_q_goal.setZero(_k);
+	_qdot_goal.setZero(_k);
+
+	_x_des_hand.setZero(6);
+	_xdot_des_hand.setZero(6);
+	_x_goal_hand.setZero(6);
+	_xdot_goal_hand.setZero(6);
+
+	_pos_goal_hand.setZero(); // 3x1 
+	_rpy_goal_hand.setZero(); // 3x1
+	JointTrajectory.set_size(_k);
+	_A_diagonal.setZero(_k,_k);
+
+	_x_err_hand.setZero(6);
+	_x_dot_err_hand.setZero(6);
+	_R_des_hand.setZero();
+
+	_I.setIdentity(7,7);
+	_J_null.setZero(_k,_k);
+
+	_pre_q.setZero(7); // use
+	_pre_qdot.setZero(7); // use
+
+	///////////////////save_stack/////////////////////
+	_q_order.setZero(7);
+	_qdot_order.setZero(7);
+	// _max_joint_position.setZero(7);
+	// _min_joint_position.setZero(7);
+
+	// _min_joint_position(0) = -2.9671;
+	// _min_joint_position(1) = -1.8326;
+	// _min_joint_position(2) = -2.9671;
+	// _min_joint_position(3) = -3.1416;
+	// _min_joint_position(4) = -2.9671;
+	// _min_joint_position(5) = -0.0873;
+	// _min_joint_position(6) = -2.9671;
+
+	// _max_joint_position(0) = 2.9671;
+	// _max_joint_position(1) = 1.8326;
+	// _max_joint_position(2) = 2.9671;
+	// _max_joint_position(3) = 0.0;
+	// _max_joint_position(4) = 2.9671;
+	// _max_joint_position(5) = 3.8223;
+	// _max_joint_position(6) = 2.9671;
+
+	///////////////////estimate_lr/////////////////////
+
+	// cout << fixed;
+	// cout.precision(3);
+	_cnt_plan = 3;
+	_bool_plan(_cnt_plan) = 1;
 }
 
 namespace py = pybind11;
-// PYBIND11_MODULE(controller, m)
+PYBIND11_MODULE(mjc_controller, m)
+{
+	m.doc() = "pybind11 for controller";
+
+	py::class_<MJCController>(m, "MJCController")
+		.def(py::init<>())
+		.def("read", &MJCController::read)
+		.def("control_mujoco", &MJCController::control_mujoco)
+		.def("write", &MJCController::write)
+		;
+
+#ifdef VERSION_INFO
+	m.attr("__version__") = VERSION_INFO;
+#else
+	m.attr("__version__") = "dev";
+#endif
+}
+
+// int add(int i, int j) {  return i + j; }
+// int sub(int i, int j) {  return i - j; }
+
+// struct MyData
 // {
-// 	m.doc() = "pybind11 for controller";
+//   float x, y;
 
-// 	py::class_<CController>(m, "CController")
-// 		.def(py::init<>())
-// 		.def("read", &CController::read)
-// 		.def("control_mujoco", &CController::control_mujoco)
-// 		.def("write", &CController::write);
+//   MyData() : x(0), y(0) { }
+//   MyData(float x, float y) : x(x), y(y) { }
 
-// #ifdef VERSION_INFO
-// 	m.attr("__version__") = VERSION_INFO;
-// #else
-// 	m.attr("__version__") = "dev";
-// #endif
+//   void print() { printf("%f, %f\n", x, y); }
+// };
+
+// PYBIND11_MODULE(mjc_controller, m) {          // "example" module name should be same of module name in CMakeLists
+//   m.doc() = "pybind11 example plugin"; // optional module docstring
+
+//   m.def("add", &add, "A function that adds two numbers");
+//   m.def("sub", &sub, "A function that subtracts two numbers");
+
+//   py::class_<MyData>(m, "MyData")
+//     .def(py::init<>())
+//     .def(py::init<float, float>(), "constructor 2", py::arg("x"), py::arg("y"))
+//     .def("print", &MyData::print)
+//     .def_readwrite("x", &MyData::x)
+//     .def_readwrite("y", &MyData::y);
 // }
 
-int add(int i, int j) {  return i + j; }
-int sub(int i, int j) {  return i - j; }
 
-struct MyData
-{
-  float x, y;
 
-  MyData() : x(0), y(0) { }
-  MyData(float x, float y) : x(x), y(y) { }
-
-  void print() { printf("%f, %f\n", x, y); }
-};
-
-PYBIND11_MODULE(mjc_controller, m) {          // "example" module name should be same of module name in CMakeLists
-  m.doc() = "pybind11 example plugin"; // optional module docstring
-
-  m.def("add", &add, "A function that adds two numbers");
-  m.def("sub", &sub, "A function that subtracts two numbers");
-
-  py::class_<MyData>(m, "MyData")
-    .def(py::init<>())
-    .def(py::init<float, float>(), "constructor 2", py::arg("x"), py::arg("y"))
-    .def("print", &MyData::print)
-    .def_readwrite("x", &MyData::x)
-    .def_readwrite("y", &MyData::y);
-}
+// cout<< "goal_pos: \n" << _goal_pos << endl;
+// cout<< "goal_vel: \n" << _goal_vel << endl;
+// cout<< "goal_time: \n" << goal_time << endl;
