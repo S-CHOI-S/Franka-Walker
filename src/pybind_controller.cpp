@@ -32,6 +32,12 @@ void MJCController::read(double t, std::array<double, 9> q, std::array<double, 9
 	}
 
 	// to use gripper, need to write some code!
+
+	// OK!
+	// cout << "read qpos: \n" << _q << endl;
+	// cout<<"read t: " << _t << endl;
+	// cout<<"read pre_t: " << _pre_t << endl;
+	// cout<<"read dt: " << _dt << endl;
 }
 
 std::array<double, 9> MJCController::write()
@@ -57,33 +63,67 @@ void MJCController::control_mujoco()
     ModelUpdate();
     motionPlan();
 
-	if (_t - _init_t < 0.1 && _bool_ee_motion == false)
+	if(_control_mode == 1) // joint space control
 	{
-		_start_time = _init_t;
-		_end_time = _start_time + _motion_time;
-		HandTrajectory.reset_initial(_start_time, _x_hand, _xdot_hand);
-		HandTrajectory.update_goal(_x_goal_hand, _xdot_goal_hand, _end_time);
-		_bool_ee_motion = true;
-		// cout<<"_t : "<<_t<<endl;
-		cout<<"_x_goal_hand :\n"<<_x_goal_hand<<endl;
+		if (_t - _init_t < 0.1 && _bool_joint_motion == false)
+		{
+			_start_time = _init_t;
+			_end_time = _start_time + _motion_time;
+			JointTrajectory.reset_initial(_start_time, _q, _qdot);
+			JointTrajectory.update_goal(_q_goal, _qdot_goal, _end_time);
+			_bool_joint_motion = true;
+
+			cout<<"ctrl_mujoco/_q_goal :\n"<<_q_goal<<endl;
+			cout<<"ctrl_mujoco/start_time: "<<_start_time<<endl;
+			cout<<"ctrl_mujoco/end_time: "<<_end_time<<endl;
+		}
+		
+		JointTrajectory.update_time(_t);
+		_q_des = JointTrajectory.position_cubicSpline();
+		_qdot_des = JointTrajectory.velocity_cubicSpline();
+
+		JointControl();
+
+		if (JointTrajectory.check_trajectory_complete() == 1)
+		{
+			_bool_plan(_cnt_plan) = 1;
+			_bool_init = true;
+		}
 	}
 
-	HandTrajectory.update_time(_t);
-	_x_des_hand.head(3) = HandTrajectory.position_cubicSpline();
-	_R_des_hand = HandTrajectory.rotationCubic();
-	_x_des_hand.segment<3>(3) = CustomMath::GetBodyRotationAngle(_R_des_hand);
-	_xdot_des_hand.head(3) = HandTrajectory.velocity_cubicSpline();
-	_xdot_des_hand.segment<3>(3) = HandTrajectory.rotationCubicDot();		
-
-	OperationalSpaceControl();
-
-	// cout<<_x_des_hand.head(3)<<endl;
-
-	if (HandTrajectory.check_trajectory_complete() == 1)
+	else if(_control_mode == 3) // operational space control
 	{
-		_bool_plan(_cnt_plan) = 1;
-		_bool_init = true;
+		if (_t - _init_t < 0.1 && _bool_ee_motion == false)
+		{
+			_start_time = _init_t;
+			_end_time = _start_time + _motion_time;
+			HandTrajectory.reset_initial(_start_time, _x_hand, _xdot_hand);
+			HandTrajectory.update_goal(_x_goal_hand, _xdot_goal_hand, _end_time);
+			_bool_ee_motion = true;
+			// cout<<"_t : "<<_t<<endl;
+			cout<<"ctrl_mujoco/_x_goal_hand :\n"<<_x_goal_hand<<endl;
+			cout<<"ctrl_mujoco/start_time: "<<_start_time<<endl;
+			cout<<"ctrl_mujoco/end_time: "<<_end_time<<endl;
+		}
+
+		HandTrajectory.update_time(_t);
+		_x_des_hand.head(3) = HandTrajectory.position_cubicSpline();
+		_R_des_hand = HandTrajectory.rotationCubic();
+		_x_des_hand.segment<3>(3) = CustomMath::GetBodyRotationAngle(_R_des_hand);
+		_xdot_des_hand.head(3) = HandTrajectory.velocity_cubicSpline();
+		_xdot_des_hand.segment<3>(3) = HandTrajectory.rotationCubicDot();		
+
+		OperationalSpaceControl();
+
+		// cout<<_x_des_hand.head(3)<<endl;
+
+		if (HandTrajectory.check_trajectory_complete() == 1)
+		{
+			_bool_plan(_cnt_plan) = 1;
+			_bool_init = true;
+		}
 	}
+	
 }
 
 void MJCController::reset_target(double motion_time, VectorXd target_pose)
@@ -118,9 +158,33 @@ void MJCController::motionPlan()
 {	
 	if (_bool_plan(_cnt_plan) == 1)
 	{
-		if(_cnt_plan == 3)
+		if(_cnt_plan == 0)
+		{	
+			cout << "plan: " << _cnt_plan << endl;
+			_q_order(0) = _q_home(0);
+			_q_order(1) = _q_home(1);
+			_q_order(2) = _q_home(2);
+			_q_order(3) = _q_home(3);
+			_q_order(4) = _q_home(4);
+			_q_order(5) = _q_home(5);
+			_q_order(6) = _q_home(6);		                    
+			// reset_target(10.0, _q_order, _qdot);
+
+			_control_mode = 1;
+			_motion_time = 10.0;
+			_bool_joint_motion = false;
+			_bool_ee_motion = false;
+
+			_q_goal = _q_order.head(7);
+			_qdot_goal.setZero();
+
+			_cnt_plan++;
+		}
+
+		else if(_cnt_plan == 1)
 		{
 			cout << "plan: " << _cnt_plan << endl;
+			cout << "present angle:\n" << _q << "\n================" << endl;
 			cout << "present pose:\n" << _x_hand << "\n================" << endl;
 
 			VectorXd target_pose;
@@ -139,7 +203,47 @@ void MJCController::motionPlan()
  			reset_target(5.0, target_pose);
 			_cnt_plan++;
 		}
+
+		// else if(_cnt_plan == 2)
+		// {
+		// 	cout << "plan: " << _cnt_plan << endl;
+		// 	cout << "present pose:\n" << _x_hand << "\n================" << endl;
+
+		// 	VectorXd target_pose;
+		// 	target_pose.setZero(6);
+		// 	// target_pose(0) = _x_hand(0) - 0.1;
+		// 	// target_pose(1) = _x_hand(1) + 0.05;
+		// 	// target_pose(2) = _x_hand(2) + 0.05;
+		// 	target_pose(0) = _x_hand(0) + 0.1;
+		// 	target_pose(1) = _x_hand(1) + 0.1;
+		// 	target_pose(2) = _x_hand(2) + 0.1;
+		// 	target_pose(3) = _x_hand(3);
+		// 	target_pose(4) = _x_hand(4);
+		// 	target_pose(5) = _x_hand(5);
+		// 	cout << "target pose:\n" << target_pose << "\n================" << endl;
+
+ 		// 	reset_target(5.0, target_pose);
+		// 	_cnt_plan++;
+		// }
 	}
+}
+
+void MJCController::JointControl()
+{	
+	// _control_mode = 1
+	_torque.setZero();
+	_A_diagonal = Model._A;
+	for(int i = 0; i < 7; i++){
+		_A_diagonal(i,i) += 1.0;
+	}
+	// Manipulator equations of motion in joint space
+	_torque = _A_diagonal*(400*(_q_des - _q) + 40*(_qdot_des - _qdot)) + Model._bg;
+	// cout<<"_q_des 	 : "<<_q_des.transpose()<<endl;
+	// cout<<"_q 		 : "<<_q.transpose()<<endl;
+	// cout<<"_qdot_des : "<<_qdot_des.transpose()<<endl;
+	// cout<<"_qdot	 : "<<_qdot.transpose()<<endl<<endl;
+
+	// cout << "cmd_torque: \n" << _torque << endl;
 }
 
 void MJCController::OperationalSpaceControl()
@@ -171,6 +275,8 @@ void MJCController::OperationalSpaceControl()
 	F_command_star = 400 * _x_err_hand + 40 * _x_dot_err_hand;
 
 	_torque = (_J_T_hands * _Lambda * F_command_star + Model._bg) + _J_null * Model._A * (_qdot_des-_qdot);
+
+	// cout << "cmd_torque: \n" << _torque << endl;
 
 	// cout << "_J_null\n" << _J_null * Model._A << endl;
 
@@ -294,7 +400,7 @@ void MJCController::Initialize()
 
 	// cout << fixed;
 	// cout.precision(3);
-	_cnt_plan = 3;
+	_cnt_plan = 0;
 	_bool_plan(_cnt_plan) = 1;
 }
 

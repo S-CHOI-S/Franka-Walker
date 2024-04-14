@@ -1,6 +1,5 @@
 file(REMOVE_RECURSE
   "CMakeFiles/example.dir/example.cpp.o"
-  "CMakeFiles/example.dir/example.cpp.o.d"
   "example.cpython-38-x86_64-linux-gnu.so"
   "example.pdb"
 )

@@ -1,1 +1,1 @@
-/usr/bin/c++ -fPIC -shared  -o mjc_controller.cpython-38-x86_64-linux-gnu.so CMakeFiles/mjc_controller.dir/src/pybind_controller.cpp.o   -L/home/kist/franka_panda_3_mppi/lib  -Wl,-rpath,/home/kist/franka_panda_3_mppi/lib -flto libpybind_lib.a -lrbdl -lrbdl_urdfreader 
+/usr/bin/c++ -fPIC  -flto -shared  -o mjc_controller.cpython-38-x86_64-linux-gnu.so CMakeFiles/mjc_controller.dir/src/pybind_controller.cpp.o   -L/home/choisol/MuJoCo-Simulation/lib  -Wl,-rpath,/home/choisol/MuJoCo-Simulation/lib libpybind_lib.a -lrbdl -lrbdl_urdfreader 

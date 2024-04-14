@@ -1498,3 +1498,21 @@ WARNING: Nan, Inf or huge value in QPOS at DOF 0. The simulation is unstable. Ti
 Fri Apr 12 19:11:57 2024
 WARNING: Nan, Inf or huge value in QACC at DOF 0. The simulation is unstable. Time = 0.0060.
 
+Sun Apr 14 16:51:09 2024
+ERROR: m->nu changed
+
+Sun Apr 14 17:04:15 2024
+ERROR: m->nu changed
+
+Sun Apr 14 17:25:31 2024
+WARNING: mju_openResource: unknown file '../models/humanoid.xml'
+
+Sun Apr 14 17:26:19 2024
+WARNING: mju_openResource: unknown file '../models/humanoid/humanoid.xml'
+
+Sun Apr 14 17:31:09 2024
+ERROR: m->nu changed
+
+Sun Apr 14 17:32:41 2024
+ERROR: m->nu changed
+
