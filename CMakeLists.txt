@@ -4,6 +4,7 @@ project(simulation)
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-no-as-needed")
+
 #fing eigen library
 find_package (Eigen3 3.3 REQUIRED)
 find_package(OpenGL REQUIRED)

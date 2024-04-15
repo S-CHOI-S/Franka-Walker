@@ -66,10 +66,12 @@ VectorXd CTrajectory::position_cubicSpline()
 	if (_time <= _time_start)
 	{
 		xd = _init_pos;
+		// cout<<"CTrajectory/positioncubicspline: HERE!"<< endl;
 	}
 	else if (_time >= _time_end)
 	{
 		xd = _goal_pos;
+		// cout<<"CTrajectory/positioncubicspline: WANGVANGING!"<< endl;
 	}
 	else {
 		xd = _init_pos + _init_vel * (_time - _time_start)
@@ -84,7 +86,7 @@ VectorXd CTrajectory::position_cubicSpline()
 			xd(i) = _goal_pos(i);
 		}
 	}
-
+	// cout<< "CTrajectory/positioncubicspline/goal_position: \n"<< xd <<endl;
 	return xd;
 }
 
@@ -200,6 +202,8 @@ void HTrajectory::update_time(double time)
 {
 	_time = time;
 	XTrajectory.update_time(_time);
+
+	// cout<<"HTrajectory/update_time: "<< _time <<endl;
 }
 
 void HTrajectory::update_goal(VectorXd goal_pos, VectorXd goal_vel, double goal_time)

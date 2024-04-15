@@ -344,11 +344,13 @@ void CController::OperationalSpaceControl()
 
 	_torque = (_J_T_hands * _Lambda * F_command_star + Model._bg) + _J_null * Model._A * (_qdot_des-_qdot);
 
+	// cout << "OperationalSpaceControl: \n" << _torque << endl;
+
 	// cout << "_J_null\n" << _J_null * Model._A << endl;
 
-	cout << "\ntarget pose:\n" << " x -> x - 0.1\n y -> y + 0.05\n z -> z + 0.05\n===============\n" << endl;
-	cout << "Robot pose error:\n" << _x_des_hand.head(3) - Model._x_hand << "\n"
-	<< _x_des_hand.tail(3) - CustomMath::GetBodyRotationAngle(Model._R_hand) << "\n===============\n===============" << endl;
+	// cout << "\ntarget pose:\n" << " x -> x - 0.1\n y -> y + 0.05\n z -> z + 0.05\n===============\n" << endl;
+	// cout << "Robot pose error:\n" << _x_des_hand.head(3) - Model._x_hand << "\n"
+	// << _x_des_hand.tail(3) - CustomMath::GetBodyRotationAngle(Model._R_hand) << "\n===============\n===============" << endl;
 }
 
 void CController::Initialize()
