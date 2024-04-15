@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/mjc_controller.dir/src/pybind_controller.cpp.o"
+  "CMakeFiles/mjc_controller.dir/src/pybind_controller.cpp.o.d"
   "mjc_controller.cpython-38-x86_64-linux-gnu.so"
   "mjc_controller.pdb"
 )
