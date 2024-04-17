@@ -208,13 +208,23 @@ class ActorNetwork(nn.Module):
         self.name = name
         self.checkpoint_dir = chkpt_dir
         self.checkpoint_file = os.path.join(self.checkpoint_dir, name+'_sac')
-        self.max_action = max_action
+        self.max_action = max_action # 가능한 action 값의 최대 크기를 나타냄
         self.reparam_noise = 1e-6
 
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
         # self.mu = nn.Linear(self.fc2_dims, self.n_actions)
         # self.sigma = nn.Linear(self.fc2_dims, self.n_actions)
+
+        '''
+            mu: state를 입력으로 받아서 각 가능한 action에 대한 평균(mean)을 계산
+                -> 각 action의 평균을 나타냄, 확률 분포의 형태로 출력됨
+            sigma: state를 입력으로 받아서 각 가능한 action에 대한 표준편차(variance)을 계산
+                -> 각 action의 표준편차을 나타냄, 확률 분포의 형태로 출력됨
+
+            => mu와 sigma를 통해 policy network가 출력하는 확률분포를 나타내는 역할을 함
+            => 이 확률 분포를 통해 agent는 주어진 state에서 action을 sampling하여 env와 상호작용하게 됨
+        '''
         self.mu = nn.Linear(fc2_dims, max_action.shape[0])
         self.sigma = nn.Linear(fc2_dims, max_action.shape[0])
 
@@ -234,24 +244,26 @@ class ActorNetwork(nn.Module):
 
         # sigma = torch.clamp(sigma, min=self.reparam_noise, max=1)
 
+        # policy network에서 출력한 raw action 값을 조정해서 최종 action을 결정하는 부분
         mu = torch.tanh(self.mu(prob)) * torch.tensor(self.max_action).to(self.device)
-        sigma = F.softplus(self.sigma(prob))
+        sigma = F.softplus(self.sigma(prob)) # 출력된 표준편차값에 대해서 softplus 함수를 적용해서 양수를 보장, 표준편차값 조절
 
         return mu, sigma
 
     def sample_normal(self, state, reparameterize=True):
-        mu, sigma = self.forward(state)
-        probabilities = Normal(mu, sigma)
+        mu, sigma = self.forward(state) # mu와 sigma를 만들어내고, 가공하는 부분
+        probabilities = Normal(mu, sigma) # 확률 분포를 만드는 부분
 
-        if reparameterize:
-            actions = probabilities.rsample()
+        if reparameterize: # True인 경우
+            actions = probabilities.rsample() # re-parameter화 트릭을 적용한 sampling
         else:
-            actions = probabilities.sample()
+            actions = probabilities.sample() # 일반적인 sampling
 
+        # sampling된 action을 [-1,1] 범위로 조정하고, 가능한 행동값의 최대 크기로 scaling함
         action = torch.tanh(actions)*torch.tensor(self.max_action).to(self.device)
-        log_probs = probabilities.log_prob(actions)
-        log_probs -= torch.log(1 - action.pow(2) + self.reparam_noise)
-        log_probs = log_probs.sum(1, keepdim=True)
+        log_probs = probabilities.log_prob(actions) # sampling된 action에 대한 log 확률을 계산
+        log_probs -= torch.log(1 - action.pow(2) + self.reparam_noise) # log 확률에 따라 re-parameter화 트릭에 의한 보정 항을 더해줌
+        log_probs = log_probs.sum(1, keepdim=True) # 각 action의 log 확률을 합산하여 반환
 
         return action, log_probs
 
@@ -337,11 +349,28 @@ class SACAgent():
         state_ = torch.tensor(new_state, dtype=torch.float).to(self.actor.device)
         state = torch.tensor(state, dtype=torch.float).to(self.actor.device)
         action = torch.tensor(action, dtype=torch.float).to(self.actor.device)
+        
+        ''' Value function 계산 '''
+        # .view(-1): return된 tensor를 1차원 vector로 펼치는 작업
+        value = self.value(state).view(-1) # 현재 state에 대한 value fcn을 계산 # 현재 state에 대한 value를 return
+        value_ = self.target_value(state_).view(-1) # 다음 state에 대한 목표 value fcn을 계산 # 다음 state에 대한 목표 value를 return
+        value_[done] = 0.0 # episode가 종료된 상태에 대한 목표 value를 0으로 설정 # 종료되었을 때 value fcn 값은 보상이 없으므로 0
 
-        value = self.value(state).view(-1)
-        value_ = self.target_value(state_).view(-1)
-        value_[done] = 0.0
-
+        '''
+            두 개의 critic network를 사용하는 이유:
+                - 안정성과 학습 성능을 향상시키기 위해서
+                - 각 critic network는 다른 가중치를 가지고 있음 -> 다른 추정값을 제공
+                - ensemble(앙상블) 학습과 비슷함
+            둘 중 작은 값(min 값)을 선택하는 이유:
+                - Robustness
+                    - 각 network가 주어진 state 및 action에 대한 다른 estimation을 제공함
+                    - 두 값 중에서 작은 값을 선택함으로써, network 간의 차이에 영향을 받지 않고 더 안정적인 추정을 얻을 수 있음
+                - Overestimation 문제 완화
+                    - 한 critic network가 다른 critic network보다 특정 상황에서 더 높은 Q값(행동 가치)을 추정할 수 있음
+                    - 두 값 중에서 작은 값을 선택함으로써, overestimation 문제를 환화할 수 있음
+                    - 과도한 높은 가치 추정을 방지하여 학습의 안정성과 성능을 향상시킨다
+        '''
+        ''' Critic network 계산 '''
         actions, log_probs = self.actor.sample_normal(state, reparameterize=False)
         log_probs = log_probs.view(-1)
         q1_new_policy = self.critic_1.forward(state, actions)
@@ -349,12 +378,14 @@ class SACAgent():
         critic_value = torch.min(q1_new_policy, q2_new_policy)
         critic_value = critic_value.view(-1)
 
-        self.value.optimizer.zero_grad()
-        value_target = critic_value - log_probs
-        value_loss = 0.5 * F.mse_loss(value, value_target)
-        value_loss.backward(retain_graph=True)
-        self.value.optimizer.step()
+        ''' Value network 학습 '''
+        self.value.optimizer.zero_grad() # 새로운 gradient descent를 위해 gradient를 초기화하는 부분
+        value_target = critic_value - log_probs # Eq.3 # value target을 계산 # critic network 값에서 log 확률을 뺀 값으로, 주어진 state에서 예상되는 미래의 reward를 나타냄
+        value_loss = 0.5 * F.mse_loss(value, value_target) # value network의 loss 계산 # value network의 출력과 target 간의 MSE를 계산
+        value_loss.backward(retain_graph=True) # back propagation을 수행 # retain_graph: 그래프를 유지하여 여러 번의 back propagation 단계를 수행할 수 있도록 함
+        self.value.optimizer.step() # parameter를 update
 
+        ''' Critic network 계산 ''' # 왜 또 계산?
         actions, log_probs = self.actor.sample_normal(state, reparameterize=True)
         log_probs = log_probs.view(-1)
         q1_new_policy = self.critic_1.forward(state, actions)
@@ -362,7 +393,7 @@ class SACAgent():
         critic_value = torch.min(q1_new_policy, q2_new_policy)
         critic_value = critic_value.view(-1)
         
-        actor_loss = log_probs - critic_value
+        actor_loss = log_probs - critic_value # Eq.12
         actor_loss = torch.mean(actor_loss)
         self.actor.optimizer.zero_grad()
         actor_loss.backward(retain_graph=True)
@@ -370,10 +401,10 @@ class SACAgent():
 
         self.critic_1.optimizer.zero_grad()
         self.critic_2.optimizer.zero_grad()
-        q_hat = self.scale*reward + self.gamma*value_
-        q1_old_policy = self.critic_1.forward(state, action).view(-1)
+        q_hat = self.scale*reward + self.gamma*value_ # Eq.8
+        q1_old_policy = self.critic_1.forward(state, action).view(-1) # 이거는 왜 또 계산?
         q2_old_policy = self.critic_2.forward(state, action).view(-1)
-        critic_1_loss = 0.5 * F.mse_loss(q1_old_policy, q_hat)
+        critic_1_loss = 0.5 * F.mse_loss(q1_old_policy, q_hat) # Eq.7
         critic_2_loss = 0.5 * F.mse_loss(q2_old_policy, q_hat)
 
         critic_loss = critic_1_loss + critic_2_loss
