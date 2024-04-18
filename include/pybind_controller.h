@@ -27,7 +27,7 @@ public:
     virtual ~MJCController();	
 
     void read(double t, std::array<double, 9> q, std::array<double, 9> qdot);
-    void control_mujoco();
+    void control_mujoco(std::array<double, 3> des_position);
     std::array<double, 9> write();
 
     VectorXd _q, _qdot, _q_order, _qdot_order;

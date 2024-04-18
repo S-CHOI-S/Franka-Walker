@@ -56,12 +56,30 @@ std::array<double, 9> MJCController::write()
 	return torque;
 }
 
-void MJCController::control_mujoco()
+void MJCController::control_mujoco(std::array<double, 3> des_position)
 {
 	// Only Operational Space Control
 
     ModelUpdate();
-    motionPlan();
+    // motionPlan();
+
+	// cout << "present angle:\n" << _q << "\n================" << endl;
+	// cout << "present pose:\n" << _x_hand << "\n================" << endl;
+
+	VectorXd target_pose;
+	target_pose.setZero(6);
+	// target_pose(0) = _x_hand(0) - 0.1;
+	// target_pose(1) = _x_hand(1) + 0.05;
+	// target_pose(2) = _x_hand(2) + 0.05;
+	target_pose(0) = des_position[0];
+	target_pose(1) = des_position[1];
+	target_pose(2) = des_position[2];
+	target_pose(3) = 3.14;
+	target_pose(4) = 0;
+	target_pose(5) = -0.78;
+	// cout << "target pose:\n" << target_pose << "\n================" << endl;
+
+	reset_target(1.0, target_pose);
 
 	if(_control_mode == 1) // joint space control
 	{

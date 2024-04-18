@@ -225,6 +225,23 @@ void CController::motionPlan()
  			reset_target(10.0, target_pose);
 			_cnt_plan++;
 		}
+
+		else if(_cnt_plan == 4)
+		{
+			cout << "plan: " << _cnt_plan << endl;
+
+			VectorXd target_pose;
+			target_pose.setZero(6);
+			target_pose(0) = 0.25;
+			target_pose(1) = -0.2;
+			target_pose(2) = 0.8;
+			target_pose(3) = _x_hand(3);
+			target_pose(4) = _x_hand(4);
+			target_pose(5) = _x_hand(5);
+
+ 			reset_target(5.0, target_pose);
+			_cnt_plan++;
+		}
 		
 	}
 }

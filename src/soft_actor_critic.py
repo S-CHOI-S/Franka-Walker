@@ -52,7 +52,7 @@ M_PI_4 = M_PI/4
 DOF = 9
 
 MAX_EPISODES = 100000
-MAX_STEPS = 100000
+MAX_STEPS = 500
 
 # Class: ReplayBuffer
 class ReplayBuffer():
@@ -70,7 +70,7 @@ class ReplayBuffer():
         self.new_state_memory = np.zeros((self.mem_size, *input_shape))
         self.action_memory = np.zeros((self.mem_size, n_actions))
         self.reward_memory = np.zeros(self.mem_size)
-        self.terminal_memory = np.zeros(self.mem_size, dtype=np.bool)
+        self.terminal_memory = np.zeros(self.mem_size, dtype=np.bool_)
 
     def store_transition(self, state, action, reward, state_, done):
         # transition: state들간에 이동하는 것을 의미
@@ -208,7 +208,7 @@ class ActorNetwork(nn.Module):
         self.name = name
         self.checkpoint_dir = chkpt_dir
         self.checkpoint_file = os.path.join(self.checkpoint_dir, name+'_sac')
-        self.max_action = max_action # 가능한 action 값의 최대 크기를 나타냄
+        self.max_action = 0.1 # 가능한 action 값의 최대 크기를 나타냄
         self.reparam_noise = 1e-6
 
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
@@ -297,7 +297,7 @@ class SACAgent():
         self.update_network_parameters(tau=1)
 
     def choose_action(self, observation):
-        state = torch.Tensor([observation]).to(self.actor.device)
+        state = torch.Tensor(np.array([observation])).to(self.actor.device)
         actions, _ = self.actor.sample_normal(state, reparameterize=False)
 
         return actions.cpu().detach().numpy()[0]
@@ -344,11 +344,11 @@ class SACAgent():
         state, action, reward, new_state, done = \
                 self.memory.sample_buffer(self.batch_size)
 
-        reward = torch.tensor(reward, dtype=torch.float).to(self.actor.device)
+        reward = torch.tensor(reward, dtype=torch.float32).to(self.actor.device)
         done = torch.tensor(done).to(self.actor.device)
-        state_ = torch.tensor(new_state, dtype=torch.float).to(self.actor.device)
-        state = torch.tensor(state, dtype=torch.float).to(self.actor.device)
-        action = torch.tensor(action, dtype=torch.float).to(self.actor.device)
+        state_ = torch.tensor(new_state, dtype=torch.float32).to(self.actor.device)
+        state = torch.tensor(state, dtype=torch.float32).to(self.actor.device)
+        action = torch.tensor(action, dtype=torch.float32).to(self.actor.device)
         
         ''' Value function 계산 '''
         # .view(-1): return된 tensor를 1차원 vector로 펼치는 작업
@@ -450,6 +450,7 @@ class Environment:
         return spaces.Dict(s)
 
     def reset(self):
+        self.data.qpos = [0, -M_PI_4, 0, -3 * M_PI_4, 0, M_PI_2, M_PI_4, 0.2, 0.2]
         self.current_position = self.data.xpos[mujoco.mj_name2id(self.model, 1, "link7")]
         self.steps = 0
         return self.current_position
@@ -459,7 +460,7 @@ class Environment:
         self.current_position += action
 
         self.controller.read(self.data.time, self.data.qpos, self.data.qvel)
-        self.controller.control_mujoco()
+        self.controller.control_mujoco(self.current_position)
         self.torque = self.controller.write()
 
         for i in range(DOF - 1):
@@ -540,6 +541,7 @@ for episode in range(MAX_EPISODES):
                 current_position = env.data.xpos[mujoco.mj_name2id(env.model, 1, "link7")]
 
                 action = agent.choose_action(observation)
+                # print("observation: ", observation)
 
                 # controller.read(data.time, data.qpos, data.qvel)
                 # controller.control_mujoco()
@@ -558,8 +560,9 @@ for episode in range(MAX_EPISODES):
 
                 observation = new_observation
                 episode_reward += reward
-                print("action: ", action)
                 
+                print("reward: ", reward)
+                print("=================================")
 
                 if done:
                     break       
