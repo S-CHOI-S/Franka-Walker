@@ -25,6 +25,7 @@
 
 import os
 import time
+import asyncio
 
 import gymnasium as gym
 from gym import spaces
@@ -51,8 +52,10 @@ M_PI_4 = M_PI/4
 
 DOF = 9
 
-MAX_EPISODES = 100000
-MAX_STEPS = 500
+MAX_EPISODES = 1000
+MAX_STEPS = 1000 # 한 번 학습할 때 몇 번 iteration 돌릴 건지
+
+torch.set_default_dtype(torch.float32)
 
 # Class: ReplayBuffer
 class ReplayBuffer():
@@ -208,7 +211,7 @@ class ActorNetwork(nn.Module):
         self.name = name
         self.checkpoint_dir = chkpt_dir
         self.checkpoint_file = os.path.join(self.checkpoint_dir, name+'_sac')
-        self.max_action = 0.1 # 가능한 action 값의 최대 크기를 나타냄
+        self.max_action = 0.02 # 가능한 action 값의 최대 크기를 나타냄
         self.reparam_noise = 1e-6
 
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
@@ -297,10 +300,14 @@ class SACAgent():
         self.update_network_parameters(tau=1)
 
     def choose_action(self, observation):
-        state = torch.Tensor(np.array([observation])).to(self.actor.device)
+        state = torch.Tensor(np.array([observation]).astype(np.float32)).to(self.actor.device)
         actions, _ = self.actor.sample_normal(state, reparameterize=False)
+        print("ACTION: ", actions)
 
-        return actions.cpu().detach().numpy()[0]
+        if env.is_target_reached():
+            actions = torch.Tensor([0.0, 0.0, 0.0])
+
+        return actions.cpu().detach().numpy().astype(np.float32)[0]
 
     def remember(self, state, action, reward, new_state, done):
         self.memory.store_transition(state, action, reward, new_state, done)
@@ -428,6 +435,11 @@ class Environment:
         self._k = 7
         self.stack = 5
 
+        self.distance_to_goal = 0
+        self.distance_to_goal_x = 0
+        self.distance_to_goal_y = 0
+        self.distance_to_goal_z = 0
+
         # self.action_space = self._construct_action_space()
         # self.observation_space = self._construct_observation_space()
         self.action_space = self._construct_action_space()
@@ -483,9 +495,33 @@ class Environment:
         return self.current_position, reward, done, {}
     
     def calculate_reward(self):
+        
         # Calculate reward based on current state
-        distance_to_goal = np.linalg.norm(self.current_position - self.goal_position)
-        reward = -distance_to_goal  # Example: negative distance as reward
+        self.distance_to_goal = np.linalg.norm(self.current_position - self.goal_position)
+        reward = -self.distance_to_goal  # Example: negative distance as reward
+
+        self.distance_to_goal_x = np.linalg.norm(self.current_position[0] - self.goal_position[0])
+        self.distance_to_goal_y = np.linalg.norm(self.current_position[1] - self.goal_position[1])
+        self.distance_to_goal_z = np.linalg.norm(self.current_position[2] - self.goal_position[2])
+        reward -= self.distance_to_goal_x / 2
+        reward -= self.distance_to_goal_y / 2
+        reward -= self.distance_to_goal_z / 2
+
+        # self.current_velocity =  ## velocity에 대한 reward도 추가하면 좋을 것 같음!
+
+        # Calculate reward based on joint limit
+        if self.controller.joint_limit(self.data.qpos):
+            reward -= 10000
+            print("joint limit occured!")
+
+        # Calculate reward based on self-collision (current: No other materials)
+        if self.data.ncon != 0:
+            reward -= 10000
+
+        # Calculate reward based on whether reached to the target
+        if self.is_target_reached():
+            reward += 10000000
+            
         return reward
     
     def is_done(self):
@@ -495,6 +531,15 @@ class Environment:
         if np.allclose(self.current_position, self.goal_position, atol=1e-3):  # Example: episode ends when goal is reached
             return True
         return False
+    
+    def is_target_reached(self):
+        if abs(self.distance_to_goal) < 0.02: # 2cm
+            return True
+        else:
+            return False
+
+
+
 
 
 # Define hyperparameters
@@ -519,29 +564,37 @@ reward_scale = 2
 env = Environment()
 agent = SACAgent(env=env)
 
-for episode in range(MAX_EPISODES):
-    observation = env.reset()
-    episode_reward = 0
+observation = env.reset()
+episode_reward = 0
+episode_rewards = []
 
-    for step in range(MAX_STEPS):
-        with mujoco.viewer.launch_passive(env.model, env.data) as viewer:
+with mujoco.viewer.launch_passive(env.model, env.data) as viewer:
 
-            # data.ctrl = [30,30,30,30,30,30,0,0]
+    while viewer.is_running():
+        step_start = time.time()
 
-            while viewer.is_running():
-                step_start = time.time()
+        # # for camera tracking
+        # viewer.cam.lookat = env.data.body('link0').subtree_com
+        # viewer.cam.elevation = -15
 
-                # mj_step can be replaced with code that also evaluates
-                # a policy and applies a control signal before stepping the physics.
+        for episode in range(MAX_EPISODES):
+            observation = env.reset()
+            episode_reward = 0
+
+            for step in range(MAX_STEPS):
 
                 # for camera tracking
                 viewer.cam.lookat = env.data.body('link0').subtree_com
                 viewer.cam.elevation = -15
 
+                # mj_step can be replaced with code that also evaluates
+                # a policy and applies a control signal before stepping the physics.
+
                 current_position = env.data.xpos[mujoco.mj_name2id(env.model, 1, "link7")]
 
+                # print(env.data.ncon)
+
                 action = agent.choose_action(observation)
-                # print("observation: ", observation)
 
                 # controller.read(data.time, data.qpos, data.qvel)
                 # controller.control_mujoco()
@@ -554,14 +607,21 @@ for episode in range(MAX_EPISODES):
 
                 new_observation, reward, done, _ = env.step(action)
 
+                if step == MAX_STEPS - 1 and not env.is_target_reached():
+                        reward -= 10000
+
                 agent.remember(observation, action, reward, new_observation, done)
 
                 agent.learn()
 
                 observation = new_observation
                 episode_reward += reward
-                
-                print("reward: ", reward)
+
+                # print("reward: ", reward)
+                print("episode: ", episode)
+                print("step:    ", step)
+                print("reward:  ", episode_reward)
+                print("error:   ", env.goal_position - current_position)
                 print("=================================")
 
                 if done:
@@ -574,3 +634,17 @@ for episode in range(MAX_EPISODES):
                 time_until_next_step = env.model.opt.timestep - (time.time() - step_start)
                 if time_until_next_step > 0:
                     time.sleep(time_until_next_step)
+            
+            episode_rewards.append(episode_reward)
+
+            plt.plot(episode_rewards)
+            plt.xlabel('Episode #')
+            plt.ylabel('Reward')
+            plt.title('Reward of Each Episode')
+            plt.grid(True)
+            plt.ylim(-20000, 5000)
+            plt.pause(0.001)
+
+            if episode == MAX_EPISODES -1:
+                plt.show()
+                break

@@ -26,9 +26,11 @@ public:
     MJCController();
     virtual ~MJCController();	
 
+    // Functions (pybind)
     void read(double t, std::array<double, 9> q, std::array<double, 9> qdot);
     void control_mujoco(std::array<double, 3> des_position);
     std::array<double, 9> write();
+    bool check_joint_limit(std::array<double, 9> q);
 
     VectorXd _q, _qdot, _q_order, _qdot_order;
     
@@ -101,6 +103,10 @@ private:
     MatrixXd _J_null; // Null space control jacobian matrix
     MatrixXd _Lambda; // Inertia matirx: Operational Space
     VectorXd F_command_star; // command vector of the decoupled end-effector
+    
+    // For joint limit
+    VectorXd _max_joint_position;
+    VectorXd _min_joint_position;
 };
 
 #endif

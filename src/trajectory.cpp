@@ -194,8 +194,8 @@ void HTrajectory::reset_initial(double time0, VectorXd init_pos, VectorXd init_v
 
 	_bool_trajectory_complete = false;
 
-	cout<< "_time_start: \n" << time0 << endl;
-	cout<< "_time: \n" << _time << endl;
+	// cout<< "_time_start: \n" << time0 << endl;
+	// cout<< "_time: \n" << _time << endl;
 }
 
 void HTrajectory::update_time(double time)

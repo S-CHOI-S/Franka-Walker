@@ -91,9 +91,9 @@ void MJCController::control_mujoco(std::array<double, 3> des_position)
 			JointTrajectory.update_goal(_q_goal, _qdot_goal, _end_time);
 			_bool_joint_motion = true;
 
-			cout<<"ctrl_mujoco/_q_goal :\n"<<_q_goal<<endl;
-			cout<<"ctrl_mujoco/start_time: "<<_start_time<<endl;
-			cout<<"ctrl_mujoco/end_time: "<<_end_time<<endl;
+			// cout<<"ctrl_mujoco/_q_goal :\n"<<_q_goal<<endl;
+			// cout<<"ctrl_mujoco/start_time: "<<_start_time<<endl;
+			// cout<<"ctrl_mujoco/end_time: "<<_end_time<<endl;
 		}
 		
 		JointTrajectory.update_time(_t);
@@ -119,9 +119,9 @@ void MJCController::control_mujoco(std::array<double, 3> des_position)
 			HandTrajectory.update_goal(_x_goal_hand, _xdot_goal_hand, _end_time);
 			_bool_ee_motion = true;
 			// cout<<"_t : "<<_t<<endl;
-			cout<<"ctrl_mujoco/_x_goal_hand :\n"<<_x_goal_hand<<endl;
-			cout<<"ctrl_mujoco/start_time: "<<_start_time<<endl;
-			cout<<"ctrl_mujoco/end_time: "<<_end_time<<endl;
+			// cout<<"ctrl_mujoco/_x_goal_hand :\n"<<_x_goal_hand<<endl;
+			// cout<<"ctrl_mujoco/start_time: "<<_start_time<<endl;
+			// cout<<"ctrl_mujoco/end_time: "<<_end_time<<endl;
 		}
 
 		HandTrajectory.update_time(_t);
@@ -154,7 +154,25 @@ void MJCController::reset_target(double motion_time, VectorXd target_pose)
 
 	_x_goal_hand = target_pose;
 	_xdot_goal_hand.setZero();
-	cout<< "reset target:\n" << _x_goal_hand << endl;
+}
+
+bool MJCController::check_joint_limit(std::array<double, 9> q)
+{
+	bool limit = false;
+
+	for(int i = 0; i < _k; i++)
+	{
+		if(((0.1 + _min_joint_position[i]) < q[i]) && (q[i] < (_max_joint_position[i] - 0.1)))
+		{
+
+		}
+		else
+		{
+			limit = true;
+		}
+	}
+
+	return limit;
 }
 
 void MJCController::ModelUpdate()
@@ -418,6 +436,13 @@ void MJCController::Initialize()
 
 	// cout << fixed;
 	// cout.precision(3);
+
+	// For joint limit
+	_max_joint_position.setZero(7);
+	_min_joint_position.setZero(7);
+	_max_joint_position = Model._max_joint_position;
+	_min_joint_position = Model._min_joint_position;
+
 	_cnt_plan = 0;
 	_bool_plan(_cnt_plan) = 1;
 }
@@ -432,6 +457,7 @@ PYBIND11_MODULE(mjc_controller, m)
 		.def("read", &MJCController::read)
 		.def("control_mujoco", &MJCController::control_mujoco)
 		.def("write", &MJCController::write)
+		.def("joint_limit", &MJCController::check_joint_limit)
 		;
 
 #ifdef VERSION_INFO
