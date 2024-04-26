@@ -114,7 +114,7 @@ VectorXd CTrajectory::velocity_cubicSpline()
 			xdotd(i) = 0.0;
 		}
 	}
-
+	
 	return xdotd;
 }
 

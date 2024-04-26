@@ -81,66 +81,93 @@ void MJCController::control_mujoco(std::array<double, 3> des_position)
 
 	reset_target(1.0, target_pose);
 
-	if(_control_mode == 1) // joint space control
+	// Operational Control
+	if (_t - _init_t < 0.1 && _bool_ee_motion == false)
 	{
-		if (_t - _init_t < 0.1 && _bool_joint_motion == false)
-		{
-			_start_time = _init_t;
-			_end_time = _start_time + _motion_time;
-			JointTrajectory.reset_initial(_start_time, _q, _qdot);
-			JointTrajectory.update_goal(_q_goal, _qdot_goal, _end_time);
-			_bool_joint_motion = true;
+		_start_time = _init_t;
+		_end_time = _start_time + _motion_time;
+		HandTrajectory.reset_initial(_start_time, _x_hand, _xdot_hand);
+		HandTrajectory.update_goal(_x_goal_hand, _xdot_goal_hand, _end_time);
+		_bool_ee_motion = true;
+		// cout<<"_t : "<<_t<<endl;
+		// cout<<"ctrl_mujoco/_x_goal_hand :\n"<<_x_goal_hand<<endl;
+		// cout<<"ctrl_mujoco/start_time: "<<_start_time<<endl;
+		// cout<<"ctrl_mujoco/end_time: "<<_end_time<<endl;
+	}
 
-			// cout<<"ctrl_mujoco/_q_goal :\n"<<_q_goal<<endl;
-			// cout<<"ctrl_mujoco/start_time: "<<_start_time<<endl;
-			// cout<<"ctrl_mujoco/end_time: "<<_end_time<<endl;
-		}
+	HandTrajectory.update_time(_t);
+	_x_des_hand.head(3) = HandTrajectory.position_cubicSpline();
+	_R_des_hand = HandTrajectory.rotationCubic();
+	_x_des_hand.segment<3>(3) = CustomMath::GetBodyRotationAngle(_R_des_hand);
+	_xdot_des_hand.head(3) = HandTrajectory.velocity_cubicSpline();
+	_xdot_des_hand.segment<3>(3) = HandTrajectory.rotationCubicDot();		
+
+	OperationalSpaceControl();
+
+	if (HandTrajectory.check_trajectory_complete() == 1)
+	{
+		_bool_plan(_cnt_plan) = 1;
+		_bool_init = true;
+	}
+
+	// if(_control_mode == 1) // joint space control
+	// {
+	// 	if (_t - _init_t < 0.1 && _bool_joint_motion == false)
+	// 	{
+	// 		_start_time = _init_t;
+	// 		_end_time = _start_time + _motion_time;
+	// 		JointTrajectory.reset_initial(_start_time, _q, _qdot);
+	// 		JointTrajectory.update_goal(_q_goal, _qdot_goal, _end_time);
+	// 		_bool_joint_motion = true;
+
+	// 		// cout<<"ctrl_mujoco/_q_goal :\n"<<_q_goal<<endl;
+	// 		// cout<<"ctrl_mujoco/start_time: "<<_start_time<<endl;
+	// 		// cout<<"ctrl_mujoco/end_time: "<<_end_time<<endl;
+	// 	}
 		
-		JointTrajectory.update_time(_t);
-		_q_des = JointTrajectory.position_cubicSpline();
-		_qdot_des = JointTrajectory.velocity_cubicSpline();
+	// 	JointTrajectory.update_time(_t);
+	// 	_q_des = JointTrajectory.position_cubicSpline();
+	// 	_qdot_des = JointTrajectory.velocity_cubicSpline();
 
-		JointControl();
+	// 	JointControl();
 
-		if (JointTrajectory.check_trajectory_complete() == 1)
-		{
-			_bool_plan(_cnt_plan) = 1;
-			_bool_init = true;
-		}
-	}
+	// 	if (JointTrajectory.check_trajectory_complete() == 1)
+	// 	{
+	// 		_bool_plan(_cnt_plan) = 1;
+	// 		_bool_init = true;
+	// 	}
+	// }
 
-	else if(_control_mode == 3) // operational space control
-	{
-		if (_t - _init_t < 0.1 && _bool_ee_motion == false)
-		{
-			_start_time = _init_t;
-			_end_time = _start_time + _motion_time;
-			HandTrajectory.reset_initial(_start_time, _x_hand, _xdot_hand);
-			HandTrajectory.update_goal(_x_goal_hand, _xdot_goal_hand, _end_time);
-			_bool_ee_motion = true;
-			// cout<<"_t : "<<_t<<endl;
-			// cout<<"ctrl_mujoco/_x_goal_hand :\n"<<_x_goal_hand<<endl;
-			// cout<<"ctrl_mujoco/start_time: "<<_start_time<<endl;
-			// cout<<"ctrl_mujoco/end_time: "<<_end_time<<endl;
-		}
+	// else if(_control_mode == 3) // operational space control
+	// {
+	// 	if (_t - _init_t < 0.1 && _bool_ee_motion == false)
+	// 	{
+	// 		_start_time = _init_t;
+	// 		_end_time = _start_time + _motion_time;
+	// 		HandTrajectory.reset_initial(_start_time, _x_hand, _xdot_hand);
+	// 		HandTrajectory.update_goal(_x_goal_hand, _xdot_goal_hand, _end_time);
+	// 		_bool_ee_motion = true;
+	// 		// cout<<"_t : "<<_t<<endl;
+	// 		// cout<<"ctrl_mujoco/_x_goal_hand :\n"<<_x_goal_hand<<endl;
+	// 		// cout<<"ctrl_mujoco/start_time: "<<_start_time<<endl;
+	// 		// cout<<"ctrl_mujoco/end_time: "<<_end_time<<endl;
+	// 	}
 
-		HandTrajectory.update_time(_t);
-		_x_des_hand.head(3) = HandTrajectory.position_cubicSpline();
-		_R_des_hand = HandTrajectory.rotationCubic();
-		_x_des_hand.segment<3>(3) = CustomMath::GetBodyRotationAngle(_R_des_hand);
-		_xdot_des_hand.head(3) = HandTrajectory.velocity_cubicSpline();
-		_xdot_des_hand.segment<3>(3) = HandTrajectory.rotationCubicDot();		
+	// 	HandTrajectory.update_time(_t);
+	// 	_x_des_hand.head(3) = HandTrajectory.position_cubicSpline();
+	// 	_R_des_hand = HandTrajectory.rotationCubic();
+	// 	_x_des_hand.segment<3>(3) = CustomMath::GetBodyRotationAngle(_R_des_hand);
+	// 	_xdot_des_hand.head(3) = HandTrajectory.velocity_cubicSpline();
+	// 	_xdot_des_hand.segment<3>(3) = HandTrajectory.rotationCubicDot();		
 
-		OperationalSpaceControl();
+	// 	OperationalSpaceControl();
 
-		// cout<<_x_des_hand.head(3)<<endl;
-
-		if (HandTrajectory.check_trajectory_complete() == 1)
-		{
-			_bool_plan(_cnt_plan) = 1;
-			_bool_init = true;
-		}
-	}
+	// 	if (HandTrajectory.check_trajectory_complete() == 1)
+	// 	{
+	// 		_bool_plan(_cnt_plan) = 1;
+	// 		_bool_init = true;
+	// 	}
+	// }
 	
 }
 
@@ -175,6 +202,21 @@ bool MJCController::check_joint_limit(std::array<double, 9> q)
 	return limit;
 }
 
+bool MJCController::check_velocity_limit()
+{
+	bool limit = false;
+
+	for(int i = 0; i < 3; i++)
+	{
+		if(abs(_xdot_hand[i]) > 0.8)
+		{
+			limit = true;
+		}
+	}
+	
+	return limit;
+}
+
 void MJCController::ModelUpdate()
 {
     Model.update_kinematics(_q, _qdot);
@@ -182,6 +224,8 @@ void MJCController::ModelUpdate()
     Model.calculate_EE_Jacobians();
 	Model.calculate_EE_positions_orientations();
 	Model.calculate_EE_velocity();
+
+	// cout << "\033[33mEE Velocity: \n" << Model._xdot_hand << "\033[0m\n" << "=======================" << endl;
 
 	_J_hands = Model._J_hand;
 
@@ -458,6 +502,7 @@ PYBIND11_MODULE(mjc_controller, m)
 		.def("control_mujoco", &MJCController::control_mujoco)
 		.def("write", &MJCController::write)
 		.def("joint_limit", &MJCController::check_joint_limit)
+		.def("velocity_limit", &MJCController::check_velocity_limit)
 		;
 
 #ifdef VERSION_INFO

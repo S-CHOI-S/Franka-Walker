@@ -31,6 +31,7 @@ public:
     void control_mujoco(std::array<double, 3> des_position);
     std::array<double, 9> write();
     bool check_joint_limit(std::array<double, 9> q);
+    bool check_velocity_limit();
 
     VectorXd _q, _qdot, _q_order, _qdot_order;
     
