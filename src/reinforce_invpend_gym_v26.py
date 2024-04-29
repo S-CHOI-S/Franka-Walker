@@ -177,6 +177,7 @@ class REINFORCE:
         state = torch.tensor(np.array([state]))
         action_means, action_stddevs = self.net(state)
         print(state)
+        print(action_means, action_stddevs)
 
         # create a normal distribution from the predicted
         #   mean and standard deviation and sample an action
@@ -269,7 +270,7 @@ for seed in [1, 2, 3, 5, 8]:  # Fibonacci seeds
         done = False
         while not done:
             action = agent.sample_action(obs)
-            print(action)
+            print("action\n", action, "\n======================\n")
 
             # Step return type - `tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]`
             # These represent the next observation, the reward from the step,
