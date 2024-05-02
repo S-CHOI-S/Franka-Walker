@@ -24,8 +24,8 @@
 # from stable_baselines3 import SAC
 
 import os
-import sys
 import time
+import asyncio
 
 import gymnasium as gym
 from gym import spaces
@@ -118,7 +118,7 @@ class CriticNetwork(nn.Module):
         self.n_actions = n_actions
         self.name = name
         self.checkpoint_dir = chkpt_dir
-        self.checkpoint_file = os.path.join(self.checkpoint_dir, 'sac_' + name)
+        self.checkpoint_file = os.path.join(self.checkpoint_dir, name+'sac')
 
         self.fc1 = nn.Linear(self.input_dims[0] + n_actions, self.fc1_dims)
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
@@ -163,7 +163,7 @@ class ValueNetwork(nn.Module):
         self.fc2_dims = fc2_dims
         self.name = name
         self.checkpoint_dir = chkpt_dir
-        self.checkpoint_file = os.path.join(self.checkpoint_dir, 'sac_' + name)
+        self.checkpoint_file = os.path.join(self.checkpoint_dir, name+'_sac')
 
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
@@ -210,8 +210,8 @@ class ActorNetwork(nn.Module):
         self.n_actions = n_actions # present: 2
         self.name = name
         self.checkpoint_dir = chkpt_dir
-        self.checkpoint_file = os.path.join(self.checkpoint_dir, 'sac_' + name)
-        self.max_action = 2 # 가능한 action 값의 최대 크기를 나타냄 # HERE
+        self.checkpoint_file = os.path.join(self.checkpoint_dir, name+'_sac')
+        self.max_action = 0.02 # 가능한 action 값의 최대 크기를 나타냄
         self.reparam_noise = 1e-6
 
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
@@ -277,7 +277,7 @@ class ActorNetwork(nn.Module):
         self.load_state_dict(torch.load(self.checkpoint_file))
 
 class SACAgent():
-    def __init__(self, alpha=0.0003, learning_rate=0.0003, input_dims=[2], # HERE
+    def __init__(self, alpha=0.0003, learning_rate=0.0003, input_dims=[3],
             env=None, gamma=0.99, n_actions=3, max_size=1000000, tau=0.005,
             layer1_size=256, layer2_size=256, batch_size=256, reward_scale=2):
         self.gamma = gamma
@@ -302,7 +302,7 @@ class SACAgent():
     def choose_action(self, observation):
         state = torch.Tensor(np.array([observation]).astype(np.float32)).to(self.actor.device)
         actions, _ = self.actor.sample_normal(state, reparameterize=False)
-        # print("ACTION: ", actions)
+        print("ACTION: ", actions)
 
         if env.is_target_reached():
             actions = torch.Tensor([0.0, 0.0, 0.0])
@@ -348,9 +348,11 @@ class SACAgent():
         if self.memory.mem_cntr < self.batch_size:
             return
 
+        # buffer에 저장된 memory 중에서 random으로 가져오기
         state, action, reward, new_state, done = \
                 self.memory.sample_buffer(self.batch_size)
 
+        # 가져온 값들을 torch.tensor로 변환
         reward = torch.tensor(reward, dtype=torch.float32).to(self.actor.device)
         done = torch.tensor(done).to(self.actor.device)
         state_ = torch.tensor(new_state, dtype=torch.float32).to(self.actor.device)
@@ -472,10 +474,8 @@ class Environment:
         self.current_position += action
 
         self.controller.read(self.data.time, self.data.qpos, self.data.qvel)
-        
-        if self.steps % 5 == 0: # 모든 step에서의 결과값이 들어가고 있지 않게: 5 step마다 한 번의 결과가 들어감
-            self.controller.control_mujoco(self.current_position)
-            self.torque = self.controller.write()
+        self.controller.control_mujoco(self.current_position)
+        self.torque = self.controller.write()
 
         for i in range(DOF - 1):
             self.data.ctrl[i] = self.torque[i]
@@ -494,41 +494,35 @@ class Environment:
         # info = {}  # Additional information (optional)
         # return observation, reward, done, info
 
-        # Set done to True if the target is reached
-        if self.is_target_reached():
-            done = True
-
         return self.current_position, reward, done, {}
     
     def calculate_reward(self):
         
         # Calculate reward based on current state
         self.distance_to_goal = np.linalg.norm(self.current_position - self.goal_position)
-        reward = -self.distance_to_goal * 100 # Example: negative distance as reward
+        reward = -self.distance_to_goal  # Example: negative distance as reward
 
         self.distance_to_goal_x = np.linalg.norm(self.current_position[0] - self.goal_position[0])
         self.distance_to_goal_y = np.linalg.norm(self.current_position[1] - self.goal_position[1])
         self.distance_to_goal_z = np.linalg.norm(self.current_position[2] - self.goal_position[2])
-        reward -= self.distance_to_goal_x / 2 * 100
-        reward -= self.distance_to_goal_y / 2 * 100
-        reward -= self.distance_to_goal_z / 2 * 100
+        reward -= self.distance_to_goal_x / 2
+        reward -= self.distance_to_goal_y / 2
+        reward -= self.distance_to_goal_z / 2
 
-        # Calculate reward based on global velocity limit
-        if self.controller.velocity_limit():
-            reward -= 30
+        # self.current_velocity =  ## velocity에 대한 reward도 추가하면 좋을 것 같음!
 
         # Calculate reward based on joint limit
         if self.controller.joint_limit(self.data.qpos):
-            reward -= 1000
-            # print("joint limit occured!")
+            reward -= 10000
+            print("joint limit occured!")
 
         # Calculate reward based on self-collision (current: No other materials)
         if self.data.ncon != 0:
-            reward -= 1000
+            reward -= 10000
 
         # Calculate reward based on whether reached to the target
         if self.is_target_reached():
-            reward += 1000000000000
+            reward += 10000000
             
         return reward
     
@@ -552,104 +546,107 @@ class Environment:
 
 # Define hyperparameters
 alpha = 0.0003
-beta = 0.0003 # 0.0003
-input_dims = [2]  # Dimension of Cartesian coordinates [x, y, z] # HERE
-gamma = 0.98
+beta = 0.0003
+input_dims = [3]  # Dimension of Cartesian coordinates [x, y, z]
+gamma = 0.99
 tau = 0.005
 batch_size = 256
 reward_scale = 2
 
-# env = Environment()
-# agent = SACAgent(env=env)
 
-# observation = env.reset()
-# episode_reward = 0
-# episode_rewards = []
+# __main__
+# model = mujoco.MjModel.from_xml_path(os.path.abspath('../model/franka_emika_panda/pandaquest_sac.xml'))
+# data = mujoco.MjData(model)
 
-# if len(sys.argv) > 1 and sys.argv[1] == 'contd':
-#     agent.load_models()
-# else:
-#     pass
+# controller = mjctrl.MJCController()
 
-# with mujoco.viewer.launch_passive(env.model, env.data) as viewer:
+# goal_position = [0.25, -0.2, 0.8]
+# current_position = data.xpos[mujoco.mj_name2id(model, 1, "link7")]
 
-#     while viewer.is_running():
-#         step_start = time.time()
+env = Environment()
+agent = SACAgent(env=env)
 
-#         # # for camera tracking
-#         # viewer.cam.lookat = env.data.body('link0').subtree_com
-#         # viewer.cam.elevation = -15
+observation = env.reset()
+episode_reward = 0
+episode_rewards = []
 
-#         for episode in range(MAX_EPISODES):
-#             observation = env.reset()
-#             episode_reward = 0
+with mujoco.viewer.launch_passive(env.model, env.data) as viewer:
 
-#             for step in range(MAX_STEPS):
+    while viewer.is_running():
+        step_start = time.time()
 
-#                 # for camera tracking
-#                 viewer.cam.lookat = env.data.body('link0').subtree_com
-#                 viewer.cam.elevation = -15
+        # # for camera tracking
+        # viewer.cam.lookat = env.data.body('link0').subtree_com
+        # viewer.cam.elevation = -15
 
-#                 # mj_step can be replaced with code that also evaluates
-#                 # a policy and applies a control signal before stepping the physics.
+        for episode in range(MAX_EPISODES):
+            observation = env.reset()
+            episode_reward = 0
 
-#                 current_position = env.data.xpos[mujoco.mj_name2id(env.model, 1, "link7")]
+            for step in range(MAX_STEPS):
 
-#                 # print(env.data.ncon)
+                # for camera tracking
+                viewer.cam.lookat = env.data.body('link0').subtree_com
+                viewer.cam.elevation = -15
 
-#                 action = agent.choose_action(observation)
+                # mj_step can be replaced with code that also evaluates
+                # a policy and applies a control signal before stepping the physics.
 
-#                 # controller.read(data.time, data.qpos, data.qvel)
-#                 # controller.control_mujoco()
-#                 # torque = controller.write()
+                current_position = env.data.xpos[mujoco.mj_name2id(env.model, 1, "link7")]
 
-#                 # for i in range(DOF - 1):
-#                 #     data.ctrl[i] = torque[i]
+                # print(env.data.ncon)
+
+                action = agent.choose_action(observation)
+
+                # controller.read(data.time, data.qpos, data.qvel)
+                # controller.control_mujoco()
+                # torque = controller.write()
+
+                # for i in range(DOF - 1):
+                #     data.ctrl[i] = torque[i]
                 
-#                 # mujoco.mj_step(model, data)
+                # mujoco.mj_step(model, data)
 
-#                 new_observation, reward, done, _ = env.step(action)
+                new_observation, reward, done, _ = env.step(action)
 
-#                 if step == MAX_STEPS - 1 and not env.is_target_reached():
-#                         reward -= 10000
+                if step == MAX_STEPS - 1 and not env.is_target_reached():
+                        reward -= 10000
 
-#                 agent.remember(observation, action, reward, new_observation, done)
+                agent.remember(observation, action, reward, new_observation, done)
 
-#                 agent.learn()
+                agent.learn()
 
-#                 observation = new_observation
-#                 episode_reward += reward
+                observation = new_observation
+                episode_reward += reward
 
-#                 # print
-#                 print("episode: ", episode)
-#                 print("step:    ", step)
-#                 print("reward:  ", episode_reward)
-#                 print("error:   ", env.goal_position - current_position)
-#                 print("=================================")
+                # print("reward: ", reward)
+                print("episode: ", episode)
+                print("step:    ", step)
+                print("reward:  ", episode_reward)
+                print("error:   ", env.goal_position - current_position)
+                print("=================================")
 
-#                 if done:
-#                     break       
+                if done:
+                    break       
 
-#                 # Pick up changes to the physics state, apply perturbations, update options from GUI.
-#                 viewer.sync()
+                # Pick up changes to the physics state, apply perturbations, update options from GUI.
+                viewer.sync()
 
-#                 # Rudimentary time keeping, will drift relative to wall clock.
-#                 time_until_next_step = env.model.opt.timestep - (time.time() - step_start)
-#                 if time_until_next_step > 0:
-#                     time.sleep(time_until_next_step)
+                # Rudimentary time keeping, will drift relative to wall clock.
+                time_until_next_step = env.model.opt.timestep - (time.time() - step_start)
+                if time_until_next_step > 0:
+                    time.sleep(time_until_next_step)
             
-#             episode_rewards.append(episode_reward)
-#             agent.save_models()
+            episode_rewards.append(episode_reward)
 
-#             plt.plot(episode_rewards)
-#             plt.xlabel('Episode #')
-#             plt.ylabel('Reward')
-#             plt.title('Reward of Each Episode')
-#             plt.grid(True)
-#             # plt.ylim(-20000, 5000)
-#             plt.pause(0.001)
+            plt.plot(episode_rewards)
+            plt.xlabel('Episode #')
+            plt.ylabel('Reward')
+            plt.title('Reward of Each Episode')
+            plt.grid(True)
+            plt.ylim(-20000, 5000)
+            plt.pause(0.001)
 
-#             if episode == MAX_EPISODES -1:
-#                 plt.show()
-#                 break
-
+            if episode == MAX_EPISODES -1:
+                plt.show()
+                break

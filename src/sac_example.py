@@ -695,7 +695,7 @@ def plot(rewards):
 DETERMINISTIC=False
 
 # choose env
-ENV = ['Pendulum', 'Reacher'][0]
+ENV = ['Pendulum', 'Reacher'][1] # 0: Pendulum, 1: Reacher
 if ENV == 'Reacher':
     # intialization
     # NUM_JOINTS=4
