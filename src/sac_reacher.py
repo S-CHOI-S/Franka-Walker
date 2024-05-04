@@ -123,10 +123,10 @@ class PolicyNetwork(nn.Module):
         mean, log_std = self.forward(state)
         std = log_std.exp()
 
-        normal = Normal(0,1)
-        z = normal.sample(mean.shape)
+        normal   = Normal(0,1)
+        z        = normal.sample(mean.shape)
         action_0 = torch.tanh(mean + std * z.to(device))
-        action = self.action_range * action_0
+        action   = self.action_range * action_0
 
         log_prob = Normal(mean,std).log_prob(mean + std * z.to(device)) - torch.log(1. - action_0.pow(2) + epsilon) -  np.log(self.action_range)
 
@@ -135,12 +135,12 @@ class PolicyNetwork(nn.Module):
         return action, log_prob, z, mean, log_std
     
     def get_action(self, state):
-        state = torch.FloatTensor(state).unsqueeze(0).to(device)
+        state         = torch.FloatTensor(state).unsqueeze(0).to(device)
         mean, log_std = self.forward(state)
-        std = log_std.exp()
+        std           = log_std.exp()
 
         normal = Normal(0,1)
-        z = normal.sample(mean.shape).to(device)
+        z      = normal.sample(mean.shape).to(device)
         action = self.action_range * torch.tanh(mean + std * z)
         action = action.detach().cpu().numpy()[0]
 
@@ -150,7 +150,7 @@ class PolicyNetwork(nn.Module):
         a = torch.FloatTensor(self.num_actions).uniform_(-1, 1)
         return (self.action_range * a).numpy()
     
-def update(batch_size, reward_scale, gamma=0.99,soft_tau=1e-2):
+def update(batch_size, reward_scale, gamma=0.95,soft_tau=1e-2):
     alpha = 1.0  # trade-off between exploration (max entropy) and exploitation (max Q)
     
     state, action, reward, next_state, done = replay_buffer.sample(batch_size)
@@ -167,9 +167,9 @@ def update(batch_size, reward_scale, gamma=0.99,soft_tau=1e-2):
     predicted_value    = value_net(state)
     new_action, log_prob, z, mean, log_std = policy_net.evaluate(state)
 
-    reward = reward_scale*(reward - reward.mean(dim=0)) /reward.std(dim=0) # normalize with batch mean and std
+    # reward = reward_scale*(reward - reward.mean(dim=0)) /reward.std(dim=0) # normalize with batch mean and std
 
-# Training Q Function
+    # Training Q Function
     target_value = target_value_net(next_state)
     target_q_value = reward + (1 - done) * gamma * target_value # if done==1, only reward
     q_value_loss1 = soft_q_criterion1(predicted_q_value1, target_q_value.detach())  # detach: no gradients for the variable
@@ -183,7 +183,7 @@ def update(batch_size, reward_scale, gamma=0.99,soft_tau=1e-2):
     q_value_loss2.backward()
     soft_q_optimizer2.step()  
 
-# Training Value Function
+    # Training Value Function
     predicted_new_q_value = torch.min(soft_q_net1(state, new_action),soft_q_net2(state, new_action))
     target_value_func = predicted_new_q_value - alpha * log_prob # for stochastic training, it equals to expectation over action
     value_loss = value_criterion(predicted_value, target_value_func.detach())
@@ -193,7 +193,7 @@ def update(batch_size, reward_scale, gamma=0.99,soft_tau=1e-2):
     value_loss.backward()
     value_optimizer.step()
 
-# Training Policy Function
+    # Training Policy Function
     ''' implementation 1 '''
     policy_loss = (alpha * log_prob - predicted_new_q_value).mean()
     ''' implementation 2 '''
@@ -220,7 +220,7 @@ def update(batch_size, reward_scale, gamma=0.99,soft_tau=1e-2):
     # print('policy loss: ', policy_loss )
 
 
-# Soft update the target value net
+    # Soft update the target value net
     for target_param, param in zip(target_value_net.parameters(), value_net.parameters()):
         target_param.data.copy_(  # copy data value into target parameters
             target_param.data * (1.0 - soft_tau) + param.data * soft_tau
@@ -230,15 +230,33 @@ def update(batch_size, reward_scale, gamma=0.99,soft_tau=1e-2):
 
 def plot(rewards):
     # clear_output(True)
-    plt.figure(figsize=(20,5))
-    plt.plot(rewards)
-    plt.savefig('sac_reacher.png')
+    plt.figure(figsize=(800,10))
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+    ax1.plot(rewards)
+    ax2.plot(rewards)
+
+    ax1.set_ylim(-100, 20)
+    ax2.set_ylim(-7000,-500)
+
+    ax1.spines['bottom'].set_visible(False)
+    ax2.spines['top'].set_visible(False)
+    ax1.xaxis.tick_top()
+    ax1.tick_params(labeltop=False)
+    ax2.xaxis.tick_bottom()
+
+    kwargs = dict(marker=[(-1, -0.5), (1, 0.5)], markersize=12,
+              linestyle="none", color='k', mec='k', mew=1, clip_on=False)
+    ax1.plot([0, 1], [0, 0], transform=ax1.transAxes, **kwargs)
+    ax2.plot([0, 1], [1, 1], transform=ax2.transAxes, **kwargs)
+
+    # plt.plot(rewards)
+    ax2.set_xlabel('Episode #')
+    fig.text(0.02, 0.50, "Reward", va='center', rotation = 'vertical', fontsize = 16)
+    ax1.set_title('Reward of Each Episode')
+    ax1.grid(True)
+    ax2.grid(True)
+    plt.savefig('sac_reacher1.png')
     # plt.show()
-
-
-
-
-
 
 '''
 Reacher:
@@ -290,13 +308,13 @@ replay_buffer = ReplayBuffer(replay_buffer_size)
 
 # hyper-parameters
 max_episodes   = 1000
-max_steps      = 20
+max_steps      = 50
 frame_idx      = 0
-batch_size     = 128
+batch_size     = 256
 explore_steps  = 0
 rewards        = []
 reward_scale   = 10.0
-model_path     = 'model/sac/sac_reacher.pth'
+model_path     = 'model/sac/sac_reacher1.pth'
 
 # training loop
 for eps in range(max_episodes):
@@ -353,3 +371,29 @@ torch.save(policy_net.state_dict(), os.path.join(model_path))
 #         state = next_state
 
 #     print('Episode: ', eps, '| Episode Reward: ', episode_reward)
+
+
+##############################################################################################
+##############################################################################################
+
+# import gymnasium as gym
+
+# from stable_baselines3 import SAC
+
+# env = gym.make("Reacher-v4", render_mode="human")
+
+# model = SAC("MlpPolicy", env, verbose=1)
+# model.learn(total_timesteps=1e6, log_interval=4)
+# model.train(batch_size=256)
+# model.save("sac_reacher_stbl")
+
+# # del model # remove to demonstrate saving and loading
+
+# model = SAC.load("sac_reacher_stbl")
+
+# obs, info = env.reset()
+# while True:
+#     action, _states = model.predict(obs, deterministic=True)
+#     obs, reward, terminated, truncated, info = env.step(action)
+#     if terminated or truncated:
+#         obs, info = env.reset()

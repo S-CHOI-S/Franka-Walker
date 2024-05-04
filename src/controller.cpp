@@ -129,6 +129,11 @@ void CController::control_mujoco()
 		{
 			_bool_plan(_cnt_plan) = 1;
 			_bool_init = true;
+			cout << "\033[33mcurrent pose: \033[0m\n" << _x_hand << endl;
+			cout << "\033[33mpose error: \033[0m\n" << _x_goal_hand-_x_hand << endl;
+			cout << "=======================" << endl;
+			// cout << "\033[33mplan: " << _cnt_plan << " (operational space control)\033[0m\n" << endl;
+
 		}
 	}
 }
@@ -211,7 +216,9 @@ void CController::motionPlan()
 		}
 		else if(_cnt_plan == 3)
 		{
-			cout << "plan: " << _cnt_plan << endl;
+			// cout << "plan: " << _cnt_plan << endl;
+			cout << "=======================" << endl;
+			cout << "\033[31mplan: " << _cnt_plan << " (operational space control)\033[0m\n" << endl;
 
 			VectorXd target_pose;
 			target_pose.setZero(6);
@@ -222,14 +229,17 @@ void CController::motionPlan()
 			target_pose(4) = _x_hand(4);
 			target_pose(5) = _x_hand(5);
 
+			cout << "\033[33mtarget pose: \033[0m\n" << target_pose << endl;
+			cout << "\033[33mcurrent pose: \033[0m\n" << _x_hand << endl;
+
  			reset_target(10.0, target_pose);
 			_cnt_plan++;
 		}
 
 		else if(_cnt_plan == 4)
 		{
-			cout << "plan: " << _cnt_plan << endl;
-
+			// cout << "plan: " << _cnt_plan << endl;
+			
 			VectorXd target_pose;
 			target_pose.setZero(6);
 			target_pose(0) = 0.25;
@@ -238,10 +248,18 @@ void CController::motionPlan()
 			target_pose(3) = _x_hand(3);
 			target_pose(4) = _x_hand(4);
 			target_pose(5) = _x_hand(5);
+			
+			cout << "\033[31mplan: " << _cnt_plan << " (operational space control)\033[0m\n" << endl;
+			cout << "\033[33mtarget pose: \033[0m\n" << target_pose << endl;
+			cout << "\033[33mcurrent pose: \033[0m\n" << _x_hand << endl;
 
  			reset_target(5.0, target_pose);
 			_cnt_plan++;
 		}
+
+		// cout << "current pose: \n" << _x_hand << endl;
+		// cout << "pose error: \n" << _x_goal_hand-_x_hand << endl;
+		// cout << "=======================" << endl;
 		
 	}
 }
