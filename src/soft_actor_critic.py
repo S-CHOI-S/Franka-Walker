@@ -52,7 +52,7 @@ M_PI_4 = M_PI/4
 
 DOF = 9
 
-MAX_EPISODES = 1000
+MAX_EPISODES = 1500
 MAX_STEPS = 1000 # 한 번 학습할 때 몇 번 iteration 돌릴 건지
 
 torch.set_default_dtype(torch.float32)
@@ -304,7 +304,7 @@ class SACAgent():
     def choose_action(self, observation):
         state = torch.Tensor(np.array([observation]).astype(np.float32)).to(self.actor.device)
         actions, _ = self.actor.sample_normal(state, reparameterize=False)
-        print("ACTION: ", actions)
+        # print("ACTION: ", actions)
 
         # if env.is_target_reached():
         #     actions = torch.Tensor([0.0, 0.0, 0.0])
@@ -337,6 +337,7 @@ class SACAgent():
         self.target_value.save_checkpoint()
         self.critic_1.save_checkpoint()
         self.critic_2.save_checkpoint()
+        print('.... successfully saved! ....')
 
     def load_models(self):
         print('.... loading models ....')
@@ -345,6 +346,7 @@ class SACAgent():
         self.target_value.load_checkpoint()
         self.critic_1.load_checkpoint()
         self.critic_2.load_checkpoint()
+        print('.... successfully loaded! ....')
 
     def learn(self):
         if self.memory.mem_cntr < self.batch_size:
@@ -445,54 +447,78 @@ episode_rewards = []
 state, _ = env.reset()
 img = env.unwrapped.get_image() # rgb_array
 
-for i in range(MAX_EPISODES):
+# train loop
+# for episode in range(MAX_EPISODES):
+#     state, _ = env.reset()
+#     episode_reward = 0
+
+#     for step in range(MAX_STEPS):
+#         # state, _ = env.reset()
+#         done = False
+#         score = 0
+
+#         action = agent.choose_action(state)
+
+#         next_state, reward, terminated, truncated, info = env.step(action)
+#         done = terminated or truncated
+#         score += reward
+        
+#         agent.remember(state, action, reward, next_state, done)
+
+#         state = next_state
+#         episode_reward += reward
+        
+#         if not load_checkpoint:
+#             agent.learn()
+        
+#         if done:
+#             episode_durations.append(step+1)
+#             break
+
+#         score_history.append(score)
+#         avg_score = np.mean(score_history[-100:])
+
+#         if avg_score > best_score:
+#             best_score = avg_score
+
+#     print('Episode: ', episode, '| Episode Reward: ', episode_reward)
+
+#     episode_rewards.append(episode_reward)
+
+#     plt.plot(episode_rewards)
+#     plt.xlabel('Episode #')
+#     plt.ylabel('Reward')
+#     plt.title('Reward of Each Episode')
+#     plt.grid(True)
+#     # plt.ylim(-20000, 5000)
+#     plt.pause(0.001)
+
+#     if episode % 300 == 0:
+#         agent.save_models()
+
+#     if episode == MAX_EPISODES -1:
+#         agent.save_models()
+#         plt.show()
+#         break
+
+# test loop
+agent.load_models()
+
+for eps in range(10):
     state, _ = env.reset()
     episode_reward = 0
 
-    for step in range(MAX_STEPS):
-        # state, _ = env.reset()
-        done = False
-        score = 0
-
+    for step in range(50):
         action = agent.choose_action(state)
-
         next_state, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
-        score += reward
-        
-        agent.remember(state, action, reward, next_state, done)
+        env.render() 
 
-        state = next_state
         episode_reward += reward
-        
-        if not load_checkpoint:
-            agent.learn()
-        
-        if done:
-            episode_durations.append(step+1)
-            break
+        state = next_state
 
-        score_history.append(score)
-        avg_score = np.mean(score_history[-100:])
+    print('Episode: ', eps, '| Episode Reward: ', episode_reward)
 
-        if avg_score > best_score:
-            best_score = avg_score
-
-        print('Episode: ', i, '| Episode Reward: ', episode_reward)
-
-    episode_rewards.append(episode_reward)
-
-    plt.plot(episode_rewards)
-    plt.xlabel('Episode #')
-    plt.ylabel('Reward')
-    plt.title('Reward of Each Episode')
-    plt.grid(True)
-    # plt.ylim(-20000, 5000)
-    plt.pause(0.001)
-
-    if i == MAX_EPISODES -1:
-        plt.show()
-        break
 
 
 ####################################################################################################
