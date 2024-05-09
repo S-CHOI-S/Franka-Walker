@@ -52,7 +52,7 @@ M_PI_4 = M_PI/4
 
 DOF = 9
 
-MAX_EPISODES = 1500
+MAX_EPISODES = 1000
 MAX_STEPS = 1000 # 한 번 학습할 때 몇 번 iteration 돌릴 건지
 
 torch.set_default_dtype(torch.float32)
@@ -428,7 +428,7 @@ class SACAgent():
         self.update_network_parameters()
 
 import gymnasium as gym
-env = gym.make('Reacher-v4', render_mode="human")
+env = gym.make('Reacher-v4', render_mode="ansi")
 # wrapped_env = gym.wrappers.RecordVideo(env)
 
 total_num_episodes = int(5e3)
@@ -446,78 +446,88 @@ episode_rewards = []
 
 state, _ = env.reset()
 img = env.unwrapped.get_image() # rgb_array
+# plt.imshow(img)
+# plt.show()
 
 # train loop
-# for episode in range(MAX_EPISODES):
-#     state, _ = env.reset()
-#     episode_reward = 0
-
-#     for step in range(MAX_STEPS):
-#         # state, _ = env.reset()
-#         done = False
-#         score = 0
-
-#         action = agent.choose_action(state)
-
-#         next_state, reward, terminated, truncated, info = env.step(action)
-#         done = terminated or truncated
-#         score += reward
-        
-#         agent.remember(state, action, reward, next_state, done)
-
-#         state = next_state
-#         episode_reward += reward
-        
-#         if not load_checkpoint:
-#             agent.learn()
-        
-#         if done:
-#             episode_durations.append(step+1)
-#             break
-
-#         score_history.append(score)
-#         avg_score = np.mean(score_history[-100:])
-
-#         if avg_score > best_score:
-#             best_score = avg_score
-
-#     print('Episode: ', episode, '| Episode Reward: ', episode_reward)
-
-#     episode_rewards.append(episode_reward)
-
-#     plt.plot(episode_rewards)
-#     plt.xlabel('Episode #')
-#     plt.ylabel('Reward')
-#     plt.title('Reward of Each Episode')
-#     plt.grid(True)
-#     # plt.ylim(-20000, 5000)
-#     plt.pause(0.001)
-
-#     if episode % 300 == 0:
-#         agent.save_models()
-
-#     if episode == MAX_EPISODES -1:
-#         agent.save_models()
-#         plt.show()
-#         break
-
-# test loop
-agent.load_models()
-
-for eps in range(10):
+for episode in range(MAX_EPISODES):
     state, _ = env.reset()
     episode_reward = 0
 
-    for step in range(50):
+    for step in range(MAX_STEPS):
+        # state, _ = env.reset()
+        done = False
+        score = 0
+
         action = agent.choose_action(state)
+
         next_state, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
-        env.render() 
+        score += reward
+        
+        agent.remember(state, action, reward, next_state, done)
 
-        episode_reward += reward
         state = next_state
+        episode_reward += reward
+        
+        if not load_checkpoint:
+            agent.learn()
+        
+        if done:
+            episode_durations.append(step+1)
+            break
 
-    print('Episode: ', eps, '| Episode Reward: ', episode_reward)
+        score_history.append(score)
+        avg_score = np.mean(score_history[-100:])
+
+        if avg_score > best_score:
+            best_score = avg_score
+
+    print('Episode: ', episode, '| Episode Reward: ', episode_reward)
+
+    episode_rewards.append(episode_reward)
+
+    # plt.plot(episode_rewards)
+    # plt.xlabel('Episode #')
+    # plt.ylabel('Reward')
+    # plt.title('Reward of Each Episode')
+    # plt.grid(True)
+    # # plt.ylim(-20000, 5000)
+    # plt.pause(0.001)
+
+    if episode % 300 == 0:
+        agent.save_models()
+
+    if episode == MAX_EPISODES -1:
+        agent.save_models()
+        plt.show()
+        break
+
+plt.plot(episode_rewards)
+plt.xlabel('Episode #')
+plt.ylabel('Reward')
+plt.title('Reward of Each Episode')
+plt.grid(True)
+# plt.ylim(-20000, 5000)
+plt.show()
+
+# test loop
+# agent.load_models()
+
+# for eps in range(10):
+#     state, _ = env.reset()
+#     episode_reward = 0
+
+#     for step in range(50):
+#         action = agent.choose_action(state)
+#         next_state, reward, terminated, truncated, info = env.step(action)
+#         done = terminated or truncated
+#         env.render()
+
+#         episode_reward += reward
+#         state = next_state
+
+#     print('Episode: ', eps, '| Episode Reward: ', episode_reward)
 
 
 
