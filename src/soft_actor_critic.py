@@ -428,7 +428,7 @@ class SACAgent():
         self.update_network_parameters()
 
 import gymnasium as gym
-env = gym.make('Reacher-v4', render_mode="ansi")
+env = gym.make('Reacher-v4', render_mode="human")
 # wrapped_env = gym.wrappers.RecordVideo(env)
 
 total_num_episodes = int(5e3)
@@ -445,9 +445,6 @@ load_checkpoint = False
 episode_rewards = []
 
 state, _ = env.reset()
-img = env.unwrapped.get_image() # rgb_array
-# plt.imshow(img)
-# plt.show()
 
 # train loop
 for episode in range(MAX_EPISODES):
@@ -457,6 +454,7 @@ for episode in range(MAX_EPISODES):
     for step in range(MAX_STEPS):
         # state, _ = env.reset()
         done = False
+
         score = 0
 
         action = agent.choose_action(state)
@@ -487,13 +485,9 @@ for episode in range(MAX_EPISODES):
 
     episode_rewards.append(episode_reward)
 
-    # plt.plot(episode_rewards)
-    # plt.xlabel('Episode #')
-    # plt.ylabel('Reward')
-    # plt.title('Reward of Each Episode')
-    # plt.grid(True)
-    # # plt.ylim(-20000, 5000)
-    # plt.pause(0.001)
+    img = env.unwrapped.get_image() # rgb_array
+    plt.imshow(img)
+    plt.show()
 
     if episode % 300 == 0:
         agent.save_models()
