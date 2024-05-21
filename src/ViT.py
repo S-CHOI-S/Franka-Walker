@@ -2,13 +2,16 @@ import torch
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 
-from torch import nn
+from torch import nn, optim
 from torch import Tensor
 from PIL import Image
 from torchvision.transforms import Compose, Resize, ToTensor
 from einops import rearrange, reduce, repeat
 from einops.layers.torch import Rearrange, Reduce
 from torchsummary import summary
+
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
 
 # batch_size = 8
 # channel = 3
@@ -232,7 +235,65 @@ class ViT(nn.Sequential):
         )
                 
 patches_embedded = PatchEmbedding()(x)
-print(MultiHeadAttention()(patches_embedded).shape)
-print(TransformerEncoderBlock()(patches_embedded).shape)
+print('Patches embedded shape:', patches_embedded.shape)
+print('MultiHeadAttention output shape:', MultiHeadAttention()(patches_embedded).shape)
+print('TransformerEncoderBlock output shape:', TransformerEncoderBlock()(patches_embedded).shape)
 
-summary(ViT(), (3, 224, 224), device='cpu')
+model = ViT()
+print(model)
+summary(model, (3, 224, 224), device='cpu')
+
+# Prepare the MNIST dataset
+transform = transforms.Compose([
+    transforms.Resize((28, 28)),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,))
+])
+
+train_dataset = datasets.MNIST(root='data', train=True, transform=transform, download=True)
+test_dataset = datasets.MNIST(root='data', train=False, transform=transform, download=True)
+
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+
+# Instantiate the model, loss function and optimizer
+model = ViT()
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Training function
+def train(model, loader, criterion, optimizer, epoch):
+    model.train()
+    running_loss = 0.0
+    for i, (inputs, labels) in enumerate(loader):
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+        running_loss += loss.item()
+        if i % 100 == 99:
+            print(f'Epoch {epoch+1}, Batch {i+1}, Loss: {running_loss / 100}')
+            running_loss = 0.0
+
+# Testing function
+def test(model, loader, criterion):
+    model.eval()
+    correct = 0
+    total = 0
+    test_loss = 0.0
+    with torch.no_grad():
+        for inputs, labels in loader:
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            test_loss += loss.item()
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+    accuracy = 100 * correct / total
+    print(f'Test Loss: {test_loss / len(loader)}, Accuracy: {accuracy}%')
+
+# Training and testing the model
+for epoch in range(5):
+    train(model, train_loader, criterion, optimizer, epoch)
+    test(model, test_loader, criterion)
