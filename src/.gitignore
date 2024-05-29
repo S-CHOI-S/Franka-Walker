@@ -1,3 +1,6 @@
 data
-*.zip
 model
+*.zip
+.ipynb_checkpoints
+.lh
+.vscode

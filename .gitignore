@@ -1,2 +1,4 @@
 */build*
-src/model/ViT/ViT-B_16-224.npz
+.history
+.lh
+.vscode
