@@ -1,8 +1,12 @@
 import os
 import torch
 import torch.nn as nn
-import numpy as np
+import torch.optim as optim
+import torch.nn.functional as F
+
 import cv2
+import numpy as np
+
 import matplotlib.pyplot as plt
 
 from PIL import Image
@@ -109,21 +113,70 @@ class MLPFeatureExtraction(nn.Module):
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
         
-        self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
+        self.fc1 = nn.Linear(np.prod(self.input_dims), self.fc1_dims)
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
+
+        self.optimizer = optim.Adam(self.parameters(), lr=learning_rate)
+        self.loss = nn.CrossEntropyLoss()
+
+    def imgarray_resize(self, img_array, width=50, height=50):
+        resize_image = np.zeros(shape=(width,height,3), dtype=np.uint8)
+
+        for W in range(width):
+            for H in range(height):
+                new_width = int( W * img_array.shape[0] / width )
+                new_height = int( H * img_array.shape[1] / height )
+                resize_image[W][H] = img_array[new_width][new_height]
+
+        return resize_image
         
     def forward(self, img_array):
-        img_array = torch.Tensor(np.array([img_array]).astype(np.float32)).squeeze(0).to(self.device)
-        
-        # flatten 먼저!
-        # prob = self.fc1(img_array)
-        
-        return print("HERE!", img_array.shape)
+        img_array = self.imgarray_resize(img_array)
+        img_array = torch.tensor(np.array([img_array]).astype(np.float32)).squeeze(0)
+        # plt.imshow(img_array.numpy().astype(np.uint8))
+        # plt.show()
 
+        flatten = torch.flatten(img_array)
+        feature = self.fc1(flatten)
+        feature = F.relu(feature)
+        feature = self.fc2(feature)
+        feature = F.relu(feature) # torch.Size([256])
 
+        return feature
 
+    def save_checkpoint(self):
+        torch.save(self.state_dict(), self.checkpoint_file)
 
+    def load_checkpoint(self):
+        self.load_state_dict(torch.load(self.checkpoint_file))
 
+learning_rate = 0.001
 
-feature = MLPFeatureExtraction(0.1, (10, 10, 3))
+feature = MLPFeatureExtraction(learning_rate, (50, 50, 3))
 feature.forward(rgb_array)
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(feature.parameters(), lr=learning_rate)
+
+# 학습을 하려면
+new_feature = feature.forward(rgb_array)
+
+# 학습 루프
+num_epochs = 10
+for epoch in range(num_epochs):
+    feature.train()
+    running_loss = 0.0
+
+    # forward pass
+    outputs = feature(rgb_array)
+    loss = feature.loss(outputs, labels) # 난 label이 없어,,
+
+    # backward pass 및 가중치 업데이트
+    feature.optimizer.zero_grad()
+    feature.loss.backward()
+    feature.optimizer.step()
+
+    running_loss += loss.item()
+
+print('Finished Training')
+
+feature.save_checkpoint()
