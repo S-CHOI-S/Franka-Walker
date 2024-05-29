@@ -312,6 +312,11 @@ def test(model, loader, criterion):
     test_losses.append(test_loss / len(loader))
     test_accuracies.append(accuracy)
     print(f'Test Loss: {test_loss / len(loader)}, Accuracy: {accuracy}%')
+    print("outputs:", outputs)
+    print(outputs.shape)
+    print(outputs.size)
+    plt.imshow(outputs.cpu())
+    plt.show()
 
 # Function to visualize predictions
 def visualize_predictions(model, dataset):

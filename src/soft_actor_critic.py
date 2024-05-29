@@ -1,34 +1,8 @@
-# # import gymnasium as gym
-
-# # from stable_baselines3 import SAC
-
-# # env = gym.make("Pendulum-v1", render_mode="human")
-
-# # model = SAC("MlpPolicy", env, verbose=1)
-# # model.learn(total_timesteps=10000, log_interval=4)
-# # model.save("sac_pendulum")
-
-# # del model # remove to demonstrate saving and loading
-
-# # model = SAC.load("sac_pendulum")
-
-# # obs, info = env.reset()
-# # while True:
-# #     action, _states = model.predict(obs, deterministic=True)
-# #     obs, reward, terminated, truncated, info = env.step(action)
-# #     if terminated or truncated:
-# #         obs, info = env.reset()
-
-# #################################################################################
-# import gymnasium as gym
-# from stable_baselines3 import SAC
-
 import os
 import time
 import asyncio
 
 import gymnasium as gym
-from gym import spaces
 
 import mujoco
 import mujoco.viewer
@@ -44,6 +18,7 @@ from torch.distributions.normal import Normal
 import matplotlib.pyplot as plt
 
 import mjc_pybind.mjc_controller as mjctrl
+import ViT_FeatureExtraction as vit
 
 # define
 M_PI = math.pi
@@ -427,9 +402,8 @@ class SACAgent():
 
         self.update_network_parameters()
 
-import gymnasium as gym
+
 env = gym.make('Reacher-v4', render_mode="human")
-# wrapped_env = gym.wrappers.RecordVideo(env)
 
 total_num_episodes = int(5e3)
 action_dim = env.action_space.shape[0] # 2
@@ -486,8 +460,6 @@ for episode in range(MAX_EPISODES):
     episode_rewards.append(episode_reward)
 
     img = env.unwrapped.get_image() # rgb_array
-    plt.imshow(img)
-    plt.show()
 
     if episode % 300 == 0:
         agent.save_models()
@@ -522,234 +494,3 @@ plt.show()
 #         state = next_state
 
 #     print('Episode: ', eps, '| Episode Reward: ', episode_reward)
-
-
-
-####################################################################################################
-# class Environment:
-#     def __init__(self):
-#         self.model = mujoco.MjModel.from_xml_path(os.path.abspath('../model/franka_emika_panda/pandaquest_sac.xml'))
-#         self.data = mujoco.MjData(self.model)
-
-#         self.controller = mjctrl.MJCController()
-
-#         self.goal_position = [0.25, -0.2, 0.8]
-#         self.current_position = self.data.xpos[mujoco.mj_name2id(self.model, 1, "link7")]
-
-#         # Initialize stack attribute
-#         self._k = 7
-#         self.stack = 5
-
-#         self.distance_to_goal = 0
-#         self.distance_to_goal_x = 0
-#         self.distance_to_goal_y = 0
-#         self.distance_to_goal_z = 0
-
-#         # self.action_space = self._construct_action_space()
-#         # self.observation_space = self._construct_observation_space()
-#         self.action_space = self._construct_action_space()
-#         self.observation_space = self._construct_observation_space()
-
-#     def _construct_action_space(self):
-#         action_space = 3
-#         action_low = -1 * np.ones(action_space)
-#         action_high = 1 * np.ones(action_space)
-#         return gym.spaces.Box(low=action_low, high=action_high, dtype=np.float32)
-    
-#     def _construct_observation_space(self):
-#         s = {'object': spaces.Box(shape=(1, 14), low=-np.inf, high=np.inf, dtype=np.float32),
-#              'q': spaces.Box(shape=(self.stack, self._k), low=-1, high=1, dtype=np.float32),
-#              'rpy': spaces.Box(shape=(self.stack, 6), low=-1, high=1, dtype=np.float_),
-#              'rpy_des': spaces.Box(shape=(self.stack, 6), low=-1, high=1, dtype=np.float_),
-#              'x_plan': spaces.Box(shape=(self.stack, 3), low=-np.inf, high=np.inf, dtype=np.float_),
-#              'x_pos': spaces.Box(shape=(self.stack, 3), low=-np.inf, high=np.inf, dtype=np.float_),
-#             }
-#         return spaces.Dict(s)
-
-#     def reset(self):
-#         self.data.qpos = [0, -M_PI_4, 0, -3 * M_PI_4, 0, M_PI_2, M_PI_4, 0.2, 0.2]
-#         self.current_position = self.data.xpos[mujoco.mj_name2id(self.model, 1, "link7")]
-#         self.steps = 0
-#         return self.current_position
-
-#     def step(self, action):
-
-#         self.current_position += action
-
-#         self.controller.read(self.data.time, self.data.qpos, self.data.qvel)
-#         self.controller.control_mujoco(self.current_position)
-#         self.torque = self.controller.write()
-
-#         for i in range(DOF - 1):
-#             self.data.ctrl[i] = self.torque[i]
-        
-#         mujoco.mj_step(self.model, self.data)
-
-#         reward = self.calculate_reward()
-#         done = self.is_done()
-
-#         self.steps += 1
-#         # self.data.ctrl[:] = action
-#         # self.sim.step()
-#         # observation = self.sim.get_state()
-#         # reward = self.calculate_reward()
-#         # done = self.is_done()
-#         # info = {}  # Additional information (optional)
-#         # return observation, reward, done, info
-
-#         return self.current_position, reward, done, {}
-    
-#     def calculate_reward(self):
-        
-#         # Calculate reward based on current state
-#         self.distance_to_goal = np.linalg.norm(self.current_position - self.goal_position)
-#         reward = -self.distance_to_goal  # Example: negative distance as reward
-
-#         self.distance_to_goal_x = np.linalg.norm(self.current_position[0] - self.goal_position[0])
-#         self.distance_to_goal_y = np.linalg.norm(self.current_position[1] - self.goal_position[1])
-#         self.distance_to_goal_z = np.linalg.norm(self.current_position[2] - self.goal_position[2])
-#         reward -= self.distance_to_goal_x / 2
-#         reward -= self.distance_to_goal_y / 2
-#         reward -= self.distance_to_goal_z / 2
-
-#         # self.current_velocity =  ## velocity에 대한 reward도 추가하면 좋을 것 같음!
-
-#         # Calculate reward based on joint limit
-#         if self.controller.joint_limit(self.data.qpos):
-#             reward -= 10000
-#             print("joint limit occured!")
-
-#         # Calculate reward based on self-collision (current: No other materials)
-#         if self.data.ncon != 0:
-#             reward -= 10000
-
-#         # Calculate reward based on whether reached to the target
-#         if self.is_target_reached():
-#             reward += 10000000
-            
-#         return reward
-    
-#     def is_done(self):
-#         # Determine if the episode is done
-#         if self.steps >= MAX_STEPS:  # Example: episode ends after a certain number of steps
-#             return True
-#         if np.allclose(self.current_position, self.goal_position, atol=1e-3):  # Example: episode ends when goal is reached
-#             return True
-#         return False
-    
-#     def is_target_reached(self):
-#         if abs(self.distance_to_goal) < 0.02: # 2cm
-#             return True
-#         else:
-#             return False
-
-
-
-
-
-# # Define hyperparameters
-# alpha = 0.0003
-# beta = 0.0003
-# input_dims = [3]  # Dimension of Cartesian coordinates [x, y, z]
-# gamma = 0.99
-# tau = 0.005
-# batch_size = 256
-# reward_scale = 2
-
-
-# # __main__
-# # model = mujoco.MjModel.from_xml_path(os.path.abspath('../model/franka_emika_panda/pandaquest_sac.xml'))
-# # data = mujoco.MjData(model)
-
-# # controller = mjctrl.MJCController()
-
-# # goal_position = [0.25, -0.2, 0.8]
-# # current_position = data.xpos[mujoco.mj_name2id(model, 1, "link7")]
-
-# env = Environment()
-# agent = SACAgent(env=env)
-
-# observation = env.reset()
-# episode_reward = 0
-# episode_rewards = []
-
-# with mujoco.viewer.launch_passive(env.model, env.data) as viewer:
-
-#     while viewer.is_running():
-#         step_start = time.time()
-
-#         # # for camera tracking
-#         # viewer.cam.lookat = env.data.body('link0').subtree_com
-#         # viewer.cam.elevation = -15
-
-#         for episode in range(MAX_EPISODES):
-#             observation = env.reset()
-#             episode_reward = 0
-
-#             for step in range(MAX_STEPS):
-
-#                 # for camera tracking
-#                 viewer.cam.lookat = env.data.body('link0').subtree_com
-#                 viewer.cam.elevation = -15
-
-#                 # mj_step can be replaced with code that also evaluates
-#                 # a policy and applies a control signal before stepping the physics.
-
-#                 current_position = env.data.xpos[mujoco.mj_name2id(env.model, 1, "link7")]
-
-#                 # print(env.data.ncon)
-
-#                 action = agent.choose_action(observation)
-
-#                 # controller.read(data.time, data.qpos, data.qvel)
-#                 # controller.control_mujoco()
-#                 # torque = controller.write()
-
-#                 # for i in range(DOF - 1):
-#                 #     data.ctrl[i] = torque[i]
-                
-#                 # mujoco.mj_step(model, data)
-
-#                 new_observation, reward, done, _ = env.step(action)
-
-#                 if step == MAX_STEPS - 1 and not env.is_target_reached():
-#                         reward -= 10000
-
-#                 agent.remember(observation, action, reward, new_observation, done)
-
-#                 agent.learn()
-
-#                 observation = new_observation
-#                 episode_reward += reward
-
-#                 # print("reward: ", reward)
-#                 print("episode: ", episode)
-#                 print("step:    ", step)
-#                 print("reward:  ", episode_reward)
-#                 print("error:   ", env.goal_position - current_position)
-#                 print("=================================")
-
-#                 if done:
-#                     break       
-
-#                 # Pick up changes to the physics state, apply perturbations, update options from GUI.
-#                 viewer.sync()
-
-#                 # Rudimentary time keeping, will drift relative to wall clock.
-#                 time_until_next_step = env.model.opt.timestep - (time.time() - step_start)
-#                 if time_until_next_step > 0:
-#                     time.sleep(time_until_next_step)
-            
-#             episode_rewards.append(episode_reward)
-
-#             plt.plot(episode_rewards)
-#             plt.xlabel('Episode #')
-#             plt.ylabel('Reward')
-#             plt.title('Reward of Each Episode')
-#             plt.grid(True)
-#             plt.ylim(-20000, 5000)
-#             plt.pause(0.001)
-
-#             if episode == MAX_EPISODES -1:
-#                 plt.show()
-#                 break
