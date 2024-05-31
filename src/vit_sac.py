@@ -18,9 +18,8 @@ from torch.distributions.normal import Normal
 import matplotlib.pyplot as plt
 
 import mjc_pybind.mjc_controller as mjctrl
-import ViT_FeatureExtraction as vit
-
 from transformers import ViTModel, AutoFeatureExtractor
+
 
 # define
 M_PI = math.pi
@@ -37,81 +36,26 @@ torch.set_default_dtype(torch.float32)
 # Class: ViTFeatureExtraction
 class ViTFeatureExtraction:
     def __init__(self, model_name='google/vit-base-patch16-224'):
-        self.model = ViTModel.from_pretrained(model_name)
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.model = ViTModel.from_pretrained(model_name).to(self.device)
         self.feature_extractor = AutoFeatureExtractor.from_pretrained(model_name)
+        # print(self.model.eval())
 
     def get_feature(self, img):
-        inputs = self.feature_extractor(images=img, return_tensors="pt")
+        inputs = self.feature_extractor(images=img, return_tensors="pt").to(self.device)
         outputs = self.model(**inputs)
-        return outputs.last_hidden_state.squeeze(0).detach().numpy()
-
-from PIL import Image
-img_path = './img/reacher_1.png'
-img = Image.open(img_path).convert('RGB')
-rgb_array = np.array(img)
-
-
-
-
-# Class: MLPFeatureExtraction
-class MLPFeatureExtraction(nn.Module):
-    def __init__(self, learning_rate, input_dims, fc1_dims=256, fc2_dims=256,
-                 name='feature', chkpt_dir='tmp/sac'):
-        super(MLPFeatureExtraction, self).__init__()
+        outputs = outputs.last_hidden_state.squeeze(0)
+        outputs = torch.flatten(outputs)
         
-        self.input_dims = input_dims
-        self.fc1_dims = fc1_dims
-        self.fc2_dims = fc2_dims
-        self.name = name
-        self.checkpoint_dir = chkpt_dir
-        self.checkpoint_file = os.path.join(self.checkpoint_dir, name+'sac')
-        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        # self.to(self.device)
-        
-        self.fc1 = nn.Linear(np.prod(self.input_dims), self.fc1_dims)
-        self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
+        return outputs.detach().cpu().numpy()
+    
+# vit = ViTFeatureExtraction()
+# from PIL import Image
+# img_path = './img/reacher.png'
+# img = Image.open(img_path).convert('RGB')
+# rgb_array = np.array(img)
 
-        self.optimizer = optim.Adam(self.parameters(), lr=learning_rate)
-        self.loss = nn.CrossEntropyLoss()
-
-    def imgarray_resize(self, img_array, width=50, height=50):
-        resize_image = np.zeros(shape=(width,height,3), dtype=np.uint8)
-
-        for W in range(width):
-            for H in range(height):
-                new_width = int( W * img_array.shape[0] / width )
-                new_height = int( H * img_array.shape[1] / height )
-                resize_image[W][H] = img_array[new_width][new_height]
-
-        return resize_image
-        
-    def forward(self, attention_map):
-        attention_map = self.imgarray_resize(attention_map)
-        attention_map = torch.tensor(np.array([attention_map]).astype(np.float32)).squeeze(0)
-        # plt.imshow(attention_map.numpy().astype(np.uint8))
-        # plt.show()
-        # print('atttttttt:', attention_map.shape) # torch.Size([50, 50, 3])
-
-        flatten = torch.flatten(attention_map) # torch.Size([7500])
-        flatten = flatten.unsqueeze(0)
-        # print('flatten:', flatten.shape)
-        feature = self.fc1(flatten)
-        feature = F.relu(feature)
-        feature = self.fc2(feature)
-        feature = F.relu(feature) # torch.Size([256])
-
-        return feature
-
-    def save_checkpoint(self):
-        torch.save(self.state_dict(), self.checkpoint_file)
-
-    def load_checkpoint(self):
-        self.load_state_dict(torch.load(self.checkpoint_file))
-
-
-''''''''''''''''''''''''''''''
-'''   Soft Actor Critic   '''
-''''''''''''''''''''''''''''''
+# print("=====================\n", vit.get_feature(rgb_array).shape)
 
 # Class: ReplayBuffer
 class ReplayBuffer():
@@ -272,9 +216,10 @@ class ActorNetwork(nn.Module):
         self.max_action = max_action # 가능한 action 값의 최대 크기를 나타냄
         self.reparam_noise = 1e-6
 
-        # self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
-        self.fc1 = nn.Linear(267, self.fc1_dims)
+        self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
+        # self.mu = nn.Linear(self.fc2_dims, self.n_actions)
+        # self.sigma = nn.Linear(self.fc2_dims, self.n_actions)
 
         '''
             mu: state를 입력으로 받아서 각 가능한 action에 대한 평균(mean)을 계산
@@ -292,31 +237,17 @@ class ActorNetwork(nn.Module):
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
         self.to(self.device)
-        
-        # for ViTFeatireExtraction
-        self.vit = vit.ViTFeatureExtraction()
-        # for MLPFeatureExtraction
-        self.featureMLP = MLPFeatureExtraction(alpha, 7500)
 
-    def forward(self, state, img_array):
-        attention_map = self.vit.get_feature(img_array)
-        # print('attention_map:', attention_map.shape) # (224, 224, 3)
-        
-        feature = self.featureMLP.forward(attention_map)
-        
-        state = state.to(self.device)
-        feature = feature.to(self.device)
-        
-        # print('state:', state.shape) # torch.Size([1, 11])
-        # print('feature:', feature.shape) # feature: torch.Size([1, 256])
-        
-        result = torch.cat((state, feature), dim=1)
-        # print('result:', result.shape) # result: torch.Size([1, 267])
-        
-        prob = self.fc1(result) # result: torch.Size([1, 267])
+    def forward(self, state):
+        prob = self.fc1(state)
         prob = F.relu(prob)
         prob = self.fc2(prob)
         prob = F.relu(prob)
+
+        # mu = self.mu(prob)
+        # sigma = self.sigma(prob)
+
+        # sigma = torch.clamp(sigma, min=self.reparam_noise, max=1)
 
         # policy network에서 출력한 raw action 값을 조정해서 최종 action을 결정하는 부분
         mu = torch.tanh(self.mu(prob)) * torch.tensor(self.max_action).to(self.device)
@@ -324,10 +255,8 @@ class ActorNetwork(nn.Module):
 
         return mu, sigma
 
-    def sample_normal(self, state, img_array, reparameterize=True):
-        # print('state:', state.shape) # torch.Size([1, 11])
-        # print('img:', img_array.shape) # (480, 480, 3)
-        mu, sigma = self.forward(state, img_array) # mu와 sigma를 만들어내고, 가공하는 부분
+    def sample_normal(self, state, reparameterize=True):
+        mu, sigma = self.forward(state) # mu와 sigma를 만들어내고, 가공하는 부분
         probabilities = Normal(mu, sigma) # 확률 분포를 만드는 부분
 
         if reparameterize: # True인 경우
@@ -338,7 +267,7 @@ class ActorNetwork(nn.Module):
         # sampling된 action을 [-1,1] 범위로 조정하고, 가능한 행동값의 최대 크기로 scaling함
         action = torch.tanh(actions)*torch.tensor(self.max_action).to(self.device)
         log_probs = probabilities.log_prob(actions) # sampling된 action에 대한 log 확률을 계산
-        log_probs -= torch.log(1 - action.pow(2) + self.reparam_noise) # log 확률에 따라 rarameter화 트릭에 의한 보정 항을 더해줌
+        log_probs -= torch.log(1 - action.pow(2) + self.reparam_noise) # log 확률에 따라 re-parameter화 트릭에 의한 보정 항을 더해줌
         log_probs = log_probs.sum(1, keepdim=True) # 각 action의 log 확률을 합산하여 반환
 
         return action, log_probs
@@ -350,7 +279,7 @@ class ActorNetwork(nn.Module):
         self.load_state_dict(torch.load(self.checkpoint_file))
 
 class SACAgent():
-    def __init__(self, alpha=0.0003, learning_rate=1e-3, input_dims=[2],
+    def __init__(self, alpha=0.0003, learning_rate=0.0003, input_dims=[2],
             env=None, gamma=0.99, n_actions=2, max_size=1000000, tau=0.005,
             layer1_size=256, layer2_size=256, batch_size=256, reward_scale=2):
         self.gamma = gamma
@@ -359,7 +288,7 @@ class SACAgent():
         self.batch_size = batch_size
         self.n_actions = n_actions
         # self.max_action = env.action_space.high
-
+        print("===================================", input_dims)
         self.actor = ActorNetwork(alpha, input_dims, n_actions=n_actions,
                     name='actor', max_action=env.action_space.high)
         self.critic_1 = CriticNetwork(learning_rate, input_dims, n_actions=n_actions,
@@ -371,13 +300,10 @@ class SACAgent():
 
         self.scale = reward_scale
         self.update_network_parameters(tau=1)
-        print("==============================",self.actor.device)
 
-    def choose_action(self, observation, img_array):
-        self.img_array = img_array
+    def choose_action(self, observation):
         state = torch.Tensor(np.array([observation]).astype(np.float32)).to(self.actor.device)
-        # print(state.shape)
-        actions, _ = self.actor.sample_normal(state, img_array, reparameterize=False)
+        actions, _ = self.actor.sample_normal(state, reparameterize=False)
         # print("ACTION: ", actions)
 
         # if env.is_target_reached():
@@ -458,7 +384,7 @@ class SACAgent():
                     - 과도한 높은 가치 추정을 방지하여 학습의 안정성과 성능을 향상시킨다
         '''
         ''' Critic network 계산 '''
-        actions, log_probs = self.actor.sample_normal(state, self.img_array, reparameterize=False)
+        actions, log_probs = self.actor.sample_normal(state, reparameterize=False)
         log_probs = log_probs.view(-1)
         q1_new_policy = self.critic_1.forward(state, actions)
         q2_new_policy = self.critic_2.forward(state, actions)
@@ -473,7 +399,7 @@ class SACAgent():
         self.value.optimizer.step() # parameter를 update
 
         ''' Critic network 계산 ''' # 왜 또 계산?
-        actions, log_probs = self.actor.sample_normal(state, self.img_array, reparameterize=True)
+        actions, log_probs = self.actor.sample_normal(state, reparameterize=True)
         log_probs = log_probs.view(-1)
         q1_new_policy = self.critic_1.forward(state, actions)
         q2_new_policy = self.critic_2.forward(state, actions)
@@ -501,13 +427,33 @@ class SACAgent():
 
         self.update_network_parameters()
 
-env = gym.make('Reacher-v4', render_mode="rgb_array")
+
+env = gym.make('Reacher-v4', render_mode="human")
 
 total_num_episodes = int(5e3)
 action_dim = env.action_space.shape[0] # 2
 state_dim = env.observation_space.shape[0] # 11
+cls_token = (151296,)
+env_obs_space_tensor = torch.tensor(env.observation_space.shape)
+cls_token_tensor = torch.tensor(cls_token)
+input_dims_shape = torch.cat((env_obs_space_tensor, cls_token_tensor))
+input_dims_shape = input_dims_shape.numpy()
 
-agent = SACAgent(input_dims=env.observation_space.shape, env=env, n_actions=action_dim)
+# print("-------------------------", (env.observation_space.shape[0]+cls_token,))
+# print("-------------------------", cls_token_tensor.shape)
+# print("-------------------------", np.concatenate((env.observation_space.shape, cls_token)))
+
+agent = SACAgent(input_dims=(151307,), env=env, n_actions=action_dim)
+feature = ViTFeatureExtraction()
+
+# vit = ViTFeatureExtraction()
+# from PIL import Image
+# img_path = './img/reacher.png'
+# img = Image.open(img_path).convert('RGB')
+# rgb_array = np.array(img)
+
+# print("=====================\n", vit.get_feature(rgb_array).shape)
+
 
 episode_durations = []
 best_score = env.reward_range[0]
@@ -516,22 +462,43 @@ load_checkpoint = False
 
 episode_rewards = []
 
-state, _ = env.reset()
-
+env_state, _ = env.reset()
 img = env.unwrapped.get_image() # rgb_array
+img = feature.get_feature(img)
+
+env_state = torch.tensor(env_state)
+img_state = torch.tensor(img)
+
+env_state = env_state.unsqueeze(0)
+img_state = img_state.view(1, -1)
+
+state = torch.cat((env_state, img_state), dim=1).view(-1)
+state = state.numpy() # (151307,)
 
 # train loop
 for episode in range(MAX_EPISODES):
-    state, _ = env.reset()
+    env_state, _ = env.reset()
+    img = env.unwrapped.get_image() # rgb_array
+    img = feature.get_feature(img)
+
+    env_state = torch.tensor(env_state)
+    img_state = torch.tensor(img)
+
+    env_state = env_state.unsqueeze(0)
+    img_state = img_state.view(1, -1)
+
+    state = torch.cat((env_state, img_state), dim=1).view(-1)
+    state = state.numpy() # (151307,)
+    
     episode_reward = 0
 
     for step in range(MAX_STEPS):
-        # state, _ = env.reset()
+        # env_state, _ = env.reset()
         done = False
 
         score = 0
-
-        action = agent.choose_action(state, img)
+        
+        action = agent.choose_action(state)
 
         next_state, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
@@ -539,8 +506,19 @@ for episode in range(MAX_EPISODES):
         
         agent.remember(state, action, reward, next_state, done)
 
-        state = next_state
+        env_state = next_state
         img = env.unwrapped.get_image() # rgb_array
+        img = feature.get_feature(img)
+
+        env_state = torch.tensor(env_state)
+        img_state = torch.tensor(img)
+
+        env_state = env_state.unsqueeze(0)
+        img_state = img_state.view(1, -1)
+
+        state = torch.cat((env_state, img_state), dim=1).view(-1)
+        state = state.numpy() # (151307,)
+        
         episode_reward += reward
         
         if not load_checkpoint:
@@ -559,6 +537,8 @@ for episode in range(MAX_EPISODES):
     print('Episode: ', episode, '| Episode Reward: ', episode_reward)
 
     episode_rewards.append(episode_reward)
+
+    img = env.unwrapped.get_image() # rgb_array
 
     if episode % 300 == 0:
         agent.save_models()

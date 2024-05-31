@@ -15,31 +15,38 @@ from torchvision import transforms
 from model.ViT.modeling import VisionTransformer, CONFIGS
 
 
-class ViTFeatureExtraction():
-    def __init__(self):
+class ViTFeatureExtraction(nn.Module):
+    def __init__(self, img_resize=224):
         super(ViTFeatureExtraction, self).__init__()
         
         # self
+        self.resize = (img_resize, img_resize)
         self.config = CONFIGS["ViT-B_16"]
-        self.model = VisionTransformer(self.config, num_classes=1000, zero_head=False, img_size=224, vis=True)
+        self.model = VisionTransformer(self.config, num_classes=1000, zero_head=False, img_size=self.resize[0], vis=True)
         self.model.load_from(np.load("./model/ViT/ViT-B_16-224.npz"))
         self.model.eval()
+        
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        self.to(self.device)
         
     def preprocess(self, img_array):
         self.original_size = img_array.shape[:2]
         
-        img_array = cv2.resize(img_array, (224, 224))
-
-        # (H, W, C) -> (C, H, W)
-        img_tensor = torch.from_numpy(img_array).permute(2, 0, 1).float()
-        img_tensor = (img_tensor - 0.5) / 0.5
+        img_array = cv2.resize(img_array, self.resize)
         
-        return img_tensor # torch.Size([3, 224, 224])
+        # (H, W, C) -> (C, H, W)
+        img_tensor = torch.from_numpy(img_array).permute(2, 0, 1).float() / 255
+        img_tensor = (img_tensor - 0.5) / 0.5
+        img_tensor = img_tensor.to(self.device)
+        # print(f'img_tensor device: {img_tensor.device}')
+        
+        return img_array, img_tensor # torch.Size([3, 224, 224])
         
     def get_feature(self, img_array):
         # preprocess
-        img_tensor = self.preprocess(img_array)
-        _, att_mat = self.model(img_tensor.unsqueeze(0))
+        img_array, img_tensor = self.preprocess(img_array)
+        with torch.no_grad():
+            _, att_mat = self.model(img_tensor.unsqueeze(0))
 
         att_mat = torch.stack(att_mat).squeeze(1)
 
@@ -48,12 +55,12 @@ class ViTFeatureExtraction():
 
         # To account for residual connections, we add an identity matrix to the
         # attention matrix and re-normalize the weights.
-        residual_att = torch.eye(att_mat.size(1))
+        residual_att = torch.eye(att_mat.size(1)).to(self.device)
         aug_att_mat = att_mat + residual_att
         aug_att_mat = aug_att_mat / aug_att_mat.sum(dim=-1).unsqueeze(-1)
 
         # Recursively multiply the weight matrices
-        joint_attentions = torch.zeros(aug_att_mat.size())
+        joint_attentions = torch.zeros(aug_att_mat.size()).to(self.device)
         joint_attentions[0] = aug_att_mat[0]
 
         for n in range(1, aug_att_mat.size(0)):
@@ -62,42 +69,42 @@ class ViTFeatureExtraction():
         # Attention from the output token to the input space.
         v = joint_attentions[-1]
         grid_size = int(np.sqrt(aug_att_mat.size(-1)))
-        mask = v[0, 1:].reshape(grid_size, grid_size).detach().numpy()
-        mask = cv2.resize(mask / mask.max(), self.original_size)[..., np.newaxis]
-        result = (mask * img_array * 255).astype("uint8") # numpy.ndarray
+        mask = v[0, 1:].reshape(grid_size, grid_size).detach().cpu().numpy()
+        # print(f'mask shape: {mask.shape}')
+        mask = cv2.resize(mask / mask.max(), self.resize)[..., np.newaxis]
+        result = (mask * img_array).astype("uint8") # numpy.ndarray
         
-        fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(16, 16))
-
-        # ax1.set_title('Original')
-        # ax2.set_title('Attention Map')
-        # _ = ax1.imshow(img_array)
-        # _ = ax2.imshow(result)
-        # plt.show()
+        return result # (224, 224, 3)
+    
+    def get_cls_token(self, img_array):
+        # Preprocess
+        _, img_tensor = self.preprocess(img_array)
+        outputs = self.model(img_tensor)
+        cls_embedding = outputs.last_hidden_state[:, 0, :]
+        print(cls_embedding.shape)
+        # with torch.no_grad():
+        #     outputs = self.model(img_tensor.unsqueeze(0))
         
-        return result
+        # # Extract the CLS token (last hidden state)
+        # last_hidden_state = outputs[0]
+        # print(outputs)
+        # cls_token_embedding = last_hidden_state[:, 0, :]  # Shape: (batch_size, hidden_size)
+        
+        # return cls_token_embedding.squeeze(0).detach().cpu().numpy()  # Shape: (hidden_size,)
 
-# def rgb2gray(rgb_array):
-#     return np.dot(rgb_array[...,:3], [0.2989, 0.5870, 0.1140])
 
 img_path = './img/reacher_1.png'
 img = Image.open(img_path).convert('RGB')
 rgb_array = np.array(img)
-print(rgb_array.shape)
 
-# gray_array = rgb2gray(rgb_array)
-# gray_image_expanded = np.expand_dims(gray_array, axis=-1)
-
-# fig, axes = plt.subplots(1, 2)
-
-# axes[0].imshow(rgb_array)
-# axes[1].imshow(gray_image_expanded)
+vit = ViTFeatureExtraction()
+attention_map = vit.get_feature(rgb_array)
+print(vit.model.eval())
+vit.get_cls_token(rgb_array)
+# print(vit.get_cls_token(rgb_array))
+# plt.imshow(vit.preprocess(rgb_array).permute(1,2,0).numpy())
 # plt.show()
 
-# print(gray_image_expanded.shape)
-
-# vit = ViTFeatureExtraction()
-# plt.imshow(vit.get_feature(gray_image_expanded))
-# plt.show()
 
 class MLPFeatureExtraction(nn.Module):
     def __init__(self, learning_rate, input_dims, fc1_dims=256, fc2_dims=256,
@@ -150,33 +157,9 @@ class MLPFeatureExtraction(nn.Module):
     def load_checkpoint(self):
         self.load_state_dict(torch.load(self.checkpoint_file))
 
-learning_rate = 0.001
+# learning_rate = 0.001
 
-feature = MLPFeatureExtraction(learning_rate, (50, 50, 3))
-feature.forward(rgb_array)
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(feature.parameters(), lr=learning_rate)
-
-# 학습을 하려면
-new_feature = feature.forward(rgb_array)
-
-# 학습 루프
-num_epochs = 10
-for epoch in range(num_epochs):
-    feature.train()
-    running_loss = 0.0
-
-    # forward pass
-    outputs = feature(rgb_array)
-    loss = feature.loss(outputs, labels) # 난 label이 없어,,
-
-    # backward pass 및 가중치 업데이트
-    feature.optimizer.zero_grad()
-    feature.loss.backward()
-    feature.optimizer.step()
-
-    running_loss += loss.item()
-
-print('Finished Training')
-
-feature.save_checkpoint()
+# feature = MLPFeatureExtraction(learning_rate, (50, 50, 3))
+# plt.imshow(feature.imgarray_resize(attention_map))
+# plt.show()
+# print(feature.forward(attention_map))
