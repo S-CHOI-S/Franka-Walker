@@ -29,7 +29,7 @@ M_PI_4 = M_PI/4
 DOF = 9
 
 MAX_EPISODES = 1000
-MAX_STEPS = 1000 # 한 번 학습할 때 몇 번 iteration 돌릴 건지
+MAX_STEPS = 50 # 한 번 학습할 때 몇 번 iteration 돌릴 건지
 
 torch.set_default_dtype(torch.float32)
 
@@ -45,9 +45,10 @@ class ViTFeatureExtraction:
         inputs = self.feature_extractor(images=img, return_tensors="pt").to(self.device)
         outputs = self.model(**inputs)
         outputs = outputs.last_hidden_state.squeeze(0)
-        outputs = torch.flatten(outputs)
-        
-        return outputs.detach().cpu().numpy()
+        # outputs = torch.flatten(outputs) # torch.Size([151296])
+        pooled_output = outputs.mean(dim=0).detach().cpu().numpy() # (768,)
+
+        return pooled_output # outputs.detach().cpu().numpy()
     
 # vit = ViTFeatureExtraction()
 # from PIL import Image
@@ -201,7 +202,7 @@ class ActorNetwork(nn.Module):
         - 주어진 state에서 각 가능한 action에 대한 확률 분포를 출력하는 역할을 함
         - actor는 주어진 상태에서 적절한 행동을 선택하는 역할을 하며, 이를 통해 정책을 결정
     '''
-    def __init__(self, alpha, input_dims, max_action, fc1_dims=256, fc2_dims=256, n_actions=3, name='actor', chkpt_dir='tmp/sac'):
+    def __init__(self, alpha, input_dims, max_action, fc1_dims=512, fc2_dims=256, n_actions=3, name='actor', chkpt_dir='tmp/sac'):
         # initialize
         super(ActorNetwork, self).__init__()
 
@@ -280,7 +281,7 @@ class ActorNetwork(nn.Module):
 
 class SACAgent():
     def __init__(self, alpha=0.0003, learning_rate=0.0003, input_dims=[2],
-            env=None, gamma=0.99, n_actions=2, max_size=1000000, tau=0.005,
+            env=None, gamma=0.99, n_actions=2, max_size=1000000, tau=0.05,
             layer1_size=256, layer2_size=256, batch_size=256, reward_scale=2):
         self.gamma = gamma
         self.tau = tau
@@ -317,7 +318,7 @@ class SACAgent():
     def update_network_parameters(self, tau=None):
         if tau is None:
             tau = self.tau
-
+        
         target_value_params = self.target_value.named_parameters()
         value_params = self.value.named_parameters()
 
@@ -327,7 +328,7 @@ class SACAgent():
         for name in value_state_dict:
             value_state_dict[name] = tau*value_state_dict[name].clone() + \
                     (1-tau)*target_value_state_dict[name].clone()
-
+        
         self.target_value.load_state_dict(value_state_dict)
 
     def save_models(self):
@@ -428,32 +429,14 @@ class SACAgent():
         self.update_network_parameters()
 
 
-env = gym.make('Reacher-v4', render_mode="human")
+env = gym.make('Reacher-v4', render_mode="rgb_array")
 
 total_num_episodes = int(5e3)
 action_dim = env.action_space.shape[0] # 2
 state_dim = env.observation_space.shape[0] # 11
-cls_token = (151296,)
-env_obs_space_tensor = torch.tensor(env.observation_space.shape)
-cls_token_tensor = torch.tensor(cls_token)
-input_dims_shape = torch.cat((env_obs_space_tensor, cls_token_tensor))
-input_dims_shape = input_dims_shape.numpy()
 
-# print("-------------------------", (env.observation_space.shape[0]+cls_token,))
-# print("-------------------------", cls_token_tensor.shape)
-# print("-------------------------", np.concatenate((env.observation_space.shape, cls_token)))
-
-agent = SACAgent(input_dims=(151307,), env=env, n_actions=action_dim)
+agent = SACAgent(input_dims=(779,), env=env, n_actions=action_dim)
 feature = ViTFeatureExtraction()
-
-# vit = ViTFeatureExtraction()
-# from PIL import Image
-# img_path = './img/reacher.png'
-# img = Image.open(img_path).convert('RGB')
-# rgb_array = np.array(img)
-
-# print("=====================\n", vit.get_feature(rgb_array).shape)
-
 
 episode_durations = []
 best_score = env.reward_range[0]
@@ -463,32 +446,10 @@ load_checkpoint = False
 episode_rewards = []
 
 env_state, _ = env.reset()
-img = env.unwrapped.get_image() # rgb_array
-img = feature.get_feature(img)
-
-env_state = torch.tensor(env_state)
-img_state = torch.tensor(img)
-
-env_state = env_state.unsqueeze(0)
-img_state = img_state.view(1, -1)
-
-state = torch.cat((env_state, img_state), dim=1).view(-1)
-state = state.numpy() # (151307,)
 
 # train loop
 for episode in range(MAX_EPISODES):
-    env_state, _ = env.reset()
-    img = env.unwrapped.get_image() # rgb_array
-    img = feature.get_feature(img)
-
-    env_state = torch.tensor(env_state)
-    img_state = torch.tensor(img)
-
-    env_state = env_state.unsqueeze(0)
-    img_state = img_state.view(1, -1)
-
-    state = torch.cat((env_state, img_state), dim=1).view(-1)
-    state = state.numpy() # (151307,)
+    state, _ = env.reset()
     
     episode_reward = 0
 
@@ -498,26 +459,53 @@ for episode in range(MAX_EPISODES):
 
         score = 0
         
-        action = agent.choose_action(state)
-
-        next_state, reward, terminated, truncated, info = env.step(action)
-        done = terminated or truncated
-        score += reward
-        
-        agent.remember(state, action, reward, next_state, done)
-
-        env_state = next_state
+        ''' for image '''
         img = env.unwrapped.get_image() # rgb_array
         img = feature.get_feature(img)
 
-        env_state = torch.tensor(env_state)
+        env_state = torch.tensor(state)
         img_state = torch.tensor(img)
 
         env_state = env_state.unsqueeze(0)
         img_state = img_state.view(1, -1)
 
-        state = torch.cat((env_state, img_state), dim=1).view(-1)
-        state = state.numpy() # (151307,)
+        cat_state = torch.cat((env_state, img_state), dim=1).view(-1)
+        cat_state = cat_state.numpy()
+        ''' '''
+        
+        action = agent.choose_action(cat_state)
+        # print("A state:", state.shape)
+        # print("A cat_state:", cat_state.shape)
+
+        next_state, reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
+        score += reward
+        
+        ''' for image '''
+        img = env.unwrapped.get_image() # rgb_array
+        img = feature.get_feature(img)
+
+        env_next_state = torch.tensor(next_state)
+        img_next_state = torch.tensor(img)
+
+        env_next_state = env_next_state.unsqueeze(0)
+        img_next_state = img_next_state.view(1, -1)
+
+        cat_next_state = torch.cat((env_next_state, img_next_state), dim=1).view(-1)
+        cat_next_state = cat_next_state.numpy()
+        ''' '''
+        
+        # print("B state:", state.shape)
+        # print("B cat_state:", cat_state.shape)
+        # print("B next_state:", next_state.shape)
+        # print("B cat_next_state:", cat_next_state.shape)
+        
+        agent.remember(cat_state, action, reward, cat_next_state, done)
+
+        state = next_state
+        # print("C state:", state.shape)
+        # print("C next_state:", next_state.shape)
+        # print("=================================================================")
         
         episode_reward += reward
         

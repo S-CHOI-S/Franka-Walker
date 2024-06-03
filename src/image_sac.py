@@ -50,9 +50,6 @@ img_path = './img/reacher_1.png'
 img = Image.open(img_path).convert('RGB')
 rgb_array = np.array(img)
 
-
-
-
 # Class: MLPFeatureExtraction
 class MLPFeatureExtraction(nn.Module):
     def __init__(self, learning_rate, input_dims, fc1_dims=256, fc2_dims=256,
