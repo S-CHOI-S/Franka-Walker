@@ -259,7 +259,6 @@ class PPO:
         self.critic_optim.load_state_dict(torch.load(filename + "_critic_optimizer"))
         
         
-        
 # Creation of a class to normalize the states
 class Normalize:
     def __init__(self, N_S):
@@ -287,6 +286,22 @@ class Normalize:
         x = np.clip(x, -5, +5)
         return x
     
+def test_model(env, model, episodes=10):
+    scores = []
+    for episode in range(episodes):
+        state, _ = env.reset()
+        done = False
+        total_reward = 0
+        while not done:
+            env.render()
+            state = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
+            action = model.actor_net.choose_action(state)
+            state, reward, done, _, _ = env.step(action)
+            total_reward += reward
+        scores.append(total_reward)
+        print(f"Episode {episode + 1}: Total Reward: {total_reward}")
+    print(f"Average Reward over {episodes} episodes: {np.mean(scores)}")
+    env.close()
 
 def main():
     env = gym.make('Walker2d-v4', render_mode='rgb_array')
@@ -325,7 +340,7 @@ def main():
                 # The action is a numpy array of 17 elements. It means that in the 17 possible directions of action we have a specific value in the continuous space.
                 # Exemple : the first coordinate correspond to the Torque applied on the hinge in the y-coordinate of the abdomen: this is continuous space.
                 a=ppo.actor_net.choose_action(torch.from_numpy(np.array(s).astype(np.float32)).unsqueeze(0))[0]
-
+                
                 #Environnement reaction to the action : There is a reaction in the 376 elements that characterize the space :
                 # Exemple : the first coordinate of the states is the z-coordinate of the torso (centre) and using env.step(a), we get the reaction of this state and
                 # of all the other ones after the action has been made.
@@ -356,7 +371,7 @@ def main():
             save_flag = True
 
             if save_flag:
-                path = log_dir + str((iter + 1)) + "/ppo/"
+                path = log_dir + "ppo/" + str((iter + 1)) + "/"
                 os.makedirs(path, exist_ok=True)
                 if not os.path.exists(path):
                     os.makedirs(path)
