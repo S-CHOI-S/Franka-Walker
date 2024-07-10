@@ -258,7 +258,7 @@ class PPO:
         self.actor_optim.load_state_dict(torch.load(filename + "_actor_optimizer"))
         self.critic_optim.load_state_dict(torch.load(filename + "_critic_optimizer"))
         
-        
+
 # Creation of a class to normalize the states
 class Normalize:
     def __init__(self, N_S):
@@ -285,6 +285,18 @@ class Normalize:
         x = x / (self.std + 1e-8)
         x = np.clip(x, -5, +5)
         return x
+    
+    def update(self, x):
+        self.mean = np.mean(x, axis=0)
+        self.std = np.std(x, axis=0) + 1e-8
+    
+    def save_params(self, path):
+        np.save(path, {'mean': self.mean, 'std': self.std})
+
+    def load_params(self, path):
+        params = np.load(path, allow_pickle=True).item()
+        self.mean = params['mean']
+        self.std = params['std']
     
 def test_model(env, model, episodes=10):
     scores = []
