@@ -6,45 +6,72 @@ from IPython.display import display, clear_output
 from collections import deque
 from tqdm import tqdm
 
-from walker import PPO
+from walker import PPO, Normalize
+
+RED = "\033[31m"
+GREEN = "\033[32m"
+YELLOW = "\033[33m"
+BLUE = "\033[34m"
+MAGENTA = "\033[35m"
+CYAN = "\033[36m"
+RESET = "\033[0m"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def test_model(env, model, episodes=10):
-    scores = []
-    for episode in range(episodes):
-        state, _ = env.reset()
-        done = False
-        total_reward = 0
-        
-        while not done:
-            
-            state = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
-            action = model.actor_net.choose_action(state)
-            action = action.squeeze()
-            state, reward, done, _, _ = env.step(action)
-            env.render()
-            
-            total_reward += reward
-        scores.append(total_reward)
-        print(f"Episode {episode + 1}: Total Reward: {total_reward}")
-    print(f"Average Reward over {episodes} episodes: {np.mean(scores)}")
-    env.close()
-
 # Initialize environment
 env = gym.make('Walker2d-v4', render_mode='human')
+
+log_dir = "../runs/20240711_15-21-10/"
 
 # Number of state and action
 N_S = env.observation_space.shape[0]
 N_A = env.action_space.shape[0]
 
 # Initialize PPO model
-ppo = PPO(N_S, N_A)
+ppo = PPO(N_S, N_A, log_dir)
+normalize = Normalize(N_S)
 
 # Load the saved model
-log_dir = "../runs/20240708_11-19-08/ppo/51300"
-ppo.load(log_dir)
-# ppo.eval()
+# ppo.load(log_dir)
+ppo.actor_net.load_model()
+# normalize.load_params(log_dir + "../../normalize_params.npy")
+ppo.actor_net.eval()
 
-state, _ = env.reset()
-test_model(env, ppo, episodes=10)
+# Test the model
+now_state, _ = env.reset()
+now_state = normalize(now_state)
+
+test_total_reward = 0
+test_episodes = 10  # Number of episodes to test
+for episode_id in range(test_episodes):
+    now_state, _ = env.reset()
+    now_state = normalize(now_state)
+    score = 0
+    for _ in range(1000):
+        #with torch.no_grad():
+            #ppo.actor_net.eval()
+        a = ppo.actor_net.choose_action(torch.from_numpy(np.array(now_state).astype(np.float32)).unsqueeze(0))[0]
+        # print(f"{YELLOW}walker velocity: {RESET}", now_state[8])
+        now_state, r, done, _, _ = env.step(a)
+        now_state = normalize(now_state)
+        score += r
+
+        if done:
+            env.reset()
+            break
+    print("episode: ", episode_id, "\tscore: ", score)
+env.close()
+# for _ in range(test_episodes):
+#     state, _ = env.reset()
+#     state = normalize(state)
+#     done = False
+#     episode_reward = 0
+#     while not done:
+#         action = ppo.actor_net.choose_action(torch.from_numpy(np.array(state).astype(np.float32)).unsqueeze(0))[0]
+#         next_state, reward, truncated, terminated, info = env.step(action)
+#         episode_reward += reward
+#         state = normalize(next_state)
+#         done = truncated or terminated
+#     test_total_reward += episode_reward
+# average_test_reward = test_total_reward / test_episodes
+# print('Average test reward: {:.2f}'.format(average_test_reward))

@@ -32,6 +32,7 @@ RESET = "\033[0m"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 current_time = datetime.datetime.now().strftime("%Y%m%d_%H-%M-%S")
 log_dir = f"../runs/{current_time}/"
+os.makedirs(log_dir, exist_ok=True)
 writer = SummaryWriter(log_dir)
 
 # tb = program.TensorBoard()
@@ -65,7 +66,7 @@ save_flag = False
 # Actor class: Used to choose actions of a continuous action space.
 
 class Actor(nn.Module):
-    def __init__(self,N_S,N_A):
+    def __init__(self, N_S, N_A, chkpt_dir):
       # Initialize NN structure.
         super(Actor,self).__init__()
         self.fc1 = nn.Linear(N_S,64)
@@ -77,6 +78,12 @@ class Actor(nn.Module):
         # This approach use gaussian distribution to decide actions. Could be
         # something else.
         self.distribution = torch.distributions.Normal
+        
+        self.checkpoint_dir = chkpt_dir
+        self.checkpoint_file = os.path.join(self.checkpoint_dir, '_actor')
+        
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        self.to(self.device)
 
     def set_init(self,layers):
       # Initialize weight and bias according to a normal distrib mean 0 and sd 0.1.
@@ -99,21 +106,34 @@ class Actor(nn.Module):
     def choose_action(self,s):
       # Choose action in the continuous action space using normal distribution
       # defined by mu and sigma of each actions returned by the NN.
+        s = torch.from_numpy(np.array(s).astype(np.float32)).unsqueeze(0).to(self.device)
         mu,sigma = self.forward(s)
         Pi = self.distribution(mu,sigma)
-        return Pi.sample().numpy()
+        return Pi.sample().cpu().numpy().squeeze(0)
+    
+    def save_model(self):
+        torch.save(self.state_dict(), self.checkpoint_file)
+        
+    def load_model(self):
+        self.load_state_dict(torch.load(self.checkpoint_file))
     
 
 # Critic class : Used to estimate V(state) the state value function through a NN.
 class Critic(nn.Module):
-    def __init__(self,N_S):
+    def __init__(self, N_S, chkpt_dir):
       # Initialize NN structure.
         super(Critic,self).__init__()
         self.fc1 = nn.Linear(N_S,64)
         self.fc2 = nn.Linear(64,64)
         self.fc3 = nn.Linear(64,1)
-        self.fc3.weight.data.mul_(0.1)
-        self.fc3.bias.data.mul_(0.0)
+        self.fc3.weight.data.mul_(0.1) # 초기 weight에 0.1을 곱해주면서 학습을 더 안정적으로 할 수 있도록(tanh, sigmoid를 사용할 경우 많이 쓰는 방식)
+        self.fc3.bias.data.mul_(0.0) # bias tensor의 모든 원소를 0으로 설정
+        
+        self.checkpoint_dir = chkpt_dir
+        self.checkpoint_file = os.path.join(self.checkpoint_dir, '_critic')
+        
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        self.to(self.device)
 
     def set_init(self,layers):
       # Initialize weight and bias according to a normal distrib mean 0 and sd 0.1.
@@ -128,14 +148,24 @@ class Critic(nn.Module):
         values = self.fc3(x)
         return values
     
+    def save_model(self):
+        torch.save(self.state_dict(), self.checkpoint_file)
+        
+    def load_model(self):
+        self.load_state_dict(torch.load(self.checkpoint_file))
+    
     
 class PPO:
-    def __init__(self, N_S, N_A):
-        self.actor_net = Actor(N_S, N_A)
-        self.critic_net = Critic(N_S)
+    def __init__(self, N_S, N_A, log_dir):
+        self.log_dir = log_dir
+        
+        self.actor_net = Actor(N_S, N_A, log_dir)
+        self.critic_net = Critic(N_S, log_dir)
         self.actor_optim = optim.Adam(self.actor_net.parameters(), lr=1e-4)
         self.critic_optim = optim.Adam(self.critic_net.parameters(), lr=1e-3, weight_decay=1e-3)
         self.critic_loss_func = torch.nn.MSELoss()
+        
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     def train(self, memory):
         states, actions, rewards, masks = [], [], [], []
@@ -146,10 +176,10 @@ class PPO:
             rewards.append(m[2])
             masks.append(m[3])
         
-        states = torch.tensor(np.array(states), dtype=torch.float32)
-        actions = torch.tensor(np.array(actions), dtype=torch.float32)
-        rewards = torch.tensor(np.array(rewards), dtype=torch.float32)
-        masks = torch.tensor(np.array(masks), dtype=torch.float32)
+        states = torch.tensor(np.array(states), dtype=torch.float32).to(self.device)
+        actions = torch.tensor(np.array(actions), dtype=torch.float32).to(self.device)
+        rewards = torch.tensor(np.array(rewards), dtype=torch.float32).to(self.device)
+        masks = torch.tensor(np.array(masks), dtype=torch.float32).to(self.device)
 
         # Use critic network defined in Model.py
         # This function enables to get the current state value V(S).
@@ -199,10 +229,14 @@ class PPO:
                 clipped_loss =ratio*b_advants
                 # Actual loss
                 actor_loss = -torch.min(surrogate_loss,clipped_loss).mean()
+                
+                walker_xvel = torch.tensor([get_walker_x_velocity(state) for state in b_states], dtype=torch.float32).to(self.device)
+                actor_loss = augmented_objective(actor_loss, walker_xvel, 3, 20)
+
+                
                 #Now that we have the loss, we can do the backward propagation to learn : everything is here.
                 self.actor_optim.zero_grad()
                 actor_loss.backward()
-
                 self.actor_optim.step()
                 
     # Get the Kullback - Leibler divergence: Measure of the diff btwn new and old policy:
@@ -219,11 +253,11 @@ class PPO:
     
     # Advantage estimation:
     def get_gae(self,rewards, masks, values):
-        rewards = torch.Tensor(rewards)
-        masks = torch.Tensor(masks)
+        rewards = torch.Tensor(rewards).to(self.device)
+        masks = torch.Tensor(masks).to(self.device)
         #Create an equivalent fullfilled of 0.
-        returns = torch.zeros_like(rewards)
-        advants = torch.zeros_like(rewards)
+        returns = torch.zeros_like(rewards).to(self.device)
+        advants = torch.zeros_like(rewards).to(self.device)
         #Init
         running_returns = 0
         previous_value = 0
@@ -266,6 +300,8 @@ class Normalize:
         self.std = np.zeros((N_S, ))
         self.stdd = np.zeros((N_S, ))
         self.n = 0
+        
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     def __call__(self, x):
         x = np.asarray(x)
@@ -306,7 +342,7 @@ def test_model(env, model, episodes=10):
         total_reward = 0
         while not done:
             env.render()
-            state = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
+            state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(DEVICE)
             action = model.actor_net.choose_action(state)
             state, reward, done, _, _ = env.step(action)
             total_reward += reward
@@ -314,6 +350,17 @@ def test_model(env, model, episodes=10):
         print(f"Episode {episode + 1}: Total Reward: {total_reward}")
     print(f"Average Reward over {episodes} episodes: {np.mean(scores)}")
     env.close()
+    
+def get_walker_x_velocity(state):
+    x_vel = state[8]
+    return x_vel
+
+def logarithmic_barrier(state, constraint_max):
+    return -torch.log(-(state - constraint_max))
+
+def augmented_objective(actor_loss, state, constraint_max, t):
+    constraint_barrier = logarithmic_barrier(state, constraint_max) / t
+    return actor_loss + constraint_barrier.mean()
 
 def main():
     env = gym.make('Walker2d-v4', render_mode='rgb_array')
@@ -329,7 +376,10 @@ def main():
 
     # Run the Ppo class
     frames = []
-    ppo = PPO(N_S,N_A)
+    ppo = PPO(N_S, N_A, log_dir)
+    # ppo.actor_net.load_model("../runs/20240708_11-19-08/ppo/100000/")
+    # ppo.critic_net.load_model("../runs/20240708_11-19-08/ppo/100000/")
+    
     # Normalisation for stability, fast convergence... always good to do.
     normalize = Normalize(N_S)
     episodes = 0
@@ -341,6 +391,7 @@ def main():
         memory = deque()
         scores = []
         steps = 0
+        xvel = []
         while steps < 2048: #Horizon
             episodes += 1
             state, _ = env.reset()
@@ -351,14 +402,14 @@ def main():
                 #Choose an action: detailed in PPO.py
                 # The action is a numpy array of 17 elements. It means that in the 17 possible directions of action we have a specific value in the continuous space.
                 # Exemple : the first coordinate correspond to the Torque applied on the hinge in the y-coordinate of the abdomen: this is continuous space.
-                a=ppo.actor_net.choose_action(torch.from_numpy(np.array(s).astype(np.float32)).unsqueeze(0))[0]
-                
+                a = ppo.actor_net.choose_action(s)
+                # print(f"{YELLOW}walker velocity: {RESET}", s[8]) # 3
                 #Environnement reaction to the action : There is a reaction in the 376 elements that characterize the space :
                 # Exemple : the first coordinate of the states is the z-coordinate of the torso (centre) and using env.step(a), we get the reaction of this state and
                 # of all the other ones after the action has been made.
                 s_ , r ,truncated, terminated ,info = env.step(a)
-                done = truncated or terminated
                 s_ = normalize(s_)
+                done = truncated or terminated
 
                 # Do we continue or do we terminate an episode?
                 mask = (1-done)*1
@@ -367,7 +418,7 @@ def main():
                 # print('a: ', a)
                 # print('r: ', r)
                 # print('mask: ', mask)
-
+                xvel.append(s[8])
                 score += r
                 s = s_
 
@@ -377,17 +428,21 @@ def main():
             #     outfile.write('\t' + str(episodes)  + '\t' + str(score) + '\n')
             scores.append(score)
         score_avg = np.mean(scores)
-        print('{} episode score is {:.2f}'.format(episodes, score_avg))
+        xvel_avg = np.mean(xvel)
+        print('{} episode score is {:.2f}, average_xvel is {:.3f}'.format(episodes, score_avg, xvel_avg))
         episode_data.append([iter + 1, score_avg])
         if (iter + 1) % save_freq == 0:
             save_flag = True
 
             if save_flag:
-                path = log_dir + "ppo/" + str((iter + 1)) + "/"
-                os.makedirs(path, exist_ok=True)
-                if not os.path.exists(path):
-                    os.makedirs(path)
-                ppo.save(path)
+                ppo.actor_net.save_model()
+                ppo.critic_net.save_model()
+                print(f"{GREEN} >> Successfully saved models! {RESET}")
+                # path = log_dir + "ppo/" + str((iter + 1)) + "/"
+                # os.makedirs(path, exist_ok=True)
+                # if not os.path.exists(path):
+                #     os.makedirs(path)
+                # ppo.save(path)
 
                 np.save(log_dir + "reward.npy", episode_data)
                 save_flag = False
