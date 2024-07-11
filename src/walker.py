@@ -232,7 +232,6 @@ class PPO:
                 
                 walker_xvel = torch.tensor([get_walker_x_velocity(state) for state in b_states], dtype=torch.float32).to(self.device)
                 actor_loss = augmented_objective(actor_loss, walker_xvel, 3, 20)
-
                 
                 #Now that we have the loss, we can do the backward propagation to learn : everything is here.
                 self.actor_optim.zero_grad()
