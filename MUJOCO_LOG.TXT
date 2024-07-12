@@ -1,0 +1,15 @@
+Wed Mar 27 17:56:30 2024
+WARNING: mju_openResource: unknown file '~/franka_panda_3_mppi/model/panda.xml'
+
+Wed Mar 27 17:56:53 2024
+WARNING: mju_openResource: unknown file '../model/panda.xml'
+
+Wed Mar 27 17:59:22 2024
+WARNING: mju_openResource: unknown file '../model/panda.xml'
+
+Wed Mar 27 18:01:07 2024
+WARNING: mju_openResource: unknown file '/home/kist/model/panda.xml'
+
+Wed Mar 27 18:02:05 2024
+WARNING: mju_openResource: unknown file '/home/kist/model/panda.xml'
+

@@ -1,0 +1,6 @@
+data
+model
+*.zip
+.ipynb_checkpoints
+.lh
+.vscode
