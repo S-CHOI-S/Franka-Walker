@@ -30,16 +30,6 @@ CYAN = "\033[36m"
 RESET = "\033[0m"
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-current_time = datetime.datetime.now().strftime("%Y%m%d_%H-%M-%S")
-log_dir = f"../runs/{current_time}/"
-os.makedirs(log_dir, exist_ok=True)
-writer = SummaryWriter(log_dir)
-print(f"{YELLOW}[MODEL/TENSORBOARD]{RESET} The data will be saved in {YELLOW}{log_dir}{RESET} directory!")
-
-# tb = program.TensorBoard()
-# tb.configure(argv=[None, '--logdir', f"../runs/franka_cabinet/{current_time}", '--port', '6300'])
-# url = tb.launch()
-# webbrowser.open_new(url)
 
 #learning rate backward propagation NN action
 lr_actor = 0.0003
@@ -302,7 +292,7 @@ class Normalize:
         self.n = 0
         
         self.checkpoint_dir = chkpt_dir
-        self.checkpoint_file = os.path.join(self.checkpoint_dir, '_normalize')
+        self.checkpoint_file = os.path.join(self.checkpoint_dir, '_normalize.npy')
         
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -455,4 +445,14 @@ def main():
         
 
 if __name__ == "__main__":
+    current_time = datetime.datetime.now().strftime("%Y%m%d_%H-%M-%S")
+    log_dir = f"../runs/{current_time}/"
+    os.makedirs(log_dir, exist_ok=True)
+    writer = SummaryWriter(log_dir)
+    print(f"{YELLOW}[MODEL/TENSORBOARD]{RESET} The data will be saved in {YELLOW}{log_dir}{RESET} directory!")
+
+    # tb = program.TensorBoard()
+    # tb.configure(argv=[None, '--logdir', f"../runs/franka_cabinet/{current_time}", '--port', '6300'])
+    # url = tb.launch()
+    # webbrowser.open_new(url)
     main()
