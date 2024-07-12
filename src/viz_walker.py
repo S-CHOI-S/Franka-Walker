@@ -19,9 +19,9 @@ RESET = "\033[0m"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initialize environment
-env = gym.make('Walker2d-v4', render_mode='human')
+env = gym.make('Walker2d-v4', render_mode='rgb_array')
 
-log_dir = "../runs/20240711_15-21-10/"
+log_dir = "../runs/20240712_04-24-57/"
 
 # Number of state and action
 N_S = env.observation_space.shape[0]
@@ -29,11 +29,12 @@ N_A = env.action_space.shape[0]
 
 # Initialize PPO model
 ppo = PPO(N_S, N_A, log_dir)
-normalize = Normalize(N_S)
+normalize = Normalize(N_S, log_dir, train_mode=False)
 
 # Load the saved model
 ppo.actor_net.load_model()
 ppo.actor_net.eval()
+normalize.load_params()
 
 # Test the model
 state, _ = env.reset()

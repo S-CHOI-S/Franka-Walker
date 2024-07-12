@@ -285,11 +285,13 @@ class PPO:
 
 # Creation of a class to normalize the states
 class Normalize:
-    def __init__(self, N_S, chkpt_dir):
+    def __init__(self, N_S, chkpt_dir, train_mode=True):
         self.mean = np.zeros((N_S,))
         self.std = np.zeros((N_S, ))
         self.stdd = np.zeros((N_S, ))
         self.n = 0
+        
+        self.train_mode = train_mode
         
         self.checkpoint_dir = chkpt_dir
         self.checkpoint_file = os.path.join(self.checkpoint_dir, '_normalize.npy')
@@ -298,17 +300,18 @@ class Normalize:
 
     def __call__(self, x):
         x = np.asarray(x)
-        self.n += 1
-        if self.n == 1:
-            self.mean = x
-        else:
-            old_mean = self.mean.copy()
-            self.mean = old_mean + (x - old_mean) / self.n
-            self.stdd = self.stdd + (x - old_mean) * (x - self.mean)
-        if self.n > 1:
-            self.std = np.sqrt(self.stdd / (self.n - 1))
-        else:
-            self.std = self.mean
+        if self.train_mode:
+            self.n += 1
+            if self.n == 1:
+                self.mean = x
+            else:
+                old_mean = self.mean.copy()
+                self.mean = old_mean + (x - old_mean) / self.n
+                self.stdd = self.stdd + (x - old_mean) * (x - self.mean)
+            if self.n > 1:
+                self.std = np.sqrt(self.stdd / (self.n - 1))
+            else:
+                self.std = self.mean
 
         x = x - self.mean
         x = x / (self.std + 1e-8)
@@ -327,23 +330,6 @@ class Normalize:
         self.mean = params['mean']
         self.std = params['std']
     
-def test_model(env, model, episodes=10):
-    scores = []
-    for episode in range(episodes):
-        state, _ = env.reset()
-        done = False
-        total_reward = 0
-        while not done:
-            env.render()
-            state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(DEVICE)
-            action = model.actor_net.choose_action(state)
-            state, reward, done, _, _ = env.step(action)
-            total_reward += reward
-        scores.append(total_reward)
-        print(f"Episode {episode + 1}: Total Reward: {total_reward}")
-    print(f"Average Reward over {episodes} episodes: {np.mean(scores)}")
-    env.close()
-    
 def get_walker_x_velocity(state):
     x_vel = state[8]
     return x_vel
@@ -361,11 +347,6 @@ def main():
     #Number of state and action
     N_S = env.observation_space.shape[0]
     N_A = env.action_space.shape[0]
-
-    # Random seed initialization
-    # env.seed(500)
-    # torch.manual_seed(500)
-    # np.random.seed(500)
 
     # Run the Ppo class
     frames = []
@@ -407,10 +388,6 @@ def main():
                 # Do we continue or do we terminate an episode?
                 mask = (1-done)*1
                 memory.append([s,a,r,mask])
-                # print('s: ', s)
-                # print('a: ', a)
-                # print('r: ', r)
-                # print('mask: ', mask)
                 xvel.append(s[8])
                 score += r
                 s = s_
@@ -432,11 +409,6 @@ def main():
                 ppo.critic_net.save_model()
                 normalize.save_params()
                 print(f"{GREEN} >> Successfully saved models! {RESET}")
-                # path = log_dir + "ppo/" + str((iter + 1)) + "/"
-                # os.makedirs(path, exist_ok=True)
-                # if not os.path.exists(path):
-                #     os.makedirs(path)
-                # ppo.save(path)
 
                 np.save(log_dir + "reward.npy", episode_data)
                 save_flag = False
@@ -455,4 +427,5 @@ if __name__ == "__main__":
     # tb.configure(argv=[None, '--logdir', f"../runs/franka_cabinet/{current_time}", '--port', '6300'])
     # url = tb.launch()
     # webbrowser.open_new(url)
+    
     main()
