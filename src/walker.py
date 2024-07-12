@@ -34,6 +34,7 @@ current_time = datetime.datetime.now().strftime("%Y%m%d_%H-%M-%S")
 log_dir = f"../runs/{current_time}/"
 os.makedirs(log_dir, exist_ok=True)
 writer = SummaryWriter(log_dir)
+print(f"{YELLOW}[MODEL/TENSORBOARD]{RESET} The data will be saved in {YELLOW}{log_dir}{RESET} directory!")
 
 # tb = program.TensorBoard()
 # tb.configure(argv=[None, '--logdir', f"../runs/franka_cabinet/{current_time}", '--port', '6300'])
@@ -294,11 +295,14 @@ class PPO:
 
 # Creation of a class to normalize the states
 class Normalize:
-    def __init__(self, N_S):
+    def __init__(self, N_S, chkpt_dir):
         self.mean = np.zeros((N_S,))
         self.std = np.zeros((N_S, ))
         self.stdd = np.zeros((N_S, ))
         self.n = 0
+        
+        self.checkpoint_dir = chkpt_dir
+        self.checkpoint_file = os.path.join(self.checkpoint_dir, '_normalize')
         
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -325,11 +329,11 @@ class Normalize:
         self.mean = np.mean(x, axis=0)
         self.std = np.std(x, axis=0) + 1e-8
     
-    def save_params(self, path):
-        np.save(path, {'mean': self.mean, 'std': self.std})
+    def save_params(self):
+        np.save(self.checkpoint_file, {'mean': self.mean, 'std': self.std})
 
-    def load_params(self, path):
-        params = np.load(path, allow_pickle=True).item()
+    def load_params(self):
+        params = np.load(self.checkpoint_file, allow_pickle=True).item()
         self.mean = params['mean']
         self.std = params['std']
     
@@ -380,7 +384,7 @@ def main():
     # ppo.critic_net.load_model("../runs/20240708_11-19-08/ppo/100000/")
     
     # Normalisation for stability, fast convergence... always good to do.
-    normalize = Normalize(N_S)
+    normalize = Normalize(N_S, log_dir)
     episodes = 0
     eva_episodes = 0
     episode_data = []
@@ -436,6 +440,7 @@ def main():
             if save_flag:
                 ppo.actor_net.save_model()
                 ppo.critic_net.save_model()
+                normalize.save_params()
                 print(f"{GREEN} >> Successfully saved models! {RESET}")
                 # path = log_dir + "ppo/" + str((iter + 1)) + "/"
                 # os.makedirs(path, exist_ok=True)
