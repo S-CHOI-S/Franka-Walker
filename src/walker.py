@@ -227,7 +227,7 @@ class PPO:
                 actor_loss = -torch.min(surrogate_loss,clipped_loss).mean()
                 
                 walker_xvel = torch.tensor([get_walker_x_velocity(state) for state in b_states], dtype=torch.float32).to(self.device)
-                actor_loss = augmented_objective(actor_loss, walker_xvel, 0, 20)
+                actor_loss = augmented_objective(actor_loss, walker_xvel, 0.2, 20)
                 
                 #Now that we have the loss, we can do the backward propagation to learn : everything is here.
                 self.actor_optim.zero_grad()
@@ -336,7 +336,7 @@ class Normalize:
         self.std = params['std']
     
 def get_walker_x_velocity(state):
-    x_vel = -state[5]
+    x_vel = state[1]
     return x_vel
 
 def logarithmic_barrier(state, constraint_max):
@@ -347,7 +347,7 @@ def augmented_objective(actor_loss, state, constraint_max, t):
     return actor_loss + constraint_barrier.mean()
 
 def main():
-    env = gym.make('Walker2d-ipo', render_mode='human')
+    env = gym.make('Walker2d-v4', render_mode='human')
 
     #Number of state and action
     N_S = env.observation_space.shape[0]
@@ -401,7 +401,7 @@ def main():
                 # Do we continue or do we terminate an episode?
                 mask = (1-done)*1
                 memory.append([s,a,r,mask])
-                xvel.append(s[5])
+                xvel.append(s[1])
                 score += r
                 s = s_
 
