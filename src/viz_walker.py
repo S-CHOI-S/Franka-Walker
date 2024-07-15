@@ -19,9 +19,9 @@ RESET = "\033[0m"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initialize environment
-env = gym.make('Walker2d-v4', render_mode='rgb_array')
+env = gym.make('Walker2d-v4', render_mode='human')
 
-log_dir = "../runs/20240712_04-24-57/"
+log_dir = "../runs/20240715_16-33-43/"
 
 # Number of state and action
 N_S = env.observation_space.shape[0]
@@ -52,6 +52,7 @@ for episode_id in range(test_episodes):
         state, reward, done, _, _ = env.step(action)
         state = normalize(state)
         score += reward
+        # print(f"{MAGENTA}thigh_left_joint: {RESET}", state[5])
 
         if done:
             env.reset()

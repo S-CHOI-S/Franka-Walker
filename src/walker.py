@@ -105,8 +105,11 @@ class Actor(nn.Module):
     def save_model(self):
         torch.save(self.state_dict(), self.checkpoint_file)
         
-    def load_model(self):
-        self.load_state_dict(torch.load(self.checkpoint_file))
+    def load_model(self, load_model_dir=None):
+        if load_model_dir is None:
+            load_model_dir = self.checkpoint_file
+        self.load_state_dict(torch.load(load_model_dir))
+
     
 
 # Critic class : Used to estimate V(state) the state value function through a NN.
@@ -142,8 +145,10 @@ class Critic(nn.Module):
     def save_model(self):
         torch.save(self.state_dict(), self.checkpoint_file)
         
-    def load_model(self):
-        self.load_state_dict(torch.load(self.checkpoint_file))
+    def load_model(self, load_model_dir=None):
+        if load_model_dir is None:
+            load_model_dir = self.checkpoint_file
+        self.load_state_dict(torch.load(load_model_dir))
     
     
 class PPO:
@@ -222,7 +227,7 @@ class PPO:
                 actor_loss = -torch.min(surrogate_loss,clipped_loss).mean()
                 
                 walker_xvel = torch.tensor([get_walker_x_velocity(state) for state in b_states], dtype=torch.float32).to(self.device)
-                actor_loss = augmented_objective(actor_loss, walker_xvel, 3, 20)
+                actor_loss = augmented_objective(actor_loss, walker_xvel, 0, 20)
                 
                 #Now that we have the loss, we can do the backward propagation to learn : everything is here.
                 self.actor_optim.zero_grad()
@@ -268,19 +273,17 @@ class PPO:
         advants = (advants - advants.mean()) / advants.std()
         return returns, advants
 
-    def save(self, filename):
-        filename = str(filename)
-        torch.save(self.actor_net.state_dict(), filename + "_actor")
-        torch.save(self.critic_net.state_dict(), filename + "_critic")
-        torch.save(self.actor_optim.state_dict(), filename + "_actor_optimizer")
-        torch.save(self.critic_optim.state_dict(), filename + "_critic_optimizer")
+    def save(self):
+        # filename = str(filename)
+        torch.save(self.actor_optim.state_dict(), self.log_dir + "_actor_optimizer")
+        torch.save(self.critic_optim.state_dict(), self.log_dir + "_critic_optimizer")
 
-    def load(self, filename):
-        filename = str(filename)
-        self.actor_net.load_state_dict(torch.load(filename + "_actor"))
-        self.critic_net.load_state_dict(torch.load(filename + "_critic"))
-        self.actor_optim.load_state_dict(torch.load(filename + "_actor_optimizer"))
-        self.critic_optim.load_state_dict(torch.load(filename + "_critic_optimizer"))
+    def load(self, log_dir=None):
+        # filename = str(filename)
+        if log_dir == None:
+            log_dir = self.log_dir
+        self.actor_optim.load_state_dict(torch.load(log_dir + "_actor_optimizer"))
+        self.critic_optim.load_state_dict(torch.load(log_dir + "_critic_optimizer"))
         
 
 # Creation of a class to normalize the states
@@ -325,13 +328,15 @@ class Normalize:
     def save_params(self):
         np.save(self.checkpoint_file, {'mean': self.mean, 'std': self.std})
 
-    def load_params(self):
-        params = np.load(self.checkpoint_file, allow_pickle=True).item()
+    def load_params(self, load_model_dir=None):
+        if load_model_dir is None:
+            load_model_dir = self.checkpoint_file
+        params = np.load(load_model_dir, allow_pickle=True).item()
         self.mean = params['mean']
         self.std = params['std']
     
 def get_walker_x_velocity(state):
-    x_vel = state[8]
+    x_vel = -state[5]
     return x_vel
 
 def logarithmic_barrier(state, constraint_max):
@@ -342,7 +347,7 @@ def augmented_objective(actor_loss, state, constraint_max, t):
     return actor_loss + constraint_barrier.mean()
 
 def main():
-    env = gym.make('Walker2d-v4', render_mode='rgb_array')
+    env = gym.make('Walker2d-ipo', render_mode='human')
 
     #Number of state and action
     N_S = env.observation_space.shape[0]
@@ -354,8 +359,16 @@ def main():
     # ppo.actor_net.load_model("../runs/20240708_11-19-08/ppo/100000/")
     # ppo.critic_net.load_model("../runs/20240708_11-19-08/ppo/100000/")
     
-    # Normalisation for stability, fast convergence... always good to do.
+    # Normalization for stability, fast convergence... always good to do.
     normalize = Normalize(N_S, log_dir)
+    
+    # ppo.actor_net.load_model('../runs/vessl/_actor')
+    # ppo.actor_net.eval()
+    # ppo.critic_net.load_model('../runs/vessl/_critic')
+    # ppo.critic_net.eval()
+    # ppo.load('../runs/vessl/')
+    # normalize.load_params('../runs/vessl/_normalize.npy')
+
     episodes = 0
     eva_episodes = 0
     episode_data = []
@@ -388,7 +401,7 @@ def main():
                 # Do we continue or do we terminate an episode?
                 mask = (1-done)*1
                 memory.append([s,a,r,mask])
-                xvel.append(s[8])
+                xvel.append(s[5])
                 score += r
                 s = s_
 
@@ -399,7 +412,10 @@ def main():
             scores.append(score)
         score_avg = np.mean(scores)
         xvel_avg = np.mean(xvel)
-        print('{} episode score is {:.2f}, average_xvel is {:.3f}'.format(episodes, score_avg, xvel_avg))
+        if xvel_avg <= 0:
+            print(f"{episodes} episode score is {score_avg:.2f}, thigh_left_joint is {RED}{xvel_avg:.3f}{RESET}")
+        else:
+            print(f"{episodes} episode score is {score_avg:.2f}, thigh_left_joint is {GREEN}{xvel_avg:.3f}{RESET}")
         episode_data.append([iter + 1, score_avg])
         if (iter + 1) % save_freq == 0:
             save_flag = True
@@ -407,6 +423,7 @@ def main():
             if save_flag:
                 ppo.actor_net.save_model()
                 ppo.critic_net.save_model()
+                ppo.save()
                 normalize.save_params()
                 print(f"{GREEN} >> Successfully saved models! {RESET}")
 
