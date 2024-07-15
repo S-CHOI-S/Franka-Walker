@@ -340,7 +340,8 @@ def get_walker_x_velocity(state):
     return x_vel
 
 def logarithmic_barrier(state, constraint_max):
-    return -torch.log(-(state - constraint_max))
+    indicator = torch.where((state - constraint_max) <= 0, torch.tensor((state - constraint_max), device=state.device), torch.tensor(0, device=state.device))
+    return -torch.log(-indicator)
 
 def augmented_objective(actor_loss, state, constraint_max, t):
     constraint_barrier = logarithmic_barrier(state, constraint_max) / t
@@ -412,10 +413,10 @@ def main():
             scores.append(score)
         score_avg = np.mean(scores)
         xvel_avg = np.mean(xvel)
-        if xvel_avg <= 0:
-            print(f"{episodes} episode score is {score_avg:.2f}, thigh_left_joint is {RED}{xvel_avg:.3f}{RESET}")
+        if xvel_avg <= 0.2:
+            print(f"{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {GREEN}{xvel_avg:.3f}{RESET}")
         else:
-            print(f"{episodes} episode score is {score_avg:.2f}, thigh_left_joint is {GREEN}{xvel_avg:.3f}{RESET}")
+            print(f"{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {RED}{xvel_avg:.3f}{RESET}")
         episode_data.append([iter + 1, score_avg])
         if (iter + 1) % save_freq == 0:
             save_flag = True
