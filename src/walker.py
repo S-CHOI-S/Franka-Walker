@@ -21,13 +21,7 @@ import webbrowser
 import torchvision.transforms as transforms
 from torch.utils.tensorboard import SummaryWriter
 
-RED = "\033[31m"
-GREEN = "\033[32m"
-YELLOW = "\033[33m"
-BLUE = "\033[34m"
-MAGENTA = "\033[35m"
-CYAN = "\033[36m"
-RESET = "\033[0m"
+from color_code import *
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -54,8 +48,10 @@ save_freq = 100
 
 save_flag = False
 
-# Actor class: Used to choose actions of a continuous action space.
+cstrnt1_limit = 0.2 # y angle of the torso
+cstrnt2_limit = 0.5 # x vel of the torso
 
+# Actor class: Used to choose actions of a continuous action space.
 class Actor(nn.Module):
     def __init__(self, N_S, N_A, chkpt_dir):
       # Initialize NN structure.
@@ -109,8 +105,7 @@ class Actor(nn.Module):
         if load_model_dir is None:
             load_model_dir = self.checkpoint_file
         self.load_state_dict(torch.load(load_model_dir))
-
-    
+          
 
 # Critic class : Used to estimate V(state) the state value function through a NN.
 class Critic(nn.Module):
@@ -150,7 +145,8 @@ class Critic(nn.Module):
             load_model_dir = self.checkpoint_file
         self.load_state_dict(torch.load(load_model_dir))
     
-    
+
+# PPO Algorithm with Constraints   
 class PPO:
     def __init__(self, N_S, N_A, log_dir):
         self.log_dir = log_dir
@@ -226,8 +222,11 @@ class PPO:
                 # Actual loss
                 actor_loss = -torch.min(surrogate_loss,clipped_loss).mean()
                 
-                walker_xvel = torch.tensor([get_walker_x_velocity(state) for state in b_states], dtype=torch.float32).to(self.device)
-                actor_loss = augmented_objective(actor_loss, walker_xvel, 0.2, 20)
+                walker_cstrnt1 = torch.tensor([get_walker_constraints(state, 1) for state in b_states], dtype=torch.float32).to(self.device)
+                actor_loss = augmented_objective(actor_loss, walker_cstrnt1, cstrnt1_limit, 20)
+                
+                walker_cstrnt2 = torch.tensor([get_walker_constraints(state, 8) for state in b_states], dtype=torch.float32).to(self.device)
+                actor_loss = augmented_objective(actor_loss, walker_cstrnt2, cstrnt2_limit, 20)
                 
                 #Now that we have the loss, we can do the backward propagation to learn : everything is here.
                 self.actor_optim.zero_grad()
@@ -335,8 +334,8 @@ class Normalize:
         self.mean = params['mean']
         self.std = params['std']
     
-def get_walker_x_velocity(state):
-    x_vel = state[1]
+def get_walker_constraints(state, num):
+    x_vel = state[num]
     return x_vel
 
 def logarithmic_barrier(state, constraint_max):
@@ -357,29 +356,29 @@ def main():
     # Run the Ppo class
     frames = []
     ppo = PPO(N_S, N_A, log_dir)
-    # ppo.actor_net.load_model("../runs/20240708_11-19-08/ppo/100000/")
-    # ppo.critic_net.load_model("../runs/20240708_11-19-08/ppo/100000/")
     
     # Normalization for stability, fast convergence... always good to do.
     normalize = Normalize(N_S, log_dir)
     
-    # ppo.actor_net.load_model('../runs/vessl/_actor')
-    # ppo.actor_net.eval()
-    # ppo.critic_net.load_model('../runs/vessl/_critic')
-    # ppo.critic_net.eval()
-    # ppo.load('../runs/vessl/')
-    # normalize.load_params('../runs/vessl/_normalize.npy')
+    ppo.actor_net.load_model('../runs/20240715_19-42-33/_actor')
+    ppo.actor_net.eval()
+    ppo.critic_net.load_model('../runs/20240715_19-42-33/_critic')
+    ppo.critic_net.eval()
+    ppo.load('../runs/20240715_19-42-33/')
+    normalize.load_params('../runs/20240715_19-42-33/_normalize.npy')
 
     episodes = 0
     eva_episodes = 0
     episode_data = []
+    constraint_data = []
     state, _ = env.reset()
 
     for iter in tqdm(range(Iter)):
         memory = deque()
         scores = []
         steps = 0
-        xvel = []
+        cstrnt1 = []
+        cstrnt2 = []
         while steps < 2048: #Horizon
             episodes += 1
             state, _ = env.reset()
@@ -389,7 +388,7 @@ def main():
                 steps += 1
                 #Choose an action: detailed in PPO.py
                 # The action is a numpy array of 17 elements. It means that in the 17 possible directions of action we have a specific value in the continuous space.
-                # Exemple : the first coordinate correspond to the Torque applied on the hinge in the y-coordinate of the abdomen: this is continuous space.
+                # Example : the first coordinate correspond to the Torque applied on the hinge in the y-coordinate of the abdomen: this is continuous space.
                 a = ppo.actor_net.choose_action(s)
                 # print(f"{YELLOW}walker velocity: {RESET}", s[8]) # 3
                 #Environnement reaction to the action : There is a reaction in the 376 elements that characterize the space :
@@ -402,7 +401,8 @@ def main():
                 # Do we continue or do we terminate an episode?
                 mask = (1-done)*1
                 memory.append([s,a,r,mask])
-                xvel.append(s[1])
+                cstrnt1.append(s[1])
+                cstrnt2.append(s[8])
                 score += r
                 s = s_
 
@@ -411,13 +411,23 @@ def main():
             # with open('log_' + args.env_name  + '.txt', 'a') as outfile:
             #     outfile.write('\t' + str(episodes)  + '\t' + str(score) + '\n')
             scores.append(score)
+        
         score_avg = np.mean(scores)
-        xvel_avg = np.mean(xvel)
-        if xvel_avg <= 0.2:
-            print(f"{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {GREEN}{xvel_avg:.3f}{RESET}")
+        cstrnt1_avg = np.mean(cstrnt1)
+        cstrnt2_avg = np.mean(cstrnt2)
+        
+        if (cstrnt1_avg <= cstrnt1_limit) & (cstrnt2_avg <= cstrnt2_limit):
+            print(f"{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {GREEN}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {GREEN}{cstrnt2_avg:.3f}{RESET}")
+        elif (cstrnt1_avg <= cstrnt1_limit) & (cstrnt2_avg > cstrnt2_limit):
+            print(f"{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {GREEN}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {RED}{cstrnt2_avg:.3f}{RESET}")
+        elif (cstrnt1_avg > cstrnt1_limit) & (cstrnt2_avg <= cstrnt2_limit):
+            print(f"{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {RED}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {GREEN}{cstrnt2_avg:.3f}{RESET}")
         else:
-            print(f"{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {RED}{xvel_avg:.3f}{RESET}")
+            print(f"{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {RED}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {RED}{cstrnt2_avg:.3f}{RESET}")
+        
         episode_data.append([iter + 1, score_avg])
+        constraint_data.append([iter + 1, cstrnt1_limit, cstrnt1_avg, cstrnt2_limit, cstrnt2_avg])
+        
         if (iter + 1) % save_freq == 0:
             save_flag = True
 
@@ -429,6 +439,9 @@ def main():
                 print(f"{GREEN} >> Successfully saved models! {RESET}")
 
                 np.save(log_dir + "reward.npy", episode_data)
+                np.save(log_dir + "constraint.npy", constraint_data)
+                print(f"{GREEN} >> Successfully saved reward & constraint data! {RESET}")
+                
                 save_flag = False
 
         ppo.train(memory)

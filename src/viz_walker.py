@@ -8,20 +8,15 @@ from tqdm import tqdm
 
 from walker import PPO, Normalize
 
-RED = "\033[31m"
-GREEN = "\033[32m"
-YELLOW = "\033[33m"
-BLUE = "\033[34m"
-MAGENTA = "\033[35m"
-CYAN = "\033[36m"
-RESET = "\033[0m"
+from color_code import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initialize environment
 env = gym.make('Walker2d-v4', render_mode='human')
 
-log_dir = "../runs/20240715_16-33-43/"
+# log_dir = "../runs/20240715_19-42-33/"
+log_dir = "../runs/20240716_14-00-55/"
 
 # Number of state and action
 N_S = env.observation_space.shape[0]
@@ -46,17 +41,20 @@ for episode_id in range(test_episodes):
     state, _ = env.reset()
     state = normalize(state)
     score = 0
+    cstrnt1 = []
     for _ in range(1000):
         action = ppo.actor_net.choose_action(state)
         # print(f"{YELLOW}walker velocity: {RESET}", state[8])
         state, reward, done, _, _ = env.step(action)
         state = normalize(state)
         score += reward
-        # print(f"{MAGENTA}thigh_left_joint: {RESET}", state[5])
+        
+        cstrnt1.append(state[1])
 
         if done:
             env.reset()
             break
     
-    print("episode: ", episode_id, "\tscore: ", score)
+    cstrnt1_avg = np.mean(cstrnt1)
+    print("episode: ", episode_id, "\tscore: ", score, "\ty_angle_of_the_torso: ", cstrnt1_avg)
 env.close()
