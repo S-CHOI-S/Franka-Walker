@@ -29,12 +29,12 @@ normalize = Normalize(N_S, log_dir, train_mode=False)
 # Load the saved model
 ppo.actor_net.load_model()
 ppo.actor_net.eval()
+ppo.critic_net.load_model()
+ppo.critic_net.eval()
+ppo.load()
 normalize.load_params()
 
 # Test the model
-state, _ = env.reset()
-state = normalize(state)
-
 test_total_reward = 0
 test_episodes = 10  # Number of episodes to test
 for episode_id in range(test_episodes):
@@ -42,19 +42,37 @@ for episode_id in range(test_episodes):
     state = normalize(state)
     score = 0
     cstrnt1 = []
+    cstrnt2 = []
     for _ in range(1000):
         action = ppo.actor_net.choose_action(state)
-        # print(f"{YELLOW}walker velocity: {RESET}", state[8])
         state, reward, done, _, _ = env.step(action)
         state = normalize(state)
         score += reward
         
         cstrnt1.append(state[1])
+        cstrnt2.append(state[8])
+        
+        # if (state[1] <= 0.2) & (state[8] <= 0.5):
+        #     print(f"\ny_angle_of_the_torso is {GREEN}{state[1]:.3f}{RESET}, x_vel_of_the_torso is {GREEN}{state[8]:.3f}{RESET}")
+        # elif (state[1] <= 0.2) & (state[8] > 0.5):
+        #     print(f"\ny_angle_of_the_torso is {GREEN}{state[1]:.3f}{RESET}, x_vel_of_the_torso is {RED}{state[8]:.3f}{RESET}")
+        # elif (state[1] > 0.2) & (state[8] <= 0.5):
+        #     print(f"\ny_angle_of_the_torso is {RED}{state[1]:.3f}{RESET}, x_vel_of_the_torso is {GREEN}{state[8]:.3f}{RESET}")
+        # else:
+        #     print(f"\ny_angle_of_the_torso is {RED}{state[1]:.3f}{RESET}, x_vel_of_the_torso is {RED}{state[8]:.3f}{RESET}")
 
         if done:
-            env.reset()
             break
     
     cstrnt1_avg = np.mean(cstrnt1)
-    print("episode: ", episode_id, "\tscore: ", score, "\ty_angle_of_the_torso: ", cstrnt1_avg)
+    cstrnt2_avg = np.mean(cstrnt2)
+    
+    if (cstrnt1_avg <= 0.2) & (cstrnt2_avg <= 0.5):
+        print(f"\nepisode: {episode_id}, score: {score}, y_angle_of_the_torso is {GREEN}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {GREEN}{cstrnt2_avg:.3f}{RESET}")
+    elif (cstrnt1_avg <= 0.2) & (cstrnt2_avg > 0.5):
+        print(f"\nepisode: {episode_id}, score: {score}, y_angle_of_the_torso is {GREEN}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {RED}{cstrnt2_avg:.3f}{RESET}")
+    elif (cstrnt1_avg > 0.2) & (cstrnt2_avg <= 0.5):
+        print(f"\nepisode: {episode_id}, score: {score}, y_angle_of_the_torso is {RED}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {GREEN}{cstrnt2_avg:.3f}{RESET}")
+    else:
+        print(f"\nepisode: {episode_id}, score: {score}, y_angle_of_the_torso is {RED}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {RED}{cstrnt2_avg:.3f}{RESET}")
 env.close()

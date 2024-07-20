@@ -360,12 +360,12 @@ def main():
     # Normalization for stability, fast convergence... always good to do.
     normalize = Normalize(N_S, log_dir)
     
-    ppo.actor_net.load_model('../runs/20240715_19-42-33/_actor')
-    ppo.actor_net.eval()
-    ppo.critic_net.load_model('../runs/20240715_19-42-33/_critic')
-    ppo.critic_net.eval()
-    ppo.load('../runs/20240715_19-42-33/')
-    normalize.load_params('../runs/20240715_19-42-33/_normalize.npy')
+    # ppo.actor_net.load_model('../runs/20240715_19-42-33/_actor')
+    # ppo.actor_net.eval()
+    # ppo.critic_net.load_model('../runs/20240715_19-42-33/_critic')
+    # ppo.critic_net.eval()
+    # ppo.load('../runs/20240715_19-42-33/')
+    # normalize.load_params('../runs/20240715_19-42-33/_normalize.npy')
 
     episodes = 0
     eva_episodes = 0
@@ -417,13 +417,13 @@ def main():
         cstrnt2_avg = np.mean(cstrnt2)
         
         if (cstrnt1_avg <= cstrnt1_limit) & (cstrnt2_avg <= cstrnt2_limit):
-            print(f"{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {GREEN}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {GREEN}{cstrnt2_avg:.3f}{RESET}")
+            print(f"\n{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {GREEN}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {GREEN}{cstrnt2_avg:.3f}{RESET}")
         elif (cstrnt1_avg <= cstrnt1_limit) & (cstrnt2_avg > cstrnt2_limit):
-            print(f"{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {GREEN}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {RED}{cstrnt2_avg:.3f}{RESET}")
+            print(f"\n{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {GREEN}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {RED}{cstrnt2_avg:.3f}{RESET}")
         elif (cstrnt1_avg > cstrnt1_limit) & (cstrnt2_avg <= cstrnt2_limit):
-            print(f"{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {RED}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {GREEN}{cstrnt2_avg:.3f}{RESET}")
+            print(f"\n{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {RED}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {GREEN}{cstrnt2_avg:.3f}{RESET}")
         else:
-            print(f"{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {RED}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {RED}{cstrnt2_avg:.3f}{RESET}")
+            print(f"\n{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {RED}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {RED}{cstrnt2_avg:.3f}{RESET}")
         
         episode_data.append([iter + 1, score_avg])
         constraint_data.append([iter + 1, cstrnt1_limit, cstrnt1_avg, cstrnt2_limit, cstrnt2_avg])

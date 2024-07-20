@@ -2,11 +2,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from matplotlib.ticker import ScalarFormatter, FuncFormatter
+
 def load_npy(file_path):
     data_npy = np.load(file_path)
     data_pd = pd.DataFrame(data_npy)
     return data_pd
-def preprocess_df(data, smoothing=100, end=None):
+
+def preprocess_df(data, smoothing=10000, end=None):
     data.columns = ['Iteration', 'Reward']
     data['Cumulative_Iteration'] = data['Iteration'].cumsum()
     if end is not None:
@@ -26,8 +28,7 @@ def preprocess_df(data, smoothing=100, end=None):
     
     return data
 
-
-def draw_plot(data1, reward, label1="PPO", label2="RL", figure_number=None, obj=None):
+def draw_plot(data1, reward, label1="PPO", label2="RL", figure_number=None, save_fig_path=None):
     font_size=18
     font_family='Ubuntu'
     plt.rc('font', family=font_family)
@@ -46,9 +47,9 @@ def draw_plot(data1, reward, label1="PPO", label2="RL", figure_number=None, obj=
     reward_type_mean = reward +"_RollingMean"
     reward_type_std = reward +"_RollingStd"
     ax.fill_between(data1['Iteration'],
-                     data1[reward_type_mean] - data1[reward_type_std],
-                     data1[reward_type_mean] + data1[reward_type_std],
-                     color='r', alpha=0.1)
+                    data1[reward_type_mean] - data1[reward_type_std],
+                    data1[reward_type_mean] + data1[reward_type_std],
+                    color='r', alpha=0.1)
 
     ax.plot(data1['Iteration'], data1[reward_type_mean], label=label1, color='r')
     ax.set_xlabel('iteration', fontsize=font_size)
@@ -68,13 +69,18 @@ def draw_plot(data1, reward, label1="PPO", label2="RL", figure_number=None, obj=
     # ax.set_title(title_name, fontsize=14)
     plt.tight_layout()
     plt.grid(True)
-    # plt.savefig("/home/kist/franka_walker/src/data/"+obj+"/"+obj+"_"+type+".png")
-    # plt.savefig("/home/kist/franka_walker/src/data/"+obj+"/"+obj+"_"+type+".svg")
-
+    
+    if save_fig_path != None:
+        plt.savefig(save_fig_path + "reward.png")
+        plt.savefig(save_fig_path + "reward.svg")
+    
 smoothing = 1000
 
-file_path1="/home/kist/franka_walker/runs/20240715_19-42-33/reward.npy"
+file_dir1 ="/home/kist/franka_walker/runs/1_Constraint/" 
+file_path1 = file_dir1 + "reward.npy"
 data1 = preprocess_df(load_npy(file_path1))
-draw_plot(data1,"Reward", figure_number=0)
+draw_plot(data1,"Reward", figure_number=0, save_fig_path=None)
 
 plt.show()
+# 20240716_14-00-55
+# 20240715_19-42-33
