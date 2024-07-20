@@ -145,39 +145,65 @@ class Critic(nn.Module):
             load_model_dir = self.checkpoint_file
         self.load_state_dict(torch.load(load_model_dir))
     
+# Multihead Cost Value Function
+class MultiheadCostValueFunction(nn.Module):
+    def __init__(self, input_dim, hidden_dim, num_constraints):
+        super(MultiheadCostValueFunction, self).__init__()
+        self.shared_layers = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU()
+        )
+        self.heads = nn.ModuleList([nn.Linear(hidden_dim, 1) for _ in range(num_constraints)])
+
+    def forward(self, x):
+        shared_representation = self.shared_layers(x)
+        return [head(shared_representation) for head in self.heads]
+
 
 # PPO Algorithm with Constraints   
 class PPO:
-    def __init__(self, N_S, N_A, log_dir):
+    def __init__(self, N_S, N_A, log_dir, num_constraints=2):
         self.log_dir = log_dir
         
         self.actor_net = Actor(N_S, N_A, log_dir)
         self.critic_net = Critic(N_S, log_dir)
+        self.multihead_net = MultiheadCostValueFunction(N_S, 64, num_constraints)
+        
         self.actor_optim = optim.Adam(self.actor_net.parameters(), lr=1e-4)
         self.critic_optim = optim.Adam(self.critic_net.parameters(), lr=1e-3, weight_decay=1e-3)
+        self.multihead_optim = optim.Adam(self.multihead_net.parameters(), lr=1e-3)
         self.critic_loss_func = torch.nn.MSELoss()
         
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     def train(self, memory):
         states, actions, rewards, masks = [], [], [], []
+        costs = [[] for _ in range(len(memory[0][4]))]
         
         for m in memory:
             states.append(m[0])
             actions.append(m[1])
             rewards.append(m[2])
             masks.append(m[3])
+            for i, cost in enumerate(m[4]):
+                costs[i].append(cost)
         
         states = torch.tensor(np.array(states), dtype=torch.float32).to(self.device)
         actions = torch.tensor(np.array(actions), dtype=torch.float32).to(self.device)
         rewards = torch.tensor(np.array(rewards), dtype=torch.float32).to(self.device)
         masks = torch.tensor(np.array(masks), dtype=torch.float32).to(self.device)
+        costs = [torch.tensor(np.array(cost), dtype=torch.float32).to(self.device) for cost in costs]
 
         # Use critic network defined in Model.py
         # This function enables to get the current state value V(S).
         values = self.critic_net(states)
+        # Get the cost values
+        cost_values = [head(states) for head in self.multihead_net(states)]
         # Get advantage.
-        returns,advants = self.get_gae(rewards,masks,values)
+        # returns,advants = self.get_gae(rewards,masks,values)
+        returns, advants, cost_advants = self.compute_cost_advantages(rewards, masks, values, cost_values)
         #Get old mu and std.
         old_mu,old_std = self.actor_net(states)
         #Get the old distribution.
@@ -233,6 +259,12 @@ class PPO:
                 actor_loss.backward()
                 self.actor_optim.step()
                 
+                # Update the Multihead Cost Value Function
+                self.multihead_optimizer.zero_grad()
+                cost_value_loss = sum([torch.nn.functional.mse_loss(est.squeeze(), val) for est, val in zip(cost_values, costs)])
+                cost_value_loss.backward()
+                self.multihead_optimizer.step()
+                
     # Get the Kullback - Leibler divergence: Measure of the diff btwn new and old policy:
     # Could be used for the objective function depending on the strategy that needs to be
     # teste.
@@ -271,6 +303,14 @@ class PPO:
         #Normalization to stabilize final advantage of the history to now.
         advants = (advants - advants.mean()) / advants.std()
         return returns, advants
+    
+    def compute_cost_advantages(self, rewards, masks, values, cost_values):
+        returns, advantages = self.get_gae(rewards, masks, values)
+        cost_advantages = []
+        for cost_value in cost_values:
+            _, cost_advantage = self.get_gae(cost_value.squeeze(), masks, cost_value.squeeze())
+            cost_advantages.append(cost_advantage)
+        return returns, advantages, cost_advantages
 
     def save(self):
         # filename = str(filename)
@@ -354,7 +394,6 @@ def main():
     N_A = env.action_space.shape[0]
 
     # Run the Ppo class
-    frames = []
     ppo = PPO(N_S, N_A, log_dir)
     
     # Normalization for stability, fast convergence... always good to do.
@@ -368,7 +407,6 @@ def main():
     # normalize.load_params('../runs/20240715_19-42-33/_normalize.npy')
 
     episodes = 0
-    eva_episodes = 0
     episode_data = []
     constraint_data = []
     state, _ = env.reset()
@@ -397,10 +435,13 @@ def main():
                 s_ , r ,truncated, terminated ,info = env.step(a)
                 s_ = normalize(s_)
                 done = truncated or terminated
+                
+                cost1 = s_[1]
+                cost2 = s_[8]
 
                 # Do we continue or do we terminate an episode?
                 mask = (1-done)*1
-                memory.append([s,a,r,mask])
+                memory.append([s,a,r,mask,[cost1, cost2]])
                 cstrnt1.append(s[1])
                 cstrnt2.append(s[8])
                 score += r
