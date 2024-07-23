@@ -76,7 +76,7 @@ def draw_plot(data1, reward, label1="PPO", label2="RL", figure_number=None, save
     
 smoothing = 1000
 
-file_dir1 ="/home/kist/franka_walker/runs/1_Constraint/" 
+file_dir1 ="/home/kist/franka_walker/runs/2_Constraints/" 
 file_path1 = file_dir1 + "reward.npy"
 data1 = preprocess_df(load_npy(file_path1))
 draw_plot(data1,"Reward", figure_number=0, save_fig_path=None)

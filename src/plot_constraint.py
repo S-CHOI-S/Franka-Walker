@@ -8,8 +8,9 @@ def load_npy(file_path):
     data_pd = pd.DataFrame(data_npy)
     return data_pd
 
-def preprocess_df(data, smoothing=10000, end=None):
+def preprocess_df(data, smoothing=1000, end=None):
     data.columns = ['Iteration', 'Constraint1_Limit', 'Constraint1', 'Constraint2_Limit', 'Constraint2']
+    # data.columns = ['Iteration', 'Constraint1_Limit', 'Constraint1']
     data['Cumulative_Iteration'] = data['Iteration'].cumsum()
     if end is not None:
         min_num = 100000
@@ -94,9 +95,9 @@ def draw_plot(data1, constraint, label1="Desired Limit", label2="", figure_numbe
 
 smoothing = 1000
 
-file_dir1 = "/home/kist/franka_walker/runs/1_Constraint/"
+file_dir1 = "/home/kist/franka_walker/runs/2_Constraints/"
 file_path1 = file_dir1 + "constraint.npy"
 data1 = preprocess_df(load_npy(file_path1))
-draw_plot(data1,"Constraint1", figure_number=0, save_fig_path=None)
+draw_plot(data1,"Constraint2", figure_number=0, save_fig_path=None)
 
 plt.show()

@@ -78,10 +78,10 @@ class Actor(nn.Module):
             nn.init.normal_(layer.weight,mean=0.,std=0.1)
             nn.init.constant_(layer.bias,0.)
 
-    def forward(self,s):
+    def forward(self,state):
       # Use of tanh activation function is recommanded : bounded [-1,1],
       # gives some non-linearity, and tends to give some stability.
-        x = torch.tanh(self.fc1(s))
+        x = torch.tanh(self.fc1(state))
         x = torch.tanh(self.fc2(x))
         # mu action output of the NN.
         mu = self.mu(x)
@@ -90,11 +90,11 @@ class Actor(nn.Module):
         sigma = torch.exp(log_sigma)
         return mu,sigma
 
-    def choose_action(self,s):
+    def choose_action(self,state):
       # Choose action in the continuous action space using normal distribution
       # defined by mu and sigma of each actions returned by the NN.
-        s = torch.from_numpy(np.array(s).astype(np.float32)).unsqueeze(0).to(self.device)
-        mu,sigma = self.forward(s)
+        state = torch.from_numpy(np.array(state).astype(np.float32)).unsqueeze(0).to(self.device)
+        mu,sigma = self.forward(state)
         Pi = self.distribution(mu,sigma)
         return Pi.sample().cpu().numpy().squeeze(0)
     
@@ -130,9 +130,9 @@ class Critic(nn.Module):
             nn.init.normal_(layer.weight,mean=0.,std=0.1)
             nn.init.constant_(layer.bias,0.)
 
-    def forward(self,s):
+    def forward(self,state):
       # Use of tanh activation function is recommanded.
-        x = torch.tanh(self.fc1(s))
+        x = torch.tanh(self.fc1(state))
         x = torch.tanh(self.fc2(x))
         values = self.fc3(x)
         return values
@@ -147,20 +147,24 @@ class Critic(nn.Module):
     
 # Multihead Cost Value Function
 class MultiheadCostValueFunction(nn.Module):
-    def __init__(self, input_dim, hidden_dim, num_constraints):
+    def __init__(self, input_dim, hidden_dim, num_heads):
         super(MultiheadCostValueFunction, self).__init__()
+        
         self.shared_layers = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU()
         )
-        self.heads = nn.ModuleList([nn.Linear(hidden_dim, 1) for _ in range(num_constraints)])
+        
+        self.heads = nn.ModuleList([nn.Linear(hidden_dim, 1) for _ in range(num_heads)])
+        
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        self.to(self.device)
 
     def forward(self, x):
-        shared_representation = self.shared_layers(x)
-        return [head(shared_representation) for head in self.heads]
-
+        x = self.shared_layers(x)
+        return torch.cat([head(x) for head in self.heads], dim=1)
 
 # PPO Algorithm with Constraints   
 class PPO:
@@ -175,6 +179,9 @@ class PPO:
         self.critic_optim = optim.Adam(self.critic_net.parameters(), lr=1e-3, weight_decay=1e-3)
         self.multihead_optim = optim.Adam(self.multihead_net.parameters(), lr=1e-3)
         self.critic_loss_func = torch.nn.MSELoss()
+        
+        self.alpha = 0.1
+        self.t = 20
         
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -196,74 +203,61 @@ class PPO:
         masks = torch.tensor(np.array(masks), dtype=torch.float32).to(self.device)
         costs = [torch.tensor(np.array(cost), dtype=torch.float32).to(self.device) for cost in costs]
 
-        # Use critic network defined in Model.py
-        # This function enables to get the current state value V(S).
         values = self.critic_net(states)
-        # Get the cost values
-        cost_values = [head(states) for head in self.multihead_net(states)]
-        # Get advantage.
-        # returns,advants = self.get_gae(rewards,masks,values)
+        cost_values = self.multihead_net(states)
         returns, advants, cost_advants = self.compute_cost_advantages(rewards, masks, values, cost_values)
-        #Get old mu and std.
-        old_mu,old_std = self.actor_net(states)
-        #Get the old distribution.
-        pi = self.actor_net.distribution(old_mu,old_std)
-        #Compute old policy.
-        old_log_prob = pi.log_prob(actions).sum(1,keepdim=True)
+        old_mu, old_std = self.actor_net(states)
+        pi = self.actor_net.distribution(old_mu, old_std)
+        old_log_prob = pi.log_prob(actions).sum(1, keepdim=True)
+        
+        adaptive_constraints = self.adaptive_constraint_thresholding(cost_values, [cstrnt1_limit, cstrnt2_limit])
 
-        # Everything happens here
         n = len(states)
         arr = np.arange(n)
         for epoch in range(1):
             np.random.shuffle(arr)
-            for i in range(n//batch_size):
-                b_index = arr[batch_size*i:batch_size*(i+1)]
+            for i in range(n // batch_size):
+                b_index = arr[batch_size * i:batch_size * (i + 1)]
                 b_states = states[b_index]
                 b_advants = advants[b_index].unsqueeze(1)
                 b_actions = actions[b_index]
                 b_returns = returns[b_index].unsqueeze(1)
 
-                #New parameter of the policy distribution by action.
-                mu,std = self.actor_net(b_states)
-                pi = self.actor_net.distribution(mu,std)
-                new_prob = pi.log_prob(b_actions).sum(1,keepdim=True)
+                mu, std = self.actor_net(b_states)
+                
+                # Debugging: Print mu and std to check for NaNs
+                print(f"mu: {mu}, std: {std}")
+                
+                pi = self.actor_net.distribution(mu, std)
+                new_prob = pi.log_prob(b_actions).sum(1, keepdim=True)
                 old_prob = old_log_prob[b_index].detach()
-                #Regularisation fixed KL : does not work as good as following clipping strategy
-                # empirically.
-                # KL_penalty = self.kl_divergence(old_mu[b_index],old_std[b_index],mu,std)
-                ratio = torch.exp(new_prob-old_prob)
+                ratio = torch.exp(new_prob - old_prob)
 
-                surrogate_loss = ratio*b_advants
+                surrogate_loss = ratio * b_advants
                 values = self.critic_net(b_states)
-                # MSE Loss : (State action value - State value)^2
-                critic_loss = self.critic_loss_func(values,b_returns)
-                # critic_loss = critic_loss - beta*KL_penalty
+                critic_loss = self.critic_loss_func(values, b_returns)
 
                 self.critic_optim.zero_grad()
                 critic_loss.backward()
                 self.critic_optim.step()
-                #Clipping strategy
-                ratio = torch.clamp(ratio,1.0-epsilon,1.0+epsilon)
-                clipped_loss =ratio*b_advants
-                # Actual loss
-                actor_loss = -torch.min(surrogate_loss,clipped_loss).mean()
-                
-                walker_cstrnt1 = torch.tensor([get_walker_constraints(state, 1) for state in b_states], dtype=torch.float32).to(self.device)
-                actor_loss = augmented_objective(actor_loss, walker_cstrnt1, cstrnt1_limit, 20)
-                
-                walker_cstrnt2 = torch.tensor([get_walker_constraints(state, 8) for state in b_states], dtype=torch.float32).to(self.device)
-                actor_loss = augmented_objective(actor_loss, walker_cstrnt2, cstrnt2_limit, 20)
-                
-                #Now that we have the loss, we can do the backward propagation to learn : everything is here.
+
+                ratio = torch.clamp(ratio, 1.0 - epsilon, 1.0 + epsilon)
+                clipped_loss = ratio * b_advants
+                actor_loss = -torch.min(surrogate_loss, clipped_loss).mean() # PPO
+
+                cost_values_estimates = self.multihead_net(b_states)
+                for idx, (cost_value, cost_advant, adaptive_limit) in enumerate(zip(cost_values_estimates.t(), cost_advants, adaptive_constraints)):
+                    actor_loss = self.augmented_objective(actor_loss, cost_value, adaptive_limit, self.t, b_advants, old_mu[b_index], old_std[b_index], mu, std)
+            
                 self.actor_optim.zero_grad()
                 actor_loss.backward()
                 self.actor_optim.step()
-                
-                # Update the Multihead Cost Value Function
-                self.multihead_optimizer.zero_grad()
-                cost_value_loss = sum([torch.nn.functional.mse_loss(est.squeeze(), val) for est, val in zip(cost_values, costs)])
+
+                cost_value_loss = sum([torch.nn.functional.mse_loss(est.squeeze(), val[b_index]) for est, val in zip(cost_values_estimates.t(), costs)])
+
+                self.multihead_optim.zero_grad()
                 cost_value_loss.backward()
-                self.multihead_optimizer.step()
+                self.multihead_optim.step()
                 
     # Get the Kullback - Leibler divergence: Measure of the diff btwn new and old policy:
     # Could be used for the objective function depending on the strategy that needs to be
@@ -311,7 +305,24 @@ class PPO:
             _, cost_advantage = self.get_gae(cost_value.squeeze(), masks, cost_value.squeeze())
             cost_advantages.append(cost_advantage)
         return returns, advantages, cost_advantages
+    
+    def logarithmic_barrier(self, cost, constraint_max):
+        indicator = torch.where((cost - constraint_max) <= 0, (cost - constraint_max).clone().detach(), torch.tensor(0, device=cost.device))
+        return -torch.log(-indicator)
 
+    def augmented_objective(self, actor_loss, cost, constraint_max, t, advants, old_mu, old_sigma, mu, sigma):
+        constraint_barrier = self.logarithmic_barrier(cost, constraint_max) / t
+        kl_divergence = self.kl_divergence(old_mu, old_sigma, mu, sigma).mean()
+        return actor_loss + constraint_barrier.mean() + advants.mean() + kl_divergence 
+    
+    def adaptive_constraint_thresholding(self, cost_values, constraint_limits):
+        adaptive_limits = []
+        for cost_value, constraint_limit in zip(cost_values.t(), constraint_limits):
+            current_cost = cost_value.mean().item()
+            adaptive_limit = max(constraint_limit, current_cost + self.alpha * constraint_limit)
+            adaptive_limits.append(adaptive_limit)
+        return adaptive_limits
+    
     def save(self):
         # filename = str(filename)
         torch.save(self.actor_optim.state_dict(), self.log_dir + "_actor_optimizer")
@@ -373,18 +384,6 @@ class Normalize:
         params = np.load(load_model_dir, allow_pickle=True).item()
         self.mean = params['mean']
         self.std = params['std']
-    
-def get_walker_constraints(state, num):
-    x_vel = state[num]
-    return x_vel
-
-def logarithmic_barrier(state, constraint_max):
-    indicator = torch.where((state - constraint_max) <= 0, torch.tensor((state - constraint_max), device=state.device), torch.tensor(0, device=state.device))
-    return -torch.log(-indicator)
-
-def augmented_objective(actor_loss, state, constraint_max, t):
-    constraint_barrier = logarithmic_barrier(state, constraint_max) / t
-    return actor_loss + constraint_barrier.mean()
 
 def main():
     env = gym.make('Walker2d-v4', render_mode='human')
@@ -420,36 +419,36 @@ def main():
         while steps < 2048: #Horizon
             episodes += 1
             state, _ = env.reset()
-            s = normalize(state)
+            state = normalize(state)
             score = 0
             for _ in range(MAX_STEP):
                 steps += 1
                 #Choose an action: detailed in PPO.py
                 # The action is a numpy array of 17 elements. It means that in the 17 possible directions of action we have a specific value in the continuous space.
                 # Example : the first coordinate correspond to the Torque applied on the hinge in the y-coordinate of the abdomen: this is continuous space.
-                a = ppo.actor_net.choose_action(s)
-                # print(f"{YELLOW}walker velocity: {RESET}", s[8]) # 3
+                action = ppo.actor_net.choose_action(state)
+                # print(f"{YELLOW}walker velocity: {RESET}", state[8]) # 3
                 #Environnement reaction to the action : There is a reaction in the 376 elements that characterize the space :
-                # Exemple : the first coordinate of the states is the z-coordinate of the torso (centre) and using env.step(a), we get the reaction of this state and
+                # Exemple : the first coordinate of the states is the z-coordinate of the torso (centre) and using env.step(action), we get the reaction of this state and
                 # of all the other ones after the action has been made.
-                s_ , r ,truncated, terminated ,info = env.step(a)
-                s_ = normalize(s_)
+                next_state, reward, truncated, terminated, info = env.step(action)
+                next_state = normalize(next_state)
                 done = truncated or terminated
                 
-                cost1 = s_[1]
-                cost2 = s_[8]
+                cost1 = next_state[1]
+                cost2 = next_state[8]
 
                 # Do we continue or do we terminate an episode?
                 mask = (1-done)*1
-                memory.append([s,a,r,mask,[cost1, cost2]])
-                cstrnt1.append(s[1])
-                cstrnt2.append(s[8])
-                score += r
-                s = s_
+                memory.append([state, action, reward, mask, [cost1, cost2]])
+                cstrnt1.append(state[1])
+                cstrnt2.append(state[8])
+                score += reward
+                state = next_state
 
                 if done:
                     break
-            # with open('log_' + args.env_name  + '.txt', 'a') as outfile:
+            # with open('log_' + args.env_name  + '.txt', 'action') as outfile:
             #     outfile.write('\t' + str(episodes)  + '\t' + str(score) + '\n')
             scores.append(score)
         
