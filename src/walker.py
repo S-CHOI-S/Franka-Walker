@@ -54,7 +54,7 @@ cstrnt2_limit = 0.5 # x vel of the torso
 # Actor class: Used to choose actions of a continuous action space.
 class Actor(nn.Module):
     def __init__(self, N_S, N_A, chkpt_dir):
-      # Initialize NN structure.
+        # Initialize NN structure.
         super(Actor,self).__init__()
         self.fc1 = nn.Linear(N_S,64)
         self.fc2 = nn.Linear(64,64)
@@ -73,14 +73,14 @@ class Actor(nn.Module):
         self.to(self.device)
 
     def set_init(self,layers):
-      # Initialize weight and bias according to a normal distrib mean 0 and sd 0.1.
+        # Initialize weight and bias according to a normal distrib mean 0 and sd 0.1.
         for layer in layers:
             nn.init.normal_(layer.weight,mean=0.,std=0.1)
             nn.init.constant_(layer.bias,0.)
 
     def forward(self,state):
-      # Use of tanh activation function is recommanded : bounded [-1,1],
-      # gives some non-linearity, and tends to give some stability.
+        # Use of tanh activation function is recommanded : bounded [-1,1],
+        # gives some non-linearity, and tends to give some stability.
         x = torch.tanh(self.fc1(state))
         x = torch.tanh(self.fc2(x))
         # mu action output of the NN.
@@ -91,8 +91,8 @@ class Actor(nn.Module):
         return mu,sigma
 
     def choose_action(self,state):
-      # Choose action in the continuous action space using normal distribution
-      # defined by mu and sigma of each actions returned by the NN.
+        # Choose action in the continuous action space using normal distribution
+        # defined by mu and sigma of each actions returned by the NN.
         state = torch.from_numpy(np.array(state).astype(np.float32)).unsqueeze(0).to(self.device)
         mu,sigma = self.forward(state)
         Pi = self.distribution(mu,sigma)
@@ -110,7 +110,7 @@ class Actor(nn.Module):
 # Critic class : Used to estimate V(state) the state value function through a NN.
 class Critic(nn.Module):
     def __init__(self, N_S, chkpt_dir):
-      # Initialize NN structure.
+        # Initialize NN structure.
         super(Critic,self).__init__()
         self.fc1 = nn.Linear(N_S,64)
         self.fc2 = nn.Linear(64,64)
@@ -159,16 +159,27 @@ class MultiheadCostValueFunction(nn.Module):
         
         self.heads = nn.ModuleList([nn.Linear(hidden_dim, 1) for _ in range(num_heads)])
         
+        self._init_weights()
+        
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
 
     def forward(self, x):
         x = self.shared_layers(x)
         return torch.cat([head(x) for head in self.heads], dim=1)
+    
+    def _init_weights(self):
+        for layer in self.shared_layers:
+            if isinstance(layer, nn.Linear):
+                layer.weight.data.mul_(0.1)
+                layer.bias.data.mul_(0.0)
+        for head in self.heads:
+            head.weight.data.mul_(0.1)
+            head.bias.data.mul_(0.0)
 
 # PPO Algorithm with Constraints   
 class PPO:
-    def __init__(self, N_S, N_A, log_dir, num_constraints=2):
+    def __init__(self, N_S, N_A, log_dir, num_constraints=2, cstrnt_limit=None):
         self.log_dir = log_dir
         
         self.actor_net = Actor(N_S, N_A, log_dir)
@@ -179,6 +190,15 @@ class PPO:
         self.critic_optim = optim.Adam(self.critic_net.parameters(), lr=1e-3, weight_decay=1e-3)
         self.multihead_optim = optim.Adam(self.multihead_net.parameters(), lr=1e-3)
         self.critic_loss_func = torch.nn.MSELoss()
+        
+        if len(cstrnt_limit) != num_constraints:
+            print(f"{RED}[ERROR] Cstrnts' info is mismatch! Please check the num of cstrnt{RESET}")
+            sys.exit()
+        # elif num_constraints == 0:
+            
+        else:
+            self.constraint_limits = cstrnt_limit
+            self.adaptive_constraints = cstrnt_limit
         
         self.alpha = 0.1
         self.t = 20
@@ -210,7 +230,7 @@ class PPO:
         pi = self.actor_net.distribution(old_mu, old_std)
         old_log_prob = pi.log_prob(actions).sum(1, keepdim=True)
         
-        adaptive_constraints = self.adaptive_constraint_thresholding(cost_values, [cstrnt1_limit, cstrnt2_limit])
+        self.adaptive_constraints = self.adaptive_constraint_thresholding(cost_values, self.constraint_limits)
 
         n = len(states)
         arr = np.arange(n)
@@ -224,9 +244,6 @@ class PPO:
                 b_returns = returns[b_index].unsqueeze(1)
 
                 mu, std = self.actor_net(b_states)
-                
-                # Debugging: Print mu and std to check for NaNs
-                print(f"mu: {mu}, std: {std}")
                 
                 pi = self.actor_net.distribution(mu, std)
                 new_prob = pi.log_prob(b_actions).sum(1, keepdim=True)
@@ -246,7 +263,7 @@ class PPO:
                 actor_loss = -torch.min(surrogate_loss, clipped_loss).mean() # PPO
 
                 cost_values_estimates = self.multihead_net(b_states)
-                for idx, (cost_value, cost_advant, adaptive_limit) in enumerate(zip(cost_values_estimates.t(), cost_advants, adaptive_constraints)):
+                for idx, (cost_value, cost_advant, adaptive_limit) in enumerate(zip(cost_values_estimates.t(), cost_advants, self.adaptive_constraints)):
                     actor_loss = self.augmented_objective(actor_loss, cost_value, adaptive_limit, self.t, b_advants, old_mu[b_index], old_std[b_index], mu, std)
             
                 self.actor_optim.zero_grad()
@@ -261,8 +278,7 @@ class PPO:
                 
     # Get the Kullback - Leibler divergence: Measure of the diff btwn new and old policy:
     # Could be used for the objective function depending on the strategy that needs to be
-    # teste.
-    def kl_divergence(self,old_mu,old_sigma,mu,sigma):
+    def kl_divergence(self, old_mu, old_sigma, mu, sigma):
 
         old_mu = old_mu.detach()
         old_sigma = old_sigma.detach()
@@ -275,14 +291,14 @@ class PPO:
     def get_gae(self,rewards, masks, values):
         rewards = torch.Tensor(rewards).to(self.device)
         masks = torch.Tensor(masks).to(self.device)
-        #Create an equivalent fullfilled of 0.
+        # Create an equivalent fullfilled of 0.
         returns = torch.zeros_like(rewards).to(self.device)
         advants = torch.zeros_like(rewards).to(self.device)
-        #Init
+        # Init
         running_returns = 0
         previous_value = 0
         running_advants = 0
-        #Here we compute A_t the advantage.
+        # Here we compute A_t the advantage.
         for t in reversed(range(0, len(rewards))):
             # Here we compute the discounted returns. Gamma is the discount factor.
             running_returns = rewards[t] + gamma * running_returns * masks[t]
@@ -294,7 +310,7 @@ class PPO:
             returns[t] = running_returns
             previous_value = values.data[t]
             advants[t] = running_advants
-        #Normalization to stabilize final advantage of the history to now.
+        # Normalization to stabilize final advantage of the history to now.
         advants = (advants - advants.mean()) / advants.std()
         return returns, advants
     
@@ -313,7 +329,7 @@ class PPO:
     def augmented_objective(self, actor_loss, cost, constraint_max, t, advants, old_mu, old_sigma, mu, sigma):
         constraint_barrier = self.logarithmic_barrier(cost, constraint_max) / t
         kl_divergence = self.kl_divergence(old_mu, old_sigma, mu, sigma).mean()
-        return actor_loss + constraint_barrier.mean() + advants.mean() + kl_divergence 
+        return actor_loss + constraint_barrier.mean() + advants.mean() #+ kl_divergence 
     
     def adaptive_constraint_thresholding(self, cost_values, constraint_limits):
         adaptive_limits = []
@@ -386,16 +402,12 @@ class Normalize:
         self.std = params['std']
 
 def main():
-    env = gym.make('Walker2d-v4', render_mode='human')
+    env = gym.make('Walker2d-v4', render_mode='rgb_array')
 
-    #Number of state and action
     N_S = env.observation_space.shape[0]
     N_A = env.action_space.shape[0]
 
-    # Run the Ppo class
-    ppo = PPO(N_S, N_A, log_dir)
-    
-    # Normalization for stability, fast convergence... always good to do.
+    ppo = PPO(N_S, N_A, log_dir, cstrnt_limit=[cstrnt1_limit, cstrnt2_limit])
     normalize = Normalize(N_S, log_dir)
     
     # ppo.actor_net.load_model('../runs/20240715_19-42-33/_actor')
@@ -423,14 +435,8 @@ def main():
             score = 0
             for _ in range(MAX_STEP):
                 steps += 1
-                #Choose an action: detailed in PPO.py
-                # The action is a numpy array of 17 elements. It means that in the 17 possible directions of action we have a specific value in the continuous space.
-                # Example : the first coordinate correspond to the Torque applied on the hinge in the y-coordinate of the abdomen: this is continuous space.
+                
                 action = ppo.actor_net.choose_action(state)
-                # print(f"{YELLOW}walker velocity: {RESET}", state[8]) # 3
-                #Environnement reaction to the action : There is a reaction in the 376 elements that characterize the space :
-                # Exemple : the first coordinate of the states is the z-coordinate of the torso (centre) and using env.step(action), we get the reaction of this state and
-                # of all the other ones after the action has been made.
                 next_state, reward, truncated, terminated, info = env.step(action)
                 next_state = normalize(next_state)
                 done = truncated or terminated
@@ -438,7 +444,6 @@ def main():
                 cost1 = next_state[1]
                 cost2 = next_state[8]
 
-                # Do we continue or do we terminate an episode?
                 mask = (1-done)*1
                 memory.append([state, action, reward, mask, [cost1, cost2]])
                 cstrnt1.append(state[1])
@@ -448,25 +453,24 @@ def main():
 
                 if done:
                     break
-            # with open('log_' + args.env_name  + '.txt', 'action') as outfile:
-            #     outfile.write('\t' + str(episodes)  + '\t' + str(score) + '\n')
+            
             scores.append(score)
         
         score_avg = np.mean(scores)
         cstrnt1_avg = np.mean(cstrnt1)
         cstrnt2_avg = np.mean(cstrnt2)
         
-        if (cstrnt1_avg <= cstrnt1_limit) & (cstrnt2_avg <= cstrnt2_limit):
-            print(f"\n{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {GREEN}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {GREEN}{cstrnt2_avg:.3f}{RESET}")
-        elif (cstrnt1_avg <= cstrnt1_limit) & (cstrnt2_avg > cstrnt2_limit):
-            print(f"\n{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {GREEN}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {RED}{cstrnt2_avg:.3f}{RESET}")
-        elif (cstrnt1_avg > cstrnt1_limit) & (cstrnt2_avg <= cstrnt2_limit):
-            print(f"\n{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {RED}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {GREEN}{cstrnt2_avg:.3f}{RESET}")
+        if (cstrnt1_avg <= ppo.adaptive_constraints[0]) & (cstrnt2_avg <= ppo.adaptive_constraints[1]):
+            print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {GREEN}{cstrnt1_avg:.3f}/ {ppo.adaptive_constraints[0]:.3f}{RESET}, cstrnt2 is {GREEN}{cstrnt2_avg:.3f}/ {ppo.adaptive_constraints[1]:.3f}{RESET}")
+        elif (cstrnt1_avg <= ppo.adaptive_constraints[0]) & (cstrnt2_avg > ppo.adaptive_constraints[1]):
+            print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {GREEN}{cstrnt1_avg:.3f}/ {ppo.adaptive_constraints[0]:.3f}{RESET}, cstrnt2 is {RED}{cstrnt2_avg:.3f}/ {ppo.adaptive_constraints[1]:.3f}{RESET}")
+        elif (cstrnt1_avg > ppo.adaptive_constraints[0]) & (cstrnt2_avg <= ppo.adaptive_constraints[1]):
+            print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {RED}{cstrnt1_avg:.3f}/ {ppo.adaptive_constraints[0]:.3f}{RESET}, cstrnt2 is {GREEN}{cstrnt2_avg:.3f}/ {ppo.adaptive_constraints[1]:.3f}{RESET}")
         else:
-            print(f"\n{episodes} episode score is {score_avg:.2f}, y_angle_of_the_torso is {RED}{cstrnt1_avg:.3f}{RESET}, x_vel_of_the_torso is {RED}{cstrnt2_avg:.3f}{RESET}")
+            print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {RED}{cstrnt1_avg:.3f}/ {ppo.adaptive_constraints[0]:.3f}{RESET}, cstrnt2 is {RED}{cstrnt2_avg:.3f}/ {ppo.adaptive_constraints[1]:.3f}{RESET}")
         
         episode_data.append([iter + 1, score_avg])
-        constraint_data.append([iter + 1, cstrnt1_limit, cstrnt1_avg, cstrnt2_limit, cstrnt2_avg])
+        constraint_data.append([iter + 1, ppo.adaptive_constraints[0], cstrnt1_avg, ppo.adaptive_constraints[1], cstrnt2_avg])
         
         if (iter + 1) % save_freq == 0:
             save_flag = True
@@ -488,6 +492,7 @@ def main():
         
 
 if __name__ == "__main__":
+    
     current_time = datetime.datetime.now().strftime("%Y%m%d_%H-%M-%S")
     log_dir = f"../runs/{current_time}/"
     os.makedirs(log_dir, exist_ok=True)
