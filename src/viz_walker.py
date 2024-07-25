@@ -2,7 +2,6 @@ import torch
 import gymnasium as gym
 import numpy as np
 import matplotlib.pyplot as plt
-from IPython.display import display, clear_output
 from collections import deque
 from tqdm import tqdm
 
@@ -16,14 +15,17 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 env = gym.make('Walker2d-v4', render_mode='human')
 
 # log_dir = "../runs/20240715_19-42-33/"
-log_dir = "../runs/20240716_14-00-55/"
+log_dir = "../runs/2_Constraints/"
 
 # Number of state and action
 N_S = env.observation_space.shape[0]
 N_A = env.action_space.shape[0]
 
+cstrnt1_limit = 0.2 # y angle of the torso
+cstrnt2_limit = 0.5 # x vel of the torso
+
 # Initialize PPO model
-ppo = PPO(N_S, N_A, log_dir)
+ppo = PPO(N_S, N_A, log_dir, cstrnt_limit=[cstrnt1_limit, cstrnt2_limit])
 normalize = Normalize(N_S, log_dir, train_mode=False)
 
 # Load the saved model
@@ -51,6 +53,12 @@ for episode_id in range(test_episodes):
         
         cstrnt1.append(state[1])
         cstrnt2.append(state[8])
+        
+        # print(f"{RESET}angle of the thigh joint:      {RESET}", state[2])
+        # print(f"{MAGENTA}angle of the leg joint:        {RESET}", state[3]) ## leg를 -1보다 크게
+        # print(f"{RESET}angle of the left thigh joint: {RESET}", state[5])
+        # print(f"{MAGENTA}angle of the left leg joint:   {RESET}", state[6]) ## leg를 -1보다 크게
+        # print("==============================================================")
         
         # if (state[1] <= 0.2) & (state[8] <= 0.5):
         #     print(f"\ny_angle_of_the_torso is {GREEN}{state[1]:.3f}{RESET}, x_vel_of_the_torso is {GREEN}{state[8]:.3f}{RESET}")

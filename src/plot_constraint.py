@@ -23,16 +23,22 @@ def preprocess_df(data, smoothing=1000, end=None):
             else:
                 break
         data = data[:idx]
+        
+    data['Constraint1_Limit_RollingMean'] = data['Constraint1_Limit'].rolling(window=smoothing).mean()
+    data['Constraint1_Limit_RollingStd'] = data['Constraint1_Limit'].rolling(window=smoothing).std()
 
     data['Constraint1_RollingMean'] = data['Constraint1'].rolling(window=smoothing).mean()
     data['Constraint1_RollingStd'] = data['Constraint1'].rolling(window=smoothing).std()
+    
+    data['Constraint2_Limit_RollingMean'] = data['Constraint2_Limit'].rolling(window=smoothing).mean()
+    data['Constraint2_Limit_RollingStd'] = data['Constraint2_Limit'].rolling(window=smoothing).std()
     
     data['Constraint2_RollingMean'] = data['Constraint2'].rolling(window=smoothing).mean()
     data['Constraint2_RollingStd'] = data['Constraint2'].rolling(window=smoothing).std()
     
     return data
 
-def draw_plot(data1, constraint, label1="Desired Limit", label2="", figure_number=None, save_fig_path=None):
+def draw_plot(data1, constraint, label1="Desired Limit", label2="Constraint", figure_number=None, save_fig_path=None):
     font_size=15
     font_family='Ubuntu'
     plt.rc('font', family=font_family)
@@ -46,6 +52,13 @@ def draw_plot(data1, constraint, label1="Desired Limit", label2="", figure_numbe
         title_name = " $\mathcal{S}_R$-Policy Episode Constraint"
         type="redundant"
     
+        constraint_limit_type_mean = constraint +"_Limit_RollingMean"
+        constraint_limit_type_std = constraint +"_Limit_RollingStd"
+        ax.fill_between(data1['Iteration'],
+                        data1[constraint_limit_type_mean] - data1[constraint_limit_type_std],
+                        data1[constraint_limit_type_mean] + data1[constraint_limit_type_std],
+                        color='g', alpha=0.1)
+    
         constraint_type_mean = constraint +"_RollingMean"
         constraint_type_std = constraint +"_RollingStd"
         ax.fill_between(data1['Iteration'],
@@ -53,13 +66,21 @@ def draw_plot(data1, constraint, label1="Desired Limit", label2="", figure_numbe
                         data1[constraint_type_mean] + data1[constraint_type_std],
                         color='r', alpha=0.1)
 
-        ax.plot(data1['Iteration'], data1['Constraint1_Limit'], label=label1, color='g', linestyle='--')
+        ax.plot(data1['Iteration'], np.full(len(data1['Iteration']), 0.2), label=label1, color='b', linestyle='--')
+        ax.plot(data1['Iteration'], data1[constraint_limit_type_mean], label="Adaptive Constraint Threshold", color='g', linestyle='--')
         ax.plot(data1['Iteration'], data1[constraint_type_mean], label=label2, color='r')
     
     elif constraint == "Constraint2":
         title_name = " $\mathcal{S}_R$-Policy Episode Constraint"
         type="redundant"
     
+        constraint_limit_type_mean = constraint +"_Limit_RollingMean"
+        constraint_limit_type_std = constraint +"_Limit_RollingStd"
+        ax.fill_between(data1['Iteration'],
+                        data1[constraint_limit_type_mean] - data1[constraint_limit_type_std],
+                        data1[constraint_limit_type_mean] + data1[constraint_limit_type_std],
+                        color='g', alpha=0.1)
+    
         constraint_type_mean = constraint +"_RollingMean"
         constraint_type_std = constraint +"_RollingStd"
         ax.fill_between(data1['Iteration'],
@@ -67,7 +88,8 @@ def draw_plot(data1, constraint, label1="Desired Limit", label2="", figure_numbe
                         data1[constraint_type_mean] + data1[constraint_type_std],
                         color='r', alpha=0.1)
 
-        ax.plot(data1['Iteration'], data1['Constraint2_Limit'], label=label1, color='g', linestyle='--')
+        ax.plot(data1['Iteration'], np.full(len(data1['Iteration']), 0.5), label=label1, color='b', linestyle='--')
+        ax.plot(data1['Iteration'], data1[constraint_limit_type_mean], label="Adaptive Constraint Threshold", color='g', linestyle='--')
         ax.plot(data1['Iteration'], data1[constraint_type_mean], label=label2, color='r')
         
     else:
@@ -95,7 +117,7 @@ def draw_plot(data1, constraint, label1="Desired Limit", label2="", figure_numbe
 
 smoothing = 1000
 
-file_dir1 = "/home/kist/franka_walker/runs/2_Constraints/"
+file_dir1 = "/home/kist/franka_walker/runs/adaptive_constraint/"
 file_path1 = file_dir1 + "constraint.npy"
 data1 = preprocess_df(load_npy(file_path1))
 draw_plot(data1,"Constraint2", figure_number=0, save_fig_path=None)

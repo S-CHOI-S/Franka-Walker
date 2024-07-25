@@ -34,7 +34,7 @@ Iter = 100000
 #Number max of step to realise in one episode. 
 MAX_STEP = 1000
 #How rewards are discounted.
-gamma =0.98
+gamma = 0.98
 #How do we stabilize variance in the return computation.
 lambd = 0.95
 #batch to train on
@@ -47,9 +47,6 @@ l2_rate = 0.001
 save_freq = 100
 
 save_flag = False
-
-cstrnt1_limit = 0.2 # y angle of the torso
-cstrnt2_limit = 0.5 # x vel of the torso
 
 # Actor class: Used to choose actions of a continuous action space.
 class Actor(nn.Module):
@@ -225,7 +222,7 @@ class PPO:
 
         values = self.critic_net(states)
         cost_values = self.multihead_net(states)
-        returns, advants, cost_advants = self.compute_cost_advantages(rewards, masks, values, cost_values)
+        returns, advants, cost_advants = self.compute_cost_advantages(rewards, masks, values, costs, cost_values)
         old_mu, old_std = self.actor_net(states)
         pi = self.actor_net.distribution(old_mu, old_std)
         old_log_prob = pi.log_prob(actions).sum(1, keepdim=True)
@@ -263,9 +260,9 @@ class PPO:
                 actor_loss = -torch.min(surrogate_loss, clipped_loss).mean() # PPO
 
                 cost_values_estimates = self.multihead_net(b_states)
-                for idx, (cost_value, cost_advant, adaptive_limit) in enumerate(zip(cost_values_estimates.t(), cost_advants, self.adaptive_constraints)):
-                    actor_loss = self.augmented_objective(actor_loss, cost_value, adaptive_limit, self.t, b_advants, old_mu[b_index], old_std[b_index], mu, std)
-            
+                b_cost_advants = [adv[b_index] for adv in cost_advants]
+                actor_loss = self.augmented_objective(actor_loss, cost_values_estimates.t(), b_cost_advants, self.adaptive_constraints, b_advants, old_mu[b_index], old_std[b_index], mu, std)
+                
                 self.actor_optim.zero_grad()
                 actor_loss.backward()
                 self.actor_optim.step()
@@ -279,12 +276,10 @@ class PPO:
     # Get the Kullback - Leibler divergence: Measure of the diff btwn new and old policy:
     # Could be used for the objective function depending on the strategy that needs to be
     def kl_divergence(self, old_mu, old_sigma, mu, sigma):
-
         old_mu = old_mu.detach()
         old_sigma = old_sigma.detach()
 
-        kl = torch.log(old_sigma) - torch.log(sigma) + (old_sigma.pow(2) + (old_mu - mu).pow(2)) / \
-             (2.0 * sigma.pow(2)) - 0.5
+        kl = torch.log(old_sigma) - torch.log(sigma) + (old_sigma.pow(2) + (old_mu - mu).pow(2)) / (2.0 * sigma.pow(2)) - 0.5
         return kl.sum(1, keepdim=True)
     
     # Advantage estimation:
@@ -314,22 +309,31 @@ class PPO:
         advants = (advants - advants.mean()) / advants.std()
         return returns, advants
     
-    def compute_cost_advantages(self, rewards, masks, values, cost_values):
+    def compute_cost_advantages(self, rewards, masks, values, cost_rewards, cost_values):
         returns, advantages = self.get_gae(rewards, masks, values)
         cost_advantages = []
-        for cost_value in cost_values:
-            _, cost_advantage = self.get_gae(cost_value.squeeze(), masks, cost_value.squeeze())
+        
+        for cost_reward, cost_value in zip(cost_rewards, cost_values.t()):
+            _, cost_advantage = self.get_gae(cost_reward, masks, cost_value)
             cost_advantages.append(cost_advantage)
+        
         return returns, advantages, cost_advantages
     
     def logarithmic_barrier(self, cost, constraint_max):
         indicator = torch.where((cost - constraint_max) <= 0, (cost - constraint_max).clone().detach(), torch.tensor(0, device=cost.device))
         return -torch.log(-indicator)
 
-    def augmented_objective(self, actor_loss, cost, constraint_max, t, advants, old_mu, old_sigma, mu, sigma):
-        constraint_barrier = self.logarithmic_barrier(cost, constraint_max) / t
+    # Original
+    # def augmented_objective(self, actor_loss, cost, cost_advant, constraint_max, t, advants, old_mu, old_sigma, mu, sigma):
+    #     constraint_barrier = self.logarithmic_barrier(cost, constraint_max) / t
+    #     kl_divergence = self.kl_divergence(old_mu, old_sigma, mu, sigma).mean()
+    #     return actor_loss + constraint_barrier.mean() + advants.mean() + cost_advant.mean() #+ kl_divergence
+    
+    def augmented_objective(self, actor_loss, cost_values, cost_advants, adaptive_constraints, advants, old_mu, old_sigma, mu, sigma):
+        constraint_barrier = sum([self.logarithmic_barrier(cost_advant / (1 - gamma) + cost_value, adaptive_constraint) / self.t 
+                                  for cost_value, cost_advant, adaptive_constraint in zip(cost_values, cost_advants, adaptive_constraints)])
         kl_divergence = self.kl_divergence(old_mu, old_sigma, mu, sigma).mean()
-        return actor_loss + constraint_barrier.mean() + advants.mean() #+ kl_divergence 
+        return actor_loss + constraint_barrier.mean() + advants.mean() #+ kl_divergence
     
     def adaptive_constraint_thresholding(self, cost_values, constraint_limits):
         adaptive_limits = []
@@ -406,8 +410,13 @@ def main():
 
     N_S = env.observation_space.shape[0]
     N_A = env.action_space.shape[0]
+    
+    cstrnt1_limit = 0.2 # y angle of the torso
+    cstrnt2_limit = 0.5 # x vel of the torso
+    cstrnt3_limit = 1 # angle of the leg joint
+    cstrnt4_limit = 1 # angle of the left leg joint
 
-    ppo = PPO(N_S, N_A, log_dir, cstrnt_limit=[cstrnt1_limit, cstrnt2_limit])
+    ppo = PPO(N_S, N_A, log_dir, num_constraints=4, cstrnt_limit=[cstrnt1_limit, cstrnt2_limit, cstrnt3_limit, cstrnt4_limit])
     normalize = Normalize(N_S, log_dir)
     
     # ppo.actor_net.load_model('../runs/20240715_19-42-33/_actor')
@@ -428,6 +437,8 @@ def main():
         steps = 0
         cstrnt1 = []
         cstrnt2 = []
+        cstrnt3 = []
+        cstrnt4 = []
         while steps < 2048: #Horizon
             episodes += 1
             state, _ = env.reset()
@@ -441,13 +452,17 @@ def main():
                 next_state = normalize(next_state)
                 done = truncated or terminated
                 
-                cost1 = next_state[1]
-                cost2 = next_state[8]
+                cost1 = next_state[1] # y angle of the torso
+                cost2 = next_state[8] # x velocity of the torso
+                cost3 = -next_state[3]
+                cost4 = -next_state[6]
 
                 mask = (1-done)*1
-                memory.append([state, action, reward, mask, [cost1, cost2]])
+                memory.append([state, action, reward, mask, [cost1, cost2, cost3, cost4]])
                 cstrnt1.append(state[1])
                 cstrnt2.append(state[8])
+                cstrnt3.append(-state[3])
+                cstrnt4.append(-state[6])
                 score += reward
                 state = next_state
 
@@ -459,6 +474,8 @@ def main():
         score_avg = np.mean(scores)
         cstrnt1_avg = np.mean(cstrnt1)
         cstrnt2_avg = np.mean(cstrnt2)
+        cstrnt3_avg = np.mean(cstrnt3)
+        cstrnt4_avg = np.mean(cstrnt4)
         
         if (cstrnt1_avg <= ppo.adaptive_constraints[0]) & (cstrnt2_avg <= ppo.adaptive_constraints[1]):
             print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {GREEN}{cstrnt1_avg:.3f}/ {ppo.adaptive_constraints[0]:.3f}{RESET}, cstrnt2 is {GREEN}{cstrnt2_avg:.3f}/ {ppo.adaptive_constraints[1]:.3f}{RESET}")
@@ -469,8 +486,18 @@ def main():
         else:
             print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {RED}{cstrnt1_avg:.3f}/ {ppo.adaptive_constraints[0]:.3f}{RESET}, cstrnt2 is {RED}{cstrnt2_avg:.3f}/ {ppo.adaptive_constraints[1]:.3f}{RESET}")
         
+        if (cstrnt3_avg <= ppo.adaptive_constraints[0]) & (cstrnt4_avg <= ppo.adaptive_constraints[1]):
+            print(f"\n\t\t\t\tcstrnt3 is {GREEN}{cstrnt3_avg:.3f}/ {ppo.adaptive_constraints[2]:.3f}{RESET}, cstrnt4 is {GREEN}{cstrnt4_avg:.3f}/ {ppo.adaptive_constraints[3]:.3f}{RESET}")
+        elif (cstrnt3_avg <= ppo.adaptive_constraints[0]) & (cstrnt4_avg > ppo.adaptive_constraints[1]):
+            print(f"\n\t\t\tcstrnt3 is {GREEN}{cstrnt3_avg:.3f}/ {ppo.adaptive_constraints[2]:.3f}{RESET}, cstrnt4 is {RED}{cstrnt4_avg:.3f}/ {ppo.adaptive_constraints[3]:.3f}{RESET}")
+        elif (cstrnt3_avg > ppo.adaptive_constraints[0]) & (cstrnt4_avg <= ppo.adaptive_constraints[1]):
+            print(f"\n\t\t\tcstrnt3 is {RED}{cstrnt3_avg:.3f}/ {ppo.adaptive_constraints[2]:.3f}{RESET}, cstrnt4 is {GREEN}{cstrnt4_avg:.3f}/ {ppo.adaptive_constraints[3]:.3f}{RESET}")
+        else:
+            print(f"\n\t\t\tcstrnt3 is {RED}{cstrnt3_avg:.3f}/ {ppo.adaptive_constraints[2]:.3f}{RESET}, cstrnt4 is {RED}{cstrnt4_avg:.3f}/ {ppo.adaptive_constraints[3]:.3f}{RESET}")
+        
         episode_data.append([iter + 1, score_avg])
-        constraint_data.append([iter + 1, ppo.adaptive_constraints[0], cstrnt1_avg, ppo.adaptive_constraints[1], cstrnt2_avg])
+        constraint_data.append([iter + 1, ppo.adaptive_constraints[0], cstrnt1_avg, ppo.adaptive_constraints[1], cstrnt2_avg, 
+                                ppo.adaptive_constraints[2], cstrnt3_avg, ppo.adaptive_constraints[3], cstrnt4_avg])
         
         if (iter + 1) % save_freq == 0:
             save_flag = True

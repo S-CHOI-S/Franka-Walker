@@ -8,7 +8,7 @@ def load_npy(file_path):
     data_pd = pd.DataFrame(data_npy)
     return data_pd
 
-def preprocess_df(data, smoothing=10000, end=None):
+def preprocess_df(data, smoothing=1000, end=None):
     data.columns = ['Iteration', 'Reward']
     data['Cumulative_Iteration'] = data['Iteration'].cumsum()
     if end is not None:
@@ -76,7 +76,7 @@ def draw_plot(data1, reward, label1="PPO", label2="RL", figure_number=None, save
     
 smoothing = 1000
 
-file_dir1 ="/home/kist/franka_walker/runs/2_Constraints/" 
+file_dir1 ="/home/kist/franka_walker/runs/adaptive_constraint/" 
 file_path1 = file_dir1 + "reward.npy"
 data1 = preprocess_df(load_npy(file_path1))
 draw_plot(data1,"Reward", figure_number=0, save_fig_path=None)
