@@ -144,7 +144,7 @@ class Critic(nn.Module):
     
 # Multihead Cost Value Function
 class MultiheadCostValueFunction(nn.Module):
-    def __init__(self, input_dim, hidden_dim, num_heads):
+    def __init__(self, input_dim, hidden_dim, num_heads, continue_train=False):
         super(MultiheadCostValueFunction, self).__init__()
         
         self.shared_layers = nn.Sequential(
@@ -155,8 +155,11 @@ class MultiheadCostValueFunction(nn.Module):
         )
         
         self.heads = nn.ModuleList([nn.Linear(hidden_dim, 1) for _ in range(num_heads)])
-        
-        self._init_weights()
+
+        if not continue_train:
+            self._init_weights()
+        else:
+            pass
         
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
@@ -173,6 +176,14 @@ class MultiheadCostValueFunction(nn.Module):
         for head in self.heads:
             head.weight.data.mul_(0.1)
             head.bias.data.mul_(0.0)
+
+    def save_model(self):
+        torch.save(self.state_dict(), self.checkpoint_file)
+
+    def load_model(self, load_model_dir=None):
+        if load_model_dir is None:
+            load_model_dir = self.checkpoint_file
+        self.load_state_dict(torch.load(load_model_dir))
 
 # PPO Algorithm with Constraints   
 class PPO:
@@ -196,6 +207,8 @@ class PPO:
         else:
             self.constraint_limits = cstrnt_limit
             self.adaptive_constraints = cstrnt_limit
+
+        self.prob_constraint_limits = 0.2
         
         self.alpha = 0.1
         self.t = 20
@@ -262,7 +275,7 @@ class PPO:
                 cost_values_estimates = self.multihead_net(b_states)
                 b_cost_advants = [adv[b_index] for adv in cost_advants]
                 actor_loss = self.augmented_objective(actor_loss, cost_values_estimates.t(), b_cost_advants, self.adaptive_constraints, b_advants, old_mu[b_index], old_std[b_index], mu, std)
-                
+                # print(f"{BLUE}cost value estimated: {RESET}", cost_values_estimates.t())
                 self.actor_optim.zero_grad()
                 actor_loss.backward()
                 self.actor_optim.step()
@@ -281,7 +294,13 @@ class PPO:
 
         kl = torch.log(old_sigma) - torch.log(sigma) + (old_sigma.pow(2) + (old_mu - mu).pow(2)) / (2.0 * sigma.pow(2)) - 0.5
         return kl.sum(1, keepdim=True)
-    
+
+    def prob_cost_function(self, s, s_prime):
+        if (s <= self.prob_constraint_limits) and (s_prime <= self.prob_constraint_limits):
+            return 0
+        else:
+            return 1
+
     # Advantage estimation:
     def get_gae(self,rewards, masks, values):
         rewards = torch.Tensor(rewards).to(self.device)
@@ -322,12 +341,6 @@ class PPO:
     def logarithmic_barrier(self, cost, constraint_max):
         indicator = torch.where((cost - constraint_max) <= 0, (cost - constraint_max).clone().detach(), torch.tensor(0, device=cost.device))
         return -torch.log(-indicator)
-
-    # Original
-    # def augmented_objective(self, actor_loss, cost, cost_advant, constraint_max, t, advants, old_mu, old_sigma, mu, sigma):
-    #     constraint_barrier = self.logarithmic_barrier(cost, constraint_max) / t
-    #     kl_divergence = self.kl_divergence(old_mu, old_sigma, mu, sigma).mean()
-    #     return actor_loss + constraint_barrier.mean() + advants.mean() + cost_advant.mean() #+ kl_divergence
     
     def augmented_objective(self, actor_loss, cost_values, cost_advants, adaptive_constraints, advants, old_mu, old_sigma, mu, sigma):
         constraint_barrier = sum([self.logarithmic_barrier(cost_advant / (1 - gamma) + cost_value, adaptive_constraint) / self.t 
@@ -347,6 +360,7 @@ class PPO:
         # filename = str(filename)
         torch.save(self.actor_optim.state_dict(), self.log_dir + "_actor_optimizer")
         torch.save(self.critic_optim.state_dict(), self.log_dir + "_critic_optimizer")
+        torch.save(self.multihead_optim.state_dict(), self.log_dir + "_multihead_optimizer")
 
     def load(self, log_dir=None):
         # filename = str(filename)
@@ -354,17 +368,23 @@ class PPO:
             log_dir = self.log_dir
         self.actor_optim.load_state_dict(torch.load(log_dir + "_actor_optimizer"))
         self.critic_optim.load_state_dict(torch.load(log_dir + "_critic_optimizer"))
+        self.multihead_optim.load_state_dict(torch.load(log_dir + "_multihead_optimizer"))
         
 
-# Creation of a class to normalize the states
+# Creation of a class to normalize the states (Z-score Normalization (Standardization))
 class Normalize:
-    def __init__(self, N_S, chkpt_dir, train_mode=True):
-        self.mean = np.zeros((N_S,))
-        self.std = np.zeros((N_S, ))
-        self.stdd = np.zeros((N_S, ))
-        self.n = 0
+    def __init__(self, N_S, chkpt_dir, train_mode=True, continue_train=False):
+        self.mean = np.zeros((N_S,)) # mean
+        self.std = np.zeros((N_S, )) # standard
+        self.stdd = np.zeros((N_S, )) # variance
         
         self.train_mode = train_mode
+        self.continue_train = continue_train
+
+        if not self.continue_train:
+            self.n = 0
+        else:
+            self.n = 1
         
         self.checkpoint_dir = chkpt_dir
         self.checkpoint_file = os.path.join(self.checkpoint_dir, '_normalize.npy')
@@ -372,15 +392,15 @@ class Normalize:
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     def __call__(self, x):
-        x = np.asarray(x)
-        if self.train_mode:
-            self.n += 1
-            if self.n == 1:
-                self.mean = x
+        x = np.asarray(x) # x: 들어오는 state 값, n = 0
+        if self.train_mode: # 학습하는 모드이면
+            self.n += 1 # n += 1
+            if self.n == 1: # n = 1이면
+                self.mean = x # 현재 state를 평균 mean 값으로 설정
             else:
-                old_mean = self.mean.copy()
-                self.mean = old_mean + (x - old_mean) / self.n
-                self.stdd = self.stdd + (x - old_mean) * (x - self.mean)
+                old_mean = self.mean.copy() # 현재 mean을 old_mean으로 설정
+                self.mean = old_mean + (x - old_mean) / self.n # 다시 mean 구하기
+                self.stdd = self.stdd + (x - old_mean) * (x - self.mean) #  다시 std 구하기
             if self.n > 1:
                 self.std = np.sqrt(self.stdd / (self.n - 1))
             else:
@@ -396,7 +416,7 @@ class Normalize:
         self.std = np.std(x, axis=0) + 1e-8
     
     def save_params(self):
-        np.save(self.checkpoint_file, {'mean': self.mean, 'std': self.std})
+        np.save(self.checkpoint_file, {'mean': self.mean, 'std': self.std, 'stdd': self.stdd})
 
     def load_params(self, load_model_dir=None):
         if load_model_dir is None:
@@ -404,6 +424,7 @@ class Normalize:
         params = np.load(load_model_dir, allow_pickle=True).item()
         self.mean = params['mean']
         self.std = params['std']
+        self.stdd = params['stdd']
 
 def main():
     env = gym.make('Walker2d-v4', render_mode='rgb_array')
@@ -417,19 +438,18 @@ def main():
     cstrnt4_limit = 1 # angle of the left leg joint
 
     ppo = PPO(N_S, N_A, log_dir, num_constraints=4, cstrnt_limit=[cstrnt1_limit, cstrnt2_limit, cstrnt3_limit, cstrnt4_limit])
-    normalize = Normalize(N_S, log_dir)
+    normalize = Normalize(N_S, log_dir, train_mode=True)
     
-    # ppo.actor_net.load_model('../runs/20240715_19-42-33/_actor')
+    # ppo.actor_net.load_model('../runs/20240725_19-01-40/_actor')
     # ppo.actor_net.eval()
-    # ppo.critic_net.load_model('../runs/20240715_19-42-33/_critic')
+    # ppo.critic_net.load_model('../runs/20240725_19-01-40/_critic')
     # ppo.critic_net.eval()
-    # ppo.load('../runs/20240715_19-42-33/')
-    # normalize.load_params('../runs/20240715_19-42-33/_normalize.npy')
+    # ppo.load('../runs/20240725_19-01-40/')
+    # normalize.load_params('../runs/20240725_19-01-40/_normalize.npy')
 
     episodes = 0
     episode_data = []
     constraint_data = []
-    state, _ = env.reset()
 
     for iter in tqdm(range(Iter)):
         memory = deque()
@@ -505,6 +525,7 @@ def main():
             if save_flag:
                 ppo.actor_net.save_model()
                 ppo.critic_net.save_model()
+                ppo.multihead_net.save_model()
                 ppo.save()
                 normalize.save_params()
                 print(f"{GREEN} >> Successfully saved models! {RESET}")

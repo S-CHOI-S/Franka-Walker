@@ -17,7 +17,7 @@ env = gym.make('Walker2d-v4', render_mode='human')
 # log_dir = "../runs/20240715_19-42-33/"
 # file_dir1 = "/home/kist/franka_walker/runs/20240725_19-01-40/"
 # log_dir = "../runs/20240725_15-23-19/" # 2 constraints
-log_dir = "../runs/ves/" # 4 constraints
+log_dir = "../runs/20240801_14-03-40/" # 4 constraints
 
 # Number of state and action
 N_S = env.observation_space.shape[0]
