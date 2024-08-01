@@ -144,7 +144,7 @@ class Critic(nn.Module):
     
 # Multihead Cost Value Function
 class MultiheadCostValueFunction(nn.Module):
-    def __init__(self, input_dim, hidden_dim, num_heads, continue_train=False):
+    def __init__(self, input_dim, hidden_dim, num_heads, continue_train=False, chkpt_dir=None):
         super(MultiheadCostValueFunction, self).__init__()
         
         self.shared_layers = nn.Sequential(
@@ -160,6 +160,9 @@ class MultiheadCostValueFunction(nn.Module):
             self._init_weights()
         else:
             pass
+
+        self.checkpoint_dir = chkpt_dir
+        self.checkpoint_file = os.path.join(self.checkpoint_dir, '_multihead')
         
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
@@ -192,7 +195,7 @@ class PPO:
         
         self.actor_net = Actor(N_S, N_A, log_dir)
         self.critic_net = Critic(N_S, log_dir)
-        self.multihead_net = MultiheadCostValueFunction(N_S, 64, num_constraints)
+        self.multihead_net = MultiheadCostValueFunction(N_S, 64, num_constraints, chkpt_dir=log_dir)
         
         self.actor_optim = optim.Adam(self.actor_net.parameters(), lr=1e-4)
         self.critic_optim = optim.Adam(self.critic_net.parameters(), lr=1e-3, weight_decay=1e-3)
