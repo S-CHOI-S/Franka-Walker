@@ -5,3 +5,4 @@ build
 .ipynb_checkpoints
 runs
 MUJOCO_LOG.TXT
+.idea
