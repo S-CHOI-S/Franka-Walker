@@ -144,7 +144,7 @@ class Critic(nn.Module):
     
 # Multihead Cost Value Function
 class MultiheadCostValueFunction(nn.Module):
-    def __init__(self, input_dim, hidden_dim, num_heads, continue_train=False, chkpt_dir=None):
+    def __init__(self, input_dim, hidden_dim, num_heads, chkpt_dir=None):
         super(MultiheadCostValueFunction, self).__init__()
         
         self.shared_layers = nn.Sequential(
@@ -156,10 +156,7 @@ class MultiheadCostValueFunction(nn.Module):
         
         self.heads = nn.ModuleList([nn.Linear(hidden_dim, 1) for _ in range(num_heads)])
 
-        if not continue_train:
-            self._init_weights()
-        else:
-            pass
+        self._init_weights()
 
         self.checkpoint_dir = chkpt_dir
         self.checkpoint_file = os.path.join(self.checkpoint_dir, '_multihead')
@@ -190,7 +187,7 @@ class MultiheadCostValueFunction(nn.Module):
 
 # PPO Algorithm with Constraints   
 class PPO:
-    def __init__(self, N_S, N_A, log_dir, num_avg_constraints=2, avg_cstrnt_limit=None):
+    def __init__(self, N_S, N_A, log_dir, num_avg_constraints=4, avg_cstrnt_limit=None):
         self.log_dir = log_dir
         
         self.actor_net = Actor(N_S, N_A, log_dir)
@@ -252,6 +249,7 @@ class PPO:
         
         self.adaptive_avg_constraints = self.adaptive_constraint_thresholding(cost_values, self.constraint_limits)
         self.adaptive_prob_constraint = self.adaptive_prob_constraint_thresholding(prob_costs) ## HERE
+        print(f"\n{MAGENTA}prob_cnstrnt: {RESET}{self.prob_constraint_limits}\t{MAGENTA}adaptive_prob_cnstrnt: {RESET}{self.adaptive_prob_constraint}\t{MAGENTA}state[1]: {RESET}{states[:,1]}")
 
         n = len(states)
         arr = np.arange(n)
@@ -461,7 +459,8 @@ def main():
     average_constraint_limit.append(1)  # angle of the leg joint
     average_constraint_limit.append(1)  # angle of the left leg joint
 
-    ppo = PPO(N_S, N_A, log_dir, num_avg_constraints=4, avg_cstrnt_limit=average_constraint_limit)
+    # ppo = PPO(N_S, N_A, log_dir, num_avg_constraints=4, avg_cstrnt_limit=average_constraint_limit)
+    ppo = PPO(N_S, N_A, log_dir, num_avg_constraints=1, avg_cstrnt_limit=[0.5])
     normalize = Normalize(N_S, log_dir, train_mode=True)
     
     # ppo.actor_net.load_model('../runs/20240725_19-01-40/_actor')
@@ -474,6 +473,9 @@ def main():
     episodes = 0
     episode_data = []
     constraint_data = []
+
+    prob_cstrnt1 = []
+    prob_cstrnt1_next = []
 
     for iter in tqdm(range(Iter)):
         memory = deque()
@@ -500,6 +502,8 @@ def main():
                 cost2 = next_state[8] # x velocity of the torso
                 cost3 = -next_state[3]
                 cost4 = -next_state[6]
+                prob1 = state[1]
+                prob1_next = next_state[1]
 
                 mask = (1-done)*1
                 memory.append([state, action, reward, next_state, mask, [cost1, cost2, cost3, cost4]])
@@ -507,6 +511,8 @@ def main():
                 avg_cstrnt2.append(state[8])
                 avg_cstrnt3.append(-state[3])
                 avg_cstrnt4.append(-state[6])
+                prob_cstrnt1.append(prob1)
+                prob_cstrnt1_next.append(prob1_next)
                 score += reward
                 state = next_state
 
@@ -521,27 +527,27 @@ def main():
         cstrnt3_avg = np.mean(avg_cstrnt3)
         cstrnt4_avg = np.mean(avg_cstrnt4)
         
-        if (cstrnt1_avg <= ppo.adaptive_avg_constraints[0]) & (cstrnt2_avg <= ppo.adaptive_avg_constraints[1]):
-            print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {GREEN}{cstrnt1_avg:.3f}/ {ppo.adaptive_avg_constraints[0]:.3f}{RESET}, cstrnt2 is {GREEN}{cstrnt2_avg:.3f}/ {ppo.adaptive_avg_constraints[1]:.3f}{RESET}")
-        elif (cstrnt1_avg <= ppo.adaptive_avg_constraints[0]) & (cstrnt2_avg > ppo.adaptive_avg_constraints[1]):
-            print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {GREEN}{cstrnt1_avg:.3f}/ {ppo.adaptive_avg_constraints[0]:.3f}{RESET}, cstrnt2 is {RED}{cstrnt2_avg:.3f}/ {ppo.adaptive_avg_constraints[1]:.3f}{RESET}")
-        elif (cstrnt1_avg > ppo.adaptive_avg_constraints[0]) & (cstrnt2_avg <= ppo.adaptive_avg_constraints[1]):
-            print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {RED}{cstrnt1_avg:.3f}/ {ppo.adaptive_avg_constraints[0]:.3f}{RESET}, cstrnt2 is {GREEN}{cstrnt2_avg:.3f}/ {ppo.adaptive_avg_constraints[1]:.3f}{RESET}")
-        else:
-            print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {RED}{cstrnt1_avg:.3f}/ {ppo.adaptive_avg_constraints[0]:.3f}{RESET}, cstrnt2 is {RED}{cstrnt2_avg:.3f}/ {ppo.adaptive_avg_constraints[1]:.3f}{RESET}")
-        
-        if (cstrnt3_avg <= ppo.adaptive_avg_constraints[0]) & (cstrnt4_avg <= ppo.adaptive_avg_constraints[1]):
-            print(f"\n\t\t\t\tcstrnt3 is {GREEN}{cstrnt3_avg:.3f}/ {ppo.adaptive_avg_constraints[2]:.3f}{RESET}, cstrnt4 is {GREEN}{cstrnt4_avg:.3f}/ {ppo.adaptive_avg_constraints[3]:.3f}{RESET}")
-        elif (cstrnt3_avg <= ppo.adaptive_avg_constraints[0]) & (cstrnt4_avg > ppo.adaptive_avg_constraints[1]):
-            print(f"\n\t\t\tcstrnt3 is {GREEN}{cstrnt3_avg:.3f}/ {ppo.adaptive_avg_constraints[2]:.3f}{RESET}, cstrnt4 is {RED}{cstrnt4_avg:.3f}/ {ppo.adaptive_avg_constraints[3]:.3f}{RESET}")
-        elif (cstrnt3_avg > ppo.adaptive_avg_constraints[0]) & (cstrnt4_avg <= ppo.adaptive_avg_constraints[1]):
-            print(f"\n\t\t\tcstrnt3 is {RED}{cstrnt3_avg:.3f}/ {ppo.adaptive_avg_constraints[2]:.3f}{RESET}, cstrnt4 is {GREEN}{cstrnt4_avg:.3f}/ {ppo.adaptive_avg_constraints[3]:.3f}{RESET}")
-        else:
-            print(f"\n\t\t\tcstrnt3 is {RED}{cstrnt3_avg:.3f}/ {ppo.adaptive_avg_constraints[2]:.3f}{RESET}, cstrnt4 is {RED}{cstrnt4_avg:.3f}/ {ppo.adaptive_avg_constraints[3]:.3f}{RESET}")
+        # if (cstrnt1_avg <= ppo.adaptive_avg_constraints[0]) & (cstrnt2_avg <= ppo.adaptive_avg_constraints[1]):
+        #     print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {GREEN}{cstrnt1_avg:.3f}/ {ppo.adaptive_avg_constraints[0]:.3f}{RESET}, cstrnt2 is {GREEN}{cstrnt2_avg:.3f}/ {ppo.adaptive_avg_constraints[1]:.3f}{RESET}")
+        # elif (cstrnt1_avg <= ppo.adaptive_avg_constraints[0]) & (cstrnt2_avg > ppo.adaptive_avg_constraints[1]):
+        #     print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {GREEN}{cstrnt1_avg:.3f}/ {ppo.adaptive_avg_constraints[0]:.3f}{RESET}, cstrnt2 is {RED}{cstrnt2_avg:.3f}/ {ppo.adaptive_avg_constraints[1]:.3f}{RESET}")
+        # elif (cstrnt1_avg > ppo.adaptive_avg_constraints[0]) & (cstrnt2_avg <= ppo.adaptive_avg_constraints[1]):
+        #     print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {RED}{cstrnt1_avg:.3f}/ {ppo.adaptive_avg_constraints[0]:.3f}{RESET}, cstrnt2 is {GREEN}{cstrnt2_avg:.3f}/ {ppo.adaptive_avg_constraints[1]:.3f}{RESET}")
+        # else:
+        #     print(f"\n{episodes} episode score is {score_avg:.2f}, cstrnt1 is {RED}{cstrnt1_avg:.3f}/ {ppo.adaptive_avg_constraints[0]:.3f}{RESET}, cstrnt2 is {RED}{cstrnt2_avg:.3f}/ {ppo.adaptive_avg_constraints[1]:.3f}{RESET}")
+        #
+        # if (cstrnt3_avg <= ppo.adaptive_avg_constraints[0]) & (cstrnt4_avg <= ppo.adaptive_avg_constraints[1]):
+        #     print(f"\n\t\t\t\tcstrnt3 is {GREEN}{cstrnt3_avg:.3f}/ {ppo.adaptive_avg_constraints[2]:.3f}{RESET}, cstrnt4 is {GREEN}{cstrnt4_avg:.3f}/ {ppo.adaptive_avg_constraints[3]:.3f}{RESET}")
+        # elif (cstrnt3_avg <= ppo.adaptive_avg_constraints[0]) & (cstrnt4_avg > ppo.adaptive_avg_constraints[1]):
+        #     print(f"\n\t\t\tcstrnt3 is {GREEN}{cstrnt3_avg:.3f}/ {ppo.adaptive_avg_constraints[2]:.3f}{RESET}, cstrnt4 is {RED}{cstrnt4_avg:.3f}/ {ppo.adaptive_avg_constraints[3]:.3f}{RESET}")
+        # elif (cstrnt3_avg > ppo.adaptive_avg_constraints[0]) & (cstrnt4_avg <= ppo.adaptive_avg_constraints[1]):
+        #     print(f"\n\t\t\tcstrnt3 is {RED}{cstrnt3_avg:.3f}/ {ppo.adaptive_avg_constraints[2]:.3f}{RESET}, cstrnt4 is {GREEN}{cstrnt4_avg:.3f}/ {ppo.adaptive_avg_constraints[3]:.3f}{RESET}")
+        # else:
+        #     print(f"\n\t\t\tcstrnt3 is {RED}{cstrnt3_avg:.3f}/ {ppo.adaptive_avg_constraints[2]:.3f}{RESET}, cstrnt4 is {RED}{cstrnt4_avg:.3f}/ {ppo.adaptive_avg_constraints[3]:.3f}{RESET}")
         
         episode_data.append([iter + 1, score_avg])
-        constraint_data.append([iter + 1, ppo.adaptive_avg_constraints[0], cstrnt1_avg, ppo.adaptive_avg_constraints[1], cstrnt2_avg,
-                                ppo.adaptive_avg_constraints[2], cstrnt3_avg, ppo.adaptive_avg_constraints[3], cstrnt4_avg])
+        constraint_data.append([iter + 1, ppo.adaptive_avg_constraints[0], cstrnt1_avg, ppo.adaptive_avg_constraints[0], cstrnt2_avg,
+                                ppo.adaptive_avg_constraints[0], cstrnt3_avg, ppo.adaptive_avg_constraints[0], cstrnt4_avg])
         
         if (iter + 1) % save_freq == 0:
             save_flag = True
@@ -552,10 +558,12 @@ def main():
                 ppo.multihead_net.save_model()
                 ppo.save()
                 normalize.save_params()
-                print(f"{GREEN} >> Successfully saved models! {RESET}")
+                print(f"\n{GREEN} >> Successfully saved models! {RESET}")
 
                 np.save(log_dir + "reward.npy", episode_data)
                 np.save(log_dir + "constraint.npy", constraint_data)
+                np.save(log_dir + "prob_constraint.npy", prob_cstrnt1)
+                np.save(log_dir + "prob_constraint_next.npy", prob_cstrnt1_next)
                 print(f"{GREEN} >> Successfully saved reward & constraint data! {RESET}")
                 
                 save_flag = False

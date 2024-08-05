@@ -17,7 +17,7 @@ env = gym.make('Walker2d-v4', render_mode='human')
 # log_dir = "../runs/20240715_19-42-33/"
 # file_dir1 = "/home/kist/franka_walker/runs/20240725_19-01-40/"
 # log_dir = "../runs/20240725_15-23-19/" # 2 constraints
-log_dir = "../runs/20240801_14-03-40/" # 4 constraints
+log_dir = "../runs/20240805_16-55-17/" # 4 constraints
 
 # Number of state and action
 N_S = env.observation_space.shape[0]
@@ -29,8 +29,8 @@ cstrnt3_limit = 1
 cstrnt4_limit = 1
 
 # Initialize PPO model
-ppo = PPO(N_S, N_A, log_dir, num_constraints=2, cstrnt_limit=[cstrnt1_limit, cstrnt2_limit])
-# ppo = PPO(N_S, N_A, log_dir, num_constraints=4, cstrnt_limit=[cstrnt1_limit, cstrnt2_limit, cstrnt3_limit, cstrnt4_limit])
+# ppo = PPO(N_S, N_A, log_dir, num_constraints=2, cstrnt_limit=[cstrnt1_limit, cstrnt2_limit])
+ppo = PPO(N_S, N_A, log_dir, num_avg_constraints=1, avg_cstrnt_limit=[cstrnt2_limit])
 normalize = Normalize(N_S, log_dir, train_mode=False)
 
 # Load the saved model
@@ -62,6 +62,9 @@ for episode_id in range(test_episodes):
         cstrnt2.append(state[8])
         cstrnt3.append(-state[3])
         cstrnt4.append(-state[6])
+
+        if state[1] > 0.2:
+            print(f"{RED}state[1]: {RESET}", state[1])
         
         # print(f"{RESET}angle of the thigh joint:      {RESET}", state[2])
         # print(f"{MAGENTA}angle of the leg joint:        {RESET}", state[3]) ## leg를 -1보다 크게
