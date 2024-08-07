@@ -26,149 +26,151 @@ from color_code import *
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-#learning rate backward propagation NN action
+# learning rate backward propagation NN action
 lr_actor = 0.0003
-#learning rate backward propagation NN state value estimation
+# learning rate backward propagation NN state value estimation
 lr_critic = 0.0003
-#Number of Learning Iteration we want to perform
+# Number of Learning Iteration we want to perform
 Iter = 100000
-#Number max of step to realise in one episode. 
+# Number max of step to realise in one episode.
 MAX_STEP = 1000
-#How rewards are discounted.
+# How rewards are discounted.
 gamma = 0.98
-#How do we stabilize variance in the return computation.
+# How do we stabilize variance in the return computation.
 lambd = 0.95
-#batch to train on
+# batch to train on
 batch_size = 64
 # Do we want high change to be taken into account.
 epsilon = 0.2
-#weight decay coefficient in ADAM for state value optim.
+# weight decay coefficient in ADAM for state value optim.
 l2_rate = 0.001
 
 save_freq = 100
 
 save_flag = False
 
+
 # Actor class: Used to choose actions of a continuous action space.
 class Actor(nn.Module):
     def __init__(self, N_S, N_A, chkpt_dir):
         # Initialize NN structure.
-        super(Actor,self).__init__()
-        self.fc1 = nn.Linear(N_S,64)
-        self.fc2 = nn.Linear(64,64)
-        self.sigma = nn.Linear(64,N_A)
-        self.mu = nn.Linear(64,N_A)
+        super(Actor, self).__init__()
+        self.fc1 = nn.Linear(N_S, 64)
+        self.fc2 = nn.Linear(64, 64)
+        self.sigma = nn.Linear(64, N_A)
+        self.mu = nn.Linear(64, N_A)
         self.mu.weight.data.mul_(0.1)
         self.mu.bias.data.mul_(0.0)
         # This approach use gaussian distribution to decide actions. Could be
         # something else.
         self.distribution = torch.distributions.Normal
-        
+
         self.checkpoint_dir = chkpt_dir
         self.checkpoint_file = os.path.join(self.checkpoint_dir, '_actor')
-        
+
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
 
-    def set_init(self,layers):
+    def set_init(self, layers):
         # Initialize weight and bias according to a normal distrib mean 0 and sd 0.1.
         for layer in layers:
-            nn.init.normal_(layer.weight,mean=0.,std=0.1)
-            nn.init.constant_(layer.bias,0.)
+            nn.init.normal_(layer.weight, mean=0., std=0.1)
+            nn.init.constant_(layer.bias, 0.)
 
-    def forward(self,state):
+    def forward(self, state):
         # Use of tanh activation function is recommanded : bounded [-1,1],
         # gives some non-linearity, and tends to give some stability.
         x = torch.tanh(self.fc1(state))
         x = torch.tanh(self.fc2(x))
         # mu action output of the NN.
         mu = self.mu(x)
-        #log_sigma action output of the NN
+        # log_sigma action output of the NN
         log_sigma = self.sigma(x)
         sigma = torch.exp(log_sigma)
-        return mu,sigma
+        return mu, sigma
 
-    def choose_action(self,state):
+    def choose_action(self, state):
         # Choose action in the continuous action space using normal distribution
         # defined by mu and sigma of each actions returned by the NN.
         state = torch.from_numpy(np.array(state).astype(np.float32)).unsqueeze(0).to(self.device)
-        mu,sigma = self.forward(state)
-        Pi = self.distribution(mu,sigma)
+        mu, sigma = self.forward(state)
+        Pi = self.distribution(mu, sigma)
         return Pi.sample().cpu().numpy().squeeze(0)
-    
+
     def save_model(self):
         torch.save(self.state_dict(), self.checkpoint_file)
-        
+
     def load_model(self, load_model_dir=None):
         if load_model_dir is None:
             load_model_dir = self.checkpoint_file
         self.load_state_dict(torch.load(load_model_dir))
-          
+
 
 # Critic class : Used to estimate V(state) the state value function through a NN.
 class Critic(nn.Module):
     def __init__(self, N_S, chkpt_dir):
         # Initialize NN structure.
-        super(Critic,self).__init__()
-        self.fc1 = nn.Linear(N_S,64)
-        self.fc2 = nn.Linear(64,64)
-        self.fc3 = nn.Linear(64,1)
-        self.fc3.weight.data.mul_(0.1) # 초기 weight에 0.1을 곱해주면서 학습을 더 안정적으로 할 수 있도록(tanh, sigmoid를 사용할 경우 많이 쓰는 방식)
-        self.fc3.bias.data.mul_(0.0) # bias tensor의 모든 원소를 0으로 설정
-        
+        super(Critic, self).__init__()
+        self.fc1 = nn.Linear(N_S, 64)
+        self.fc2 = nn.Linear(64, 64)
+        self.fc3 = nn.Linear(64, 1)
+        self.fc3.weight.data.mul_(0.1)  # 초기 weight에 0.1을 곱해주면서 학습을 더 안정적으로 할 수 있도록(tanh, sigmoid를 사용할 경우 많이 쓰는 방식)
+        self.fc3.bias.data.mul_(0.0)  # bias tensor의 모든 원소를 0으로 설정
+
         self.checkpoint_dir = chkpt_dir
         self.checkpoint_file = os.path.join(self.checkpoint_dir, '_critic')
-        
+
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
 
-    def set_init(self,layers):
-      # Initialize weight and bias according to a normal distrib mean 0 and sd 0.1.
+    def set_init(self, layers):
+        # Initialize weight and bias according to a normal distrib mean 0 and sd 0.1.
         for layer in layers:
-            nn.init.normal_(layer.weight,mean=0.,std=0.1)
-            nn.init.constant_(layer.bias,0.)
+            nn.init.normal_(layer.weight, mean=0., std=0.1)
+            nn.init.constant_(layer.bias, 0.)
 
-    def forward(self,state):
-      # Use of tanh activation function is recommanded.
+    def forward(self, state):
+        # Use of tanh activation function is recommanded.
         x = torch.tanh(self.fc1(state))
         x = torch.tanh(self.fc2(x))
         values = self.fc3(x)
         return values
-    
+
     def save_model(self):
         torch.save(self.state_dict(), self.checkpoint_file)
-        
+
     def load_model(self, load_model_dir=None):
         if load_model_dir is None:
             load_model_dir = self.checkpoint_file
         self.load_state_dict(torch.load(load_model_dir))
-    
+
+
 # Multihead Cost Value Function
 class MultiheadCostValueFunction(nn.Module):
     def __init__(self, input_dim, hidden_dim, num_heads, chkpt_dir=None):
         super(MultiheadCostValueFunction, self).__init__()
-        
+
         self.shared_layers = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU()
         )
-        
+
         self.heads = nn.ModuleList([nn.Linear(hidden_dim, 1) for _ in range(num_heads)])
 
         self._init_weights()
 
         self.checkpoint_dir = chkpt_dir
         self.checkpoint_file = os.path.join(self.checkpoint_dir, '_multihead')
-        
+
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
 
     def forward(self, x):
         x = self.shared_layers(x)
         return torch.cat([head(x) for head in self.heads], dim=1)
-    
+
     def _init_weights(self):
         for layer in self.shared_layers:
             if isinstance(layer, nn.Linear):
@@ -186,7 +188,8 @@ class MultiheadCostValueFunction(nn.Module):
             load_model_dir = self.checkpoint_file
         self.load_state_dict(torch.load(load_model_dir))
 
-# PPO Algorithm with Constraints   
+
+# PPO Algorithm with Constraints
 class PPO:
     def __init__(self, N_S, N_A, log_dir, num_avg_constraints=4, avg_cstrnt_limit=None):
         self.log_dir = log_dir
@@ -282,8 +285,7 @@ class PPO:
                 actor_loss.backward()
                 self.actor_optim.step()
 
-    def train_with_constraints(self,
-                               memory):  # memory.append([state, action, reward, next_state, mask, [cost1, cost2, cost3, cost4]])
+    def train_with_constraints(self, memory):  # memory.append([state, action, reward, next_state, mask, [cost1, cost2, cost3, cost4]])
         states, actions, rewards, next_states, masks = [], [], [], [], []
         costs = [[] for _ in range(len(memory[0][5]))]
         prob_costs = []
@@ -379,7 +381,7 @@ class PPO:
         old_sigma = old_sigma.detach()
 
         kl = torch.log(old_sigma) - torch.log(sigma) + (old_sigma.pow(2) + (old_mu - mu).pow(2)) / (
-                    2.0 * sigma.pow(2)) - 0.5
+                2.0 * sigma.pow(2)) - 0.5
         return kl.sum(1, keepdim=True)
 
     def prob_cost_function(self, s, s_prime, num):
@@ -469,13 +471,14 @@ class PPO:
         self.critic_optim.load_state_dict(torch.load(log_dir + "_critic_optimizer"))
         self.multihead_optim.load_state_dict(torch.load(log_dir + "_multihead_optimizer"))
 
+
 # Creation of a class to normalize the states (Z-score Normalization (Standardization))
 class Normalize:
     def __init__(self, N_S, chkpt_dir, train_mode=True, continue_train=False):
-        self.mean = np.zeros((N_S,)) # mean
-        self.std = np.zeros((N_S, )) # standard
-        self.stdd = np.zeros((N_S, )) # variance
-        
+        self.mean = np.zeros((N_S,))  # mean
+        self.std = np.zeros((N_S,))  # standard
+        self.stdd = np.zeros((N_S,))  # variance
+
         self.train_mode = train_mode
         self.continue_train = continue_train
 
@@ -487,10 +490,10 @@ class Normalize:
         self.get_joint_threshold()
         self.start_idx = 5
         self.end_idx = 21
-        
+
         self.checkpoint_dir = chkpt_dir
         self.checkpoint_file = os.path.join(self.checkpoint_dir, '_normalize.npy')
-        
+
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     def __call__(self, x):
@@ -522,23 +525,23 @@ class Normalize:
 
     def get_joint_threshold(self):
         self.joint_ranges = {
-            'abdomen_z': (-45, 45),
-            'abdomen_y': (-75, 30),
-            'abdomen_x': (-35, 35),
-            'right_hip_x': (-25, 5),
-            'right_hip_z': (-60, 35),
-            'right_hip_y': (-110, 20),
-            'right_knee': (-160, -2),
-            'left_hip_x': (-25, 5),
-            'left_hip_z': (-60, 35),
-            'left_hip_y': (-110, 20),
-            'left_knee': (-160, -2),
-            'right_shoulder1': (-85, 60),
-            'right_shoulder2': (-85, 60),
-            'right_elbow': (-90, 50),
-            'left_shoulder1': (-60, 85),
-            'left_shoulder2': (-60, 85),
-            'left_elbow': (-90, 50),
+            'abdomen_z': (-0.785, 0.785), # (-45, 45),
+            'abdomen_y': (-1.31, 0.524), # (-75, 30),
+            'abdomen_x': (-0.611, 0.611), # (-35, 35),
+            'right_hip_x': (-0.436, 0.0873), # (-25, 5),
+            'right_hip_z': (-1.05, 0.611), # (-60, 35),
+            'right_hip_y': (-1.92, 0.349), # (-110, 20),
+            'right_knee': (-2.79, -0.0349), # (-160, -2),
+            'left_hip_x': (-0.436, 0.0873), # (-25, 5),
+            'left_hip_z': (-1.05, 0.611), # (-60, 35),
+            'left_hip_y': (-1.92, 0.349), # (-110, 20),
+            'left_knee': (-2.79, -0.0349), # (-160, -2),
+            'right_shoulder1': (-1.48, 1.05), # (-85, 60),
+            'right_shoulder2': (-1.48, 1.05), # (-85, 60),
+            'right_elbow': (-1.57, 0.873), # (-90, 50),
+            'left_shoulder1': (-1.05, 1.48), # (-60, 85),
+            'left_shoulder2': (-1.05, 1.48), # (-60, 85),
+            'left_elbow': (-1.57, 0.873), # (-90, 50),
         }
 
         self.selected_joint_ranges = list(self.joint_ranges.values())
@@ -546,7 +549,7 @@ class Normalize:
     def update(self, x):
         self.mean = np.mean(x, axis=0)
         self.std = np.std(x, axis=0) + 1e-8
-    
+
     def save_params(self):
         np.save(self.checkpoint_file, {'mean': self.mean, 'std': self.std, 'stdd': self.stdd})
 
@@ -558,23 +561,26 @@ class Normalize:
         self.std = params['std']
         self.stdd = params['stdd']
 
+
 def main():
-    env = gym.make('Humanoid-v4', render_mode='rgb_array')
+    env = gym.make('Humanoid-v4', render_mode='human')
 
     N_S = env.observation_space.shape[0]
     N_A = env.action_space.shape[0]
 
     average_constraint_limit = []
-    average_constraint_limit.append(0.2)
-    average_constraint_limit.append(-0.2)
-    average_constraint_limit.append(0.15)
-    average_constraint_limit.append(-0.15)
-    average_constraint_limit.append(0.13)
-    average_constraint_limit.append(-0.13)
+    normalize_avg_cstrnt_limit = lambda x, min_val, max_val: 2 * (x - min_val) / (max_val - min_val) - 1
+    average_constraint_limit.append(normalize_avg_cstrnt_limit(0.2, -0.785, 0.785)) # (-0.785, 0.785)
+    average_constraint_limit.append(normalize_avg_cstrnt_limit(-0.2, -0.785, 0.785))
+    average_constraint_limit.append(normalize_avg_cstrnt_limit(0.15, -1.31, 0.524)) # (-1.31, 0.524)
+    average_constraint_limit.append(normalize_avg_cstrnt_limit(-0.15, -1.31, 0.524))
+    average_constraint_limit.append(normalize_avg_cstrnt_limit(0.13, -0.611, 0.611)) # (-0.611, 0.611)
+    average_constraint_limit.append(normalize_avg_cstrnt_limit(-0.13, -0.611, 0.611))
+    print(f"{BLUE}avg_cstrnt_limit_normalized: {RESET}\n{average_constraint_limit}")
 
     ppo = PPO(N_S, N_A, log_dir, num_avg_constraints=6, avg_cstrnt_limit=average_constraint_limit)
     normalize = Normalize(N_S, log_dir, train_mode=True)
-    
+
     # ppo.actor_net.load_model('../runs/20240725_19-01-40/_actor')
     # ppo.actor_net.eval()
     # ppo.critic_net.load_model('../runs/20240725_19-01-40/_critic')
@@ -593,14 +599,14 @@ def main():
         avg_cstrnt1 = []
         avg_cstrnt2 = []
         avg_cstrnt3 = []
-        while steps < 2048: #Horizon
+        while steps < 2048:  # Horizon
             episodes += 1
             state, _ = env.reset()
             state = normalize(state)
             score = 0
             for _ in range(MAX_STEP):
                 steps += 1
-                
+
                 action = ppo.actor_net.choose_action(state)
                 next_state, reward, truncated, terminated, _ = env.step(action)
                 next_state = normalize(next_state)
@@ -608,7 +614,7 @@ def main():
 
                 cost = [next_state[5], -next_state[5], next_state[6], -next_state[6], next_state[7], -next_state[7]]
 
-                mask = (1-done)*1
+                mask = (1 - done) * 1
                 memory.append([state, action, reward, next_state, mask, cost])
 
                 avg_cstrnt1.append(state[5])
@@ -620,7 +626,7 @@ def main():
 
                 if done:
                     break
-            
+
             scores.append(score)
         score_avg = np.mean(scores)
 
@@ -649,19 +655,20 @@ def main():
                 np.save(log_dir + "reward.npy", episode_data)
                 np.save(log_dir + "constraint.npy", avg_cstrnt_data)
                 print(f"{GREEN} >> Successfully saved reward & constraint data! {RESET}")
-                
+
                 save_flag = False
 
         ppo.train(memory)
-        
+
+
 def save_info_yaml(log_dir, info):
     info_file_path = os.path.join(log_dir, 'INFO.yaml')
     with open(info_file_path, 'w') as file:
         yaml.dump(info, file, default_flow_style=False)
     print(f"INFO.yaml file saved in {info_file_path}")
 
+
 if __name__ == "__main__":
-    
     current_time = datetime.datetime.now().strftime("%Y%m%d_%H-%M-%S")
     log_dir = f"../runs/humanoid/{current_time}/"
     os.makedirs(log_dir, exist_ok=True)
