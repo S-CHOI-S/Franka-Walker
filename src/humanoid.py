@@ -219,9 +219,10 @@ class PPO:
         else:
             self.train = self.train_with_constraints
 
-        self.prob_constraint_limits = 1
+        self.prob_constraint_limits = -0.7765042979942693
         self.prob_constraint_threshold = 0.001  # threshold for probablistic constraint
-        self.adaptive_prob_constraints = self.prob_constraint_limits
+        self.adaptive_prob_constraint1 = self.prob_constraint_limits
+        self.adaptive_prob_constraint2 = self.prob_constraint_limits
 
         self.alpha = 0.1
         self.prob_alpha = 10
@@ -288,7 +289,8 @@ class PPO:
     def train_with_constraints(self, memory):  # memory.append([state, action, reward, next_state, mask, [cost1, cost2, cost3, cost4]])
         states, actions, rewards, next_states, masks = [], [], [], [], []
         costs = [[] for _ in range(len(memory[0][5]))]
-        prob_costs = []
+        prob_costs1 = []
+        prob_costs2 = []
 
         for m in memory:
             states.append(m[0])
@@ -298,7 +300,8 @@ class PPO:
             masks.append(m[4])
             for i, cost in enumerate(m[5]):
                 costs[i].append(cost)
-            prob_costs.append(self.prob_cost_function(-m[0], -m[3], 3))  # Calculate probabilistic cost for each step
+            prob_costs1.append(self.prob_cost_function(-m[0], -m[3], 18))  # Calculate probabilistic cost for each step
+            prob_costs2.append(self.prob_cost_function(-m[0], -m[3], 21))  # Calculate probabilistic cost for each step
 
         states = torch.tensor(np.array(states), dtype=torch.float32).to(self.device)
         actions = torch.tensor(np.array(actions), dtype=torch.float32).to(self.device)
@@ -306,8 +309,8 @@ class PPO:
         next_states = torch.tensor(np.array(next_states), dtype=torch.float32).to(self.device)
         masks = torch.tensor(np.array(masks), dtype=torch.float32).to(self.device)
         costs = [torch.tensor(np.array(cost), dtype=torch.float32).to(self.device) for cost in costs]
-        prob_costs = torch.tensor(np.array(prob_costs), dtype=torch.float32).to(
-            self.device)  # Convert prob costs to tensor
+        prob_costs1 = torch.tensor(np.array(prob_costs1), dtype=torch.float32).to(self.device)
+        prob_costs2 = torch.tensor(np.array(prob_costs2), dtype=torch.float32).to(self.device)
 
         values = self.critic_net(states)
         cost_values = self.multihead_net(states)
@@ -317,7 +320,8 @@ class PPO:
         old_log_prob = pi.log_prob(actions).sum(1, keepdim=True)
 
         self.adaptive_avg_constraints = self.adaptive_constraint_thresholding(cost_values, self.constraint_limits)
-        self.adaptive_prob_constraint = self.adaptive_prob_constraint_thresholding(prob_costs)  ## HERE
+        self.adaptive_prob_constraint1 = self.adaptive_prob_constraint_thresholding(prob_costs1)  ## HERE
+        self.adaptive_prob_constraint2 = self.adaptive_prob_constraint_thresholding(prob_costs2)
         # print(f"\n{MAGENTA}prob_cnstrnt: {RESET}{self.prob_constraint_threshold}/{self.prob_constraint_limits}"
         #       f"\t{MAGENTA}adaptive_prob_cnstrnt: {RESET}{self.adaptive_prob_constraint}\t"f"{MAGENTA}-state[3]: {RESET}{prob_costs.sum()}")
 
@@ -358,10 +362,15 @@ class PPO:
                                                       old_std[b_index], mu, std)
 
                 ## HERE
-                prob_cost_sum = prob_costs.sum()  # Mean of probabilistic costs for the episode
-                prob_constraint_loss = self.logarithmic_barrier(prob_cost_sum, self.adaptive_prob_constraint)
+                prob_cost1_sum = prob_costs1.sum()  # Mean of probabilistic costs for the episode
+                prob_constraint1_loss = self.logarithmic_barrier(prob_cost1_sum, self.adaptive_prob_constraint1)
                 # prob_constraint_loss = self.logarithmic_barrier(prob_cost_sum, self.prob_constraint_threshold)
-                actor_loss += prob_constraint_loss  # Add probabilistic constraint loss
+                actor_loss += prob_constraint1_loss  # Add probabilistic constraint loss
+
+                prob_cost2_sum = prob_costs2.sum()  # Mean of probabilistic costs for the episode
+                prob_constraint2_loss = self.logarithmic_barrier(prob_cost2_sum, self.adaptive_prob_constraint2)
+                # prob_constraint_loss = self.logarithmic_barrier(prob_cost_sum, self.prob_constraint_threshold)
+                actor_loss += prob_constraint2_loss  # Add probabilistic constraint loss
 
                 self.actor_optim.zero_grad()
                 actor_loss.backward()
@@ -563,7 +572,7 @@ class Normalize:
 
 
 def main():
-    env = gym.make('Humanoid-v4', render_mode='human')
+    env = gym.make('Humanoid-v4', render_mode='rgb_array')
 
     N_S = env.observation_space.shape[0]
     N_A = env.action_space.shape[0]
@@ -591,6 +600,10 @@ def main():
     episodes = 0
     episode_data = []
     avg_cstrnt_data = []
+    prob_cstrnt1 = []
+    prob_cstrnt1_next = []
+    prob_cstrnt2 = []
+    prob_cstrnt2_next = []
 
     for iter in tqdm(range(Iter)):
         memory = deque()
@@ -613,6 +626,10 @@ def main():
                 done = truncated or terminated
 
                 cost = [next_state[5], -next_state[5], next_state[6], -next_state[6], next_state[7], -next_state[7]]
+                prob1 = -state[18]
+                prob1_next = -next_state[18]
+                prob2 = -state[21]
+                prob2_next = -next_state[21]
 
                 mask = (1 - done) * 1
                 memory.append([state, action, reward, next_state, mask, cost])
@@ -620,6 +637,10 @@ def main():
                 avg_cstrnt1.append(state[5])
                 avg_cstrnt2.append(state[6])
                 avg_cstrnt3.append(state[7])
+                prob_cstrnt1.append(prob1)
+                prob_cstrnt1_next.append(prob1_next)
+                prob_cstrnt2.append(prob2)
+                prob_cstrnt2_next.append(prob2_next)
 
                 score += reward
                 state = next_state
@@ -654,6 +675,11 @@ def main():
 
                 np.save(log_dir + "reward.npy", episode_data)
                 np.save(log_dir + "constraint.npy", avg_cstrnt_data)
+                np.save(log_dir + "prob_constraint1.npy", prob_cstrnt1)
+                np.save(log_dir + "prob_constraint1_next.npy", prob_cstrnt1_next)
+                np.save(log_dir + "prob_constraint2.npy", prob_cstrnt2)
+                np.save(log_dir + "prob_constraint2_next.npy", prob_cstrnt2_next)
+
                 print(f"{GREEN} >> Successfully saved reward & constraint data! {RESET}")
 
                 save_flag = False
