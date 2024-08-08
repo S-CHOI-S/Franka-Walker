@@ -12,7 +12,7 @@ from color_code import *
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initialize environment
-env = gym.make('Humanoid-v4', render_mode='human')
+env = gym.make('Humanoid-v4', render_mode='rgb_array')
 
 log_dir = "../runs/humanoid/20240807_13-49-06/"
 

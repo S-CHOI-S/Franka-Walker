@@ -585,7 +585,6 @@ def main():
     average_constraint_limit.append(normalize_avg_cstrnt_limit(-0.15, -1.31, 0.524))
     average_constraint_limit.append(normalize_avg_cstrnt_limit(0.13, -0.611, 0.611)) # (-0.611, 0.611)
     average_constraint_limit.append(normalize_avg_cstrnt_limit(-0.13, -0.611, 0.611))
-    print(f"{BLUE}avg_cstrnt_limit_normalized: {RESET}\n{average_constraint_limit}")
 
     ppo = PPO(N_S, N_A, log_dir, num_avg_constraints=6, avg_cstrnt_limit=average_constraint_limit)
     normalize = Normalize(N_S, log_dir, train_mode=True)
@@ -654,6 +653,9 @@ def main():
         cstrnt1_avg = np.mean(avg_cstrnt1)
         cstrnt2_avg = np.mean(avg_cstrnt2)
         cstrnt3_avg = np.mean(avg_cstrnt3)
+        
+        prob_cstrnt1_avg = np.mean(prob_cstrnt1)
+        prob_cstrnt2_avg = np.mean(prob_cstrnt2)
 
         episode_data.append([iter + 1, score_avg])
 
@@ -681,6 +683,10 @@ def main():
                 np.save(log_dir + "prob_constraint2_next.npy", prob_cstrnt2_next)
 
                 print(f"{GREEN} >> Successfully saved reward & constraint data! {RESET}")
+                print(f"{YELLOW} >> Episode num: {RESET}{iter + 1}, {YELLOW}Reward: {RESET}{score_avg}")
+                print(f"{YELLOW} >> cstrnt1_avg: {RESET}{cstrnt1_avg}, {YELLOW}cstrnt2_avg: {RESET}{cstrnt2_avg}, {YELLOW}cstrnt3_avg: {RESET}{cstrnt3_avg}")
+                print(f"{YELLOW} >> prob_cstrnt1_avg: {RESET}{prob_cstrnt1_avg}, {YELLOW}prob_cstrnt2_avg: {RESET}{prob_cstrnt2_avg}")
+                
 
                 save_flag = False
 
