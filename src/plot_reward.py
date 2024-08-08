@@ -8,7 +8,7 @@ def load_npy(file_path):
     data_pd = pd.DataFrame(data_npy)
     return data_pd
 
-def preprocess_df(data, smoothing=1000, end=None):
+def preprocess_df(data, smoothing=500, end=None):
     data.columns = ['Iteration', 'Reward']
     data['Cumulative_Iteration'] = data['Iteration'].cumsum()
     if end is not None:

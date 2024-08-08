@@ -219,7 +219,7 @@ class PPO:
         else:
             self.train = self.train_with_constraints
 
-        self.prob_constraint_limits = -0.7765042979942693
+        self.prob_constraint_limits = -0.7
         self.prob_constraint_threshold = 0.001  # threshold for probablistic constraint
         self.adaptive_prob_constraint1 = self.prob_constraint_limits
         self.adaptive_prob_constraint2 = self.prob_constraint_limits
@@ -355,11 +355,11 @@ class PPO:
                 clipped_loss = ratio * b_advants
                 actor_loss = -torch.min(surrogate_loss, clipped_loss).mean()  # PPO
 
-                cost_values_estimates = self.multihead_net(b_states)
-                b_cost_advants = [adv[b_index] for adv in cost_advants]
-                actor_loss = self.augmented_objective(actor_loss, cost_values_estimates.t(), b_cost_advants,
-                                                      self.adaptive_avg_constraints, b_advants, old_mu[b_index],
-                                                      old_std[b_index], mu, std)
+                # cost_values_estimates = self.multihead_net(b_states)
+                # b_cost_advants = [adv[b_index] for adv in cost_advants]
+                # actor_loss = self.augmented_objective(actor_loss, cost_values_estimates.t(), b_cost_advants,
+                #                                       self.adaptive_avg_constraints, b_advants, old_mu[b_index],
+                #                                       old_std[b_index], mu, std)
 
                 ## HERE
                 prob_cost1_sum = prob_costs1.sum()  # Mean of probabilistic costs for the episode
@@ -376,11 +376,11 @@ class PPO:
                 actor_loss.backward()
                 self.actor_optim.step()
 
-                cost_value_loss = sum([torch.nn.functional.mse_loss(est.squeeze(), val[b_index]) for est, val in
-                                       zip(cost_values_estimates.t(), costs)])
+                # cost_value_loss = sum([torch.nn.functional.mse_loss(est.squeeze(), val[b_index]) for est, val in
+                #                        zip(cost_values_estimates.t(), costs)])
 
                 self.multihead_optim.zero_grad()
-                cost_value_loss.backward()
+                # cost_value_loss.backward()
                 self.multihead_optim.step()
 
     # Get the Kullback - Leibler divergence: Measure of the diff btwn new and old policy:
@@ -404,7 +404,7 @@ class PPO:
     def adaptive_prob_constraint_thresholding(self, prob_costs):
         current_prob_cost = prob_costs.mean().item()
         adaptive_limit = max(self.prob_constraint_threshold,
-                             current_prob_cost + self.alpha * self.prob_constraint_threshold)
+                             current_prob_cost + self.prob_alpha * self.prob_constraint_threshold)
         # adaptive_limit = max(self.prob_constraint_threshold, current_prob_cost - self.prob_alpha * self.prob_constraint_threshold)
         return adaptive_limit
 
@@ -599,10 +599,12 @@ def main():
     episodes = 0
     episode_data = []
     avg_cstrnt_data = []
+    prob_cstrnt_data = []
     prob_cstrnt1 = []
     prob_cstrnt1_next = []
     prob_cstrnt2 = []
     prob_cstrnt2_next = []
+    pc1, pc2 = [], []
 
     for iter in tqdm(range(Iter)):
         memory = deque()
@@ -640,6 +642,8 @@ def main():
                 prob_cstrnt1_next.append(prob1_next)
                 prob_cstrnt2.append(prob2)
                 prob_cstrnt2_next.append(prob2_next)
+                pc1.append(ppo.prob_cost_function(-state, -next_state, 18))
+                pc2.append(ppo.prob_cost_function(-state, -next_state, 21))
 
                 score += reward
                 state = next_state
@@ -657,12 +661,19 @@ def main():
         prob_cstrnt1_avg = np.mean(prob_cstrnt1)
         prob_cstrnt2_avg = np.mean(prob_cstrnt2)
 
+        pc1_avg = np.mean(pc1)
+        pc2_avg = np.mean(pc2)
+
         episode_data.append([iter + 1, score_avg])
 
         avg_cstrnt_data.append(
             [iter + 1, ppo.adaptive_avg_constraints[0], cstrnt1_avg, ppo.adaptive_avg_constraints[1], -cstrnt1_avg,
              ppo.adaptive_avg_constraints[2], cstrnt2_avg, ppo.adaptive_avg_constraints[3], -cstrnt2_avg,
              ppo.adaptive_avg_constraints[4], cstrnt3_avg, ppo.adaptive_avg_constraints[5], -cstrnt3_avg])
+
+        prob_cstrnt_data.append(
+            [iter + 1, ppo.adaptive_prob_constraint1, pc1_avg, ppo.adaptive_prob_constraint2, pc2_avg]
+        )
 
         if (iter + 1) % save_freq == 0:
             save_flag = True
@@ -685,7 +696,8 @@ def main():
                 print(f"{GREEN} >> Successfully saved reward & constraint data! {RESET}")
                 print(f"{YELLOW} >> Episode num: {RESET}{iter + 1}, {YELLOW}Reward: {RESET}{score_avg}")
                 print(f"{YELLOW} >> cstrnt1_avg: {RESET}{cstrnt1_avg}, {YELLOW}cstrnt2_avg: {RESET}{cstrnt2_avg}, {YELLOW}cstrnt3_avg: {RESET}{cstrnt3_avg}")
-                print(f"{YELLOW} >> prob_cstrnt1_avg: {RESET}{prob_cstrnt1_avg}, {YELLOW}prob_cstrnt2_avg: {RESET}{prob_cstrnt2_avg}")
+                print(f"{YELLOW} >> prob_cstrnt1_limit: {RESET}{ppo.adaptive_prob_constraint1}, {YELLOW}prob_cstrnt2_limit: {RESET}{ppo.adaptive_prob_constraint2}")
+                print(f"{YELLOW} >> prob_cstrnt1_avg: {RESET}{pc1_avg}, {YELLOW}prob_cstrnt2_avg: {RESET}{pc2_avg}")
                 
 
                 save_flag = False

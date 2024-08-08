@@ -12,9 +12,9 @@ from color_code import *
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initialize environment
-env = gym.make('Humanoid-v4', render_mode='rgb_array')
+env = gym.make('Humanoid-v4', render_mode='human')
 
-log_dir = "../runs/humanoid/20240807_13-49-06/"
+log_dir = "../runs/humanoid/20240806_15-43-25/"
 
 # Number of state and action
 N_S = env.observation_space.shape[0]
@@ -31,8 +31,8 @@ average_constraint_limit.append(normalize_avg_cstrnt_limit(-0.13, -0.611, 0.611)
 print(f"{BLUE}avg_cstrnt_limit_normalized: {RESET}\n{average_constraint_limit}")
 
 # Initialize PPO model
-# ppo = PPO(N_S, N_A, log_dir, num_avg_constraints=0)
-ppo = PPO(N_S, N_A, log_dir, num_avg_constraints=6, avg_cstrnt_limit=average_constraint_limit)
+ppo = PPO(N_S, N_A, log_dir, num_avg_constraints=0)
+# ppo = PPO(N_S, N_A, log_dir, num_avg_constraints=6, avg_cstrnt_limit=average_constraint_limit)
 normalize = Normalize(N_S, log_dir, train_mode=False)
 
 # Load the saved model
@@ -71,7 +71,7 @@ for episode_id in range(test_episodes):
     cstrnt2_avg = np.mean(avg_cstrnt2)
     cstrnt3_avg = np.mean(avg_cstrnt3)
 
-    print(f"\nEPISODE NUM: {episode_id} ========================================================")
+    print(f"\nEPISODE NUM: {episode_id}\t EPISODE SCORE: {score}========================================================")
     print(f"{BLUE}z-limit: {RESET}{average_constraint_limit[1]:.3f}/{average_constraint_limit[0]:.3f},\t{BLUE}y-limit: {RESET}{average_constraint_limit[3]:.3f}/{average_constraint_limit[2]:.3f},\t"
           f"{BLUE}x-limit: {RESET}{average_constraint_limit[5]:.3f}/{average_constraint_limit[4]:.3f}")
     print(f"{CYAN}z-angle: {RESET}{cstrnt1_avg:.3f},\t{CYAN}y-angle: {RESET}{cstrnt2_avg:.3f},\t{CYAN}x-angle: {RESET}{cstrnt3_avg:.3f}")
