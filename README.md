@@ -58,3 +58,10 @@ $ python src/plot_reward.py
 ``` shell
 $ python src/plot_constraint.py
 ```
+
+</br>
+
+## References
+- [Proximal Policy Optimization Algorithms](https://arxiv.org/abs/1707.06347)
+- [IPO: Interior-point Policy Optimization under Constraints](https://arxiv.org/abs/1910.09615)
+- [Not Only Rewards But Also Constraints: Applications on Legged Robot Locomotion](https://arxiv.org/abs/2308.12517)
