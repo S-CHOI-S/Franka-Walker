@@ -1,6 +1,6 @@
 # Franka Walker
 Preliminary project for humanoid locomotion using RL
-</br>
+</br></br>
 
 ## Gymnasium Environments
 For this project, the '[Walker2D](https://gymnasium.farama.org/environments/mujoco/walker2d/)', '[Humanoid](https://gymnasium.farama.org/environments/mujoco/humanoid/)' environments from [Gymnasium](https://gymnasium.farama.org/) are used.
@@ -8,14 +8,11 @@ For this project, the '[Walker2D](https://gymnasium.farama.org/environments/mujo
 <a href="https://gymnasium.farama.org/_images/gymnasium-text.png">
   <img src="https://gymnasium.farama.org/_images/gymnasium-text.png" alt="Gymnasium" style="width: 250px; height: auto;"/>
 </a>
-
-<a href="https://gymnasium.farama.org/_images/walker2d.gif">
-  <img src="https://gymnasium.farama.org/_images/walker2d.gif" alt="Walker2D GIF" style="width: 200px; height: auto;"/>
-</a>
-<a href="https://gymnasium.farama.org/_images/humanoid.gif">
-  <img src="https://gymnasium.farama.org/_images/humanoid.gif" alt="Humanoid GIF" style="width: 200px; height: auto;"/>
-</a>
 </br>
+
+<img src="https://github.com/user-attachments/assets/cb9fe43d-a024-4212-8e44-383165a56c19" width="30%"/>
+<img src="https://github.com/user-attachments/assets/ccfbfded-d52c-4a3d-af64-eac77a5689e3" width="30%"/>
+</br></br>
 
 ## Installation
 __Step 1.__ Create conda environment
